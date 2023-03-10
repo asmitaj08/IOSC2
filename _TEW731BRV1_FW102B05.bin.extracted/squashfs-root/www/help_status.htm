@@ -1,0 +1,511 @@
+<HTML>
+ <HEAD>
+  <!-- $MVD$:app("RoboHELP HTML Edition by Blue Sky Software, portions by MicroVision Dev. Inc.","769") -->
+  <!-- $MVD$:template("","0","0") -->
+  <!-- $MVD$:fontset("Arial","Arial") -->
+  <!-- $MVD$:fontset("Times New Roman","Times New Roman") -->
+  <!-- $MVD$:fontset("Arial Narrow","Arial Narrow") -->
+  <TITLE>Status</TITLE>
+ <link rel="stylesheet" href="style.css" type="text/css"><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <script language="JavaScript" src="uk.js"></script>
+ 
+ <script language="JavaScript" src="public_js/public.js"></script>
+ <script language="Javascript" src="js/jquery-1.3.2.min.js"></script>
+ <script language="Javascript" src="js/xml.js"></script>
+ <script language="Javascript" src="js/object.js"></script>
+ <script type="text/javascript">
+<!--
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_findObj(n, d) { //v4.01
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+}
+//-->
+ </script>
+</HEAD>
+  
+<BODY onLoad="MM_preloadImages('but_help_main_1.gif','but_help_status_1.gif','but_help_tools_1.gif','but_help_wireless_1.gif')">
+<table width="750" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="21"><img src="c1_tl.gif" width="21" height="21" /></td>
+    <td width="708" background="bg1_t.gif"><img src="top_1.gif" width="390" height="21" /></td>
+    <td width="21"><img src="c1_tr.gif" width="21" height="21" /></td>
+  </tr>
+  <tr>
+    <td valign="top" background="bg1_l.gif"><img src="top_2.gif" width="21" height="69" /></td>
+    <td background="bg.gif"><table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="13%"><img src="logo.gif" /></td>
+        <td width="87%" align="right"><img src="description.gif" /></td>
+      </tr>
+    </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="20%" height="429" valign="top"><table width="100%" border="0" align="center" cellpadding="5" cellspacing="0" bgcolor="#000000">
+              <tr>
+                <td bgcolor="#C5CEDA" class="headerbg2"><b><script>show_words('_Help')</script></b></td>
+              </tr>
+              <tr>
+                <td bgcolor="#000000" ><table width="56%" border="0" cellpadding="0" cellspacing="0" bgcolor="#1D1D1D">
+                    
+                    <tr>
+                      <td><img src="spacer.gif" width="8" height="8" /></td>
+                    </tr>
+                    <tr>
+                      <td onclick="location.href='help_main.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG749');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>	</a></td>
+                    </tr>
+                    
+                    <tr>
+                      <td><img src="spacer.gif" width="8" height="8" /></td>
+                    </tr>
+                    <tr>
+                      <td onclick="location.href='help_wlan.htm'"><table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wireless')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table></a></td>
+                    </tr>
+                    <tr>
+                      <td><img src="spacer.gif" width="8" height="8" /></td>
+                    </tr>
+                   
+                    <tr>
+                      <td onclick="location.href='help_status.htm'"><table class="menu_tb">
+				<tr>
+					<td class="menu_sel_nw"></td>
+					<td class="menu_sel_n"></td>
+					<td class="menu_sel_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_w"></td>
+					<td class="menu_sel_m"><b>&nbsp;&nbsp;<script>show_words('_MSG748')</script></td>
+					<td class="menu_sel_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_sw"></td>
+					<td class="menu_sel_s"></td>
+					<td class="menu_sel_se"></td>
+				</tr>
+				</table></a></td>
+                    </tr>
+                    <tr>
+                      <td><table width="100%" border="0" cellpadding="2" >
+                          <tr>
+                            <td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+                            <td width="87%"><b><a href="help_status.htm#status_device_info" class="submenus"><script>show_words('_DevInfo')</script></a><a href="help_access.htm#access_user_group" class="submenus"></a></b></td>
+                          </tr>
+                          <!--<tr>
+                  <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                  <td><a href="inbound_filter.htm" class="submenus"><b><script>show_words('_MSG736')</script> </b></a></td>
+                </tr>-->
+                          <tr>
+                            <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                            <td><b><a href="help_status.htm#status_log" class="submenus"><script>show_words('_Log')</script></a><a href="help_access.htm#access_url_group" class="submenus"></a></b></td>
+                          </tr>
+                          <tr>
+                            <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                            <td><b><a href="help_status.htm#status_log_settings" class="submenus"><script>show_words('_LogSettings')</script></a><a href="help_access.htm#access_ip_filter" class="submenus"></a></b></td>
+                          </tr>
+                          <tr>
+                            <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                            <td><b><a href="help_status.htm#status_statistic" class="submenus"><script>show_words('_Statistics')</script></a><a href="help_access.htm#access_domain_filter" class="submenus"></a></b></td>
+                          </tr>
+                          <tr>
+                            <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                            <td><b><a href="help_status.htm#status_wireless" class="submenus"><script>show_words('_Wireless')</script></a><a href="help_access.htm#access_protocol_filter" class="submenus"></a></b></td>
+                          </tr>
+                      </table></td>
+                    </tr>
+                    <tr>
+                      <td><img src="spacer.gif" width="8" height="8" /></td>
+                    </tr>
+					 <tr>
+                      <td onclick="location.href='help_routing.htm'"><table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG747')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table></a></td>
+                    </tr>
+					<tr>
+                      <td><img src="spacer.gif" width="8" height="8" /></td>
+                    </tr>
+					
+                    <tr>
+                      <td onclick="location.href='help_access.htm'"><table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Access')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table></a></td>
+                    </tr>
+					<tr>
+                      <td><img src="spacer.gif" width="8" height="8" /></td>
+                    </tr>
+					<tr>
+                      <td onclick="location.href='help_manage.htm'"><table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG746')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table></a></td>
+                    </tr>
+                    <tr>
+                      <td><img src="spacer.gif" width="8" height="8" /></td>
+                    </tr>
+                    <tr>
+                      <td onclick="location.href='help_tools.htm'"><table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Tools')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table></a></td>
+                    </tr>
+                    
+                    <tr>
+                      <td><img src="spacer.gif" width="8" height="8" /></td>
+                    </tr>
+                    <tr>
+                      <td onclick="location.href='help_wizard.htm'"><table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wizard')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table></a></td>
+                    </tr>
+                </table></td>
+              </tr>
+            </table>
+              <p></p>
+              <p>&nbsp;</p>
+              <p>&nbsp;</p></td>
+            <td width="2%"><img src="spacer.gif" width="10" height="15" /></td>
+            <td width="78%" valign="top"><table width="100%" border="0" cellpadding="5" cellspacing="0" bgcolor="#000000">
+              <tr>
+                <td bgcolor="#C5CEDA" class="headerbg2"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                  <tr>
+                    <td width="79%" class="textheader"><script>show_words('_Status')</script></td>
+                    <td width="21%"><input name="button" type="button" id="close_btn" class="ButtonHelp" onclick="javascript:window.close();" value="" />
+						<script>$('#close_btn').val(get_words('_Close'));</script>
+                    </td>
+                  </tr>
+                </table>
+                </td>
+              </tr>
+              <tr>
+                <td><table width="100%" border="0" cellpadding="5" cellspacing="1">
+                    <tr>
+                      <td bgcolor="#F0F0F0"><P><script>show_words('_MSG310')</script></P>
+                          <P> <script>show_words('_MSG311')</script></P>
+                        <UL>
+                            <LI CLASS="mvd-P-Bullet">
+                              <P CLASS="Bullet"> <b><A HREF="#status_device_info"><script>show_words('_DevInfo')</script></A></b></P>
+                            <LI CLASS="mvd-P-Bullet">
+                              <P CLASS="Bullet"> <b><A HREF="#status_log"><script>show_words('_Log')</script></A></b></P>
+                            <LI CLASS="mvd-P-Bullet">
+                              <P CLASS="Bullet"> <b><A HREF="#status_log_settings"><script>show_words('_LogSettings')</script></A></b></P>
+                            <LI CLASS="mvd-P-Bullet">
+                              <P CLASS="Bullet"> <b><A HREF="#status_statistic"><script>show_words('_Statistics')</script></A></b></P>
+                            <LI CLASS="mvd-P-Bullet">
+                              <P CLASS="Bullet"> <b><A HREF="#status_wireless"><script>show_words('_Wireless')</script></A></b></P>
+                        </UL></td>
+                    </tr>
+                </table></td>
+              </tr>
+            </table>
+              <br>
+              <br>
+              <a name="status_device_info"></a><br>
+              <table width="100%" border="0" cellpadding="5" cellspacing="0" bgcolor="#000000">
+                <tr>
+                  <td bgcolor="#C5CEDA" class="headerbg2"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                    <tr>
+                      <td width="79%" class="textheader"><script>show_words('_DevInfo')</script></td>
+                      <td width="21%"><input name="button" type="button" id="close_btn1" class="ButtonHelp" onclick="javascript:window.close();" value="" />
+							<script>$('#close_btn1').val(get_words('_Close'));</script>
+                      </td>
+                    </tr>
+                  </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td><table width="100%" border="0" cellpadding="5" cellspacing="1">
+                      <tr>
+                        <td bgcolor="#F0F0F0"><P><script>show_words('_MSG312')</script></P>
+                            <p><script>show_words('_MSG313')</script></P>
+                            <p><script>show_words('_MSG314')</script></P>
+                            <P><script>show_words('_MSG315')</script></P>
+                            <P><script>show_words('_MSG316')</script></P>
+                            <P><script>show_words('_MSG317')</script> </P>
+                          <P> <A HREF="help_status.htm"><script>show_words('_MSG318');</script></A></P></td>
+                      </tr>
+                  </table></td>
+                </tr>
+              </table>
+              <br>
+              <br>
+              <a name="status_log"></a><br>
+              <table width="100%" border="0" cellpadding="5" cellspacing="0" bgcolor="#000000">
+                <tr>
+                  <td bgcolor="#C5CEDA" class="headerbg2"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                    <tr>
+                      <td width="79%" class="textheader"><script>show_words('_Log')</script></td>
+                      <td width="21%"><input name="button" type="button" id="close_btn3" class="ButtonHelp" onclick="javascript:window.close();" value="" />
+							<script>$('#close_btn3').val(get_words('_Close'));</script>
+                      </td>
+                    </tr>
+                  </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td><table width="100%" border="0" cellpadding="5" cellspacing="1">
+                      <tr>
+                        <td bgcolor="#F0F0F0"><P><script>show_words('_MSG319');</script></P>
+                            <UL>
+                              <LI CLASS="mvd-P">
+                                <P STYLE="margin-top : 0.0pt;margin-bottom : 0.0pt;"> <script>show_words('_MSG320');</script></P>
+                              <LI CLASS="mvd-P">
+                                <P STYLE="margin-top : 0.0pt;margin-bottom : 0.0pt;"> <script>show_words('_MSG321');</script></P>
+                              <LI CLASS="mvd-P">
+                                <P STYLE="margin-top : 0.0pt;margin-bottom : 0.0pt;"> <script>show_words('_MSG322');</script></P>
+                              <LI CLASS="mvd-P">
+                                <P STYLE="margin-top : 0.0pt;margin-bottom : 0.0pt;"> <script>show_words('_MSG323');</script></P>
+                              <LI CLASS="mvd-P">
+                                <P STYLE="margin-top : 0.0pt;margin-bottom : 0.0pt;"> <script>show_words('_MSG324');</script></P>
+                              <LI CLASS="mvd-P">
+                                <P STYLE="margin-top : 0.0pt;margin-bottom : 0.0pt;"> <script>show_words('_MSG325');</script></P>
+                          </UL>
+                          <P> <script>show_words('_MSG326');</script></P>
+                          <P> <script>show_words('_MSG327');</script></P>
+                          <P> <script>show_words('_MSG327');</script></P>
+                          <P> <A HREF="help_status.htm"><script>show_words('_MSG318');</script></A></P></td>
+                      </tr>
+                  </table></td>
+                </tr>
+              </table>
+              <br>
+              <br>
+              <a name="status_log_settings"></a><br>
+              <table width="100%" border="0" cellpadding="5" cellspacing="0" bgcolor="#000000">
+                <tr>
+                  <td bgcolor="#C5CEDA" class="headerbg2"> <table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                    <tr>
+                      <td width="79%" class="textheader"><script>show_words('_LogSettings')</script></td>
+                      <td width="21%"><input name="button" type="button" id="close_btn4" class="ButtonHelp" onclick="javascript:window.close();" value="" />
+							<script>$('#close_btn4').val(get_words('_Close'));</script>
+                      </td>
+                    </tr>
+                  </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td><table width="100%" border="0" cellpadding="5" cellspacing="1">
+                      <tr>
+                        <td bgcolor="#F0F0F0"><P><script>show_words('_MSG329')</script></P>
+                          <P><script>show_words('_MSG330')</script></P>
+                          <p><script>show_words('_MSG331')</script></p>
+                          <p><script>show_words('_MSG332')</script></p>
+                          <P><script>show_words('_MSG333')</script></P>
+                          <P><script>show_words('_MSG334')</script></P>
+							<UL>
+                              <LI CLASS="mvd-P">
+                                <P><script>show_words('_MSG335')</script> </P>
+                              <LI CLASS="mvd-P">
+                                <P> <script>show_words('_MSG336')</script> </P>                              
+                                <UL>
+                              		<LI CLASS="mvd-P">
+                               		<P><script>show_words('_MSG337')</script></P>
+                              		<LI CLASS="mvd-P">
+                               		<P><script>show_words('_MSG338')</script></P>
+                               		<LI CLASS="mvd-P">
+                               		<P><script>show_words('_MSG339')</script></P>
+                               		<LI CLASS="mvd-P">
+                               		<P><script>show_words('_MSG340')</script></P>
+                          		</UL>
+                          	</UL>                             
+                          <P> <script>show_words('_MSG341')</script></P>
+                          <P> <script>show_words('_MSG342')</script></P>
+                          <UL>
+                              <LI CLASS="mvd-P">
+                                <P> <script>show_words('_MSG343')</script></P>
+                              <LI CLASS="mvd-P">
+                                <P> <script>show_words('_MSG344')</script></P>
+                              <LI CLASS="mvd-P">
+                                <P> <script>show_words('_MSG345')</script></P>
+                              <LI CLASS="mvd-P">
+                                <P> <script>show_words('_MSG346')</script></P>
+                              <LI CLASS="mvd-P">
+                                <P> <script>show_words('_MSG347')</script></P>
+                          </UL>
+                          <P> <A HREF="help_status.htm"><script>show_words('_MSG318');</script></A></P></td>
+                      </tr>
+                  </table></td>
+                </tr>
+              </table>
+              <br>
+              <br>
+              <a name="status_statistic"></a><br>
+              <table width="100%" border="0" cellpadding="5" cellspacing="0" bgcolor="#000000">
+                <tr>
+                  <td bgcolor="#C5CEDA" class="headerbg2"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                    <tr>
+                      <td width="79%" class="textheader"><font color="#FFFFFF"><script>show_words('_Statistic');</script></font></td>
+                      <td width="21%"><input name="button" type="button" id="close_btn5" class="ButtonHelp" onclick="javascript:window.close();" value="" />
+							<script>$('#close_btn5').val(get_words('_Close'));</script>
+                      </td>
+                    </tr>
+                  </table></td>
+                </tr>
+                <tr>
+                  <td><table width="100%" border="0" cellpadding="5" cellspacing="1">
+                      <tr>
+                        <td bgcolor="#F0F0F0"><P><script>show_words('_MSG348')</script></P>
+                            <P><script>show_words('_MSG349')</script></P>
+                          <P><script>show_words('_MSG350')</script></P>
+                          <P><script>show_words('_MSG351')</script></P>
+                          <P> <A HREF="help_status.htm"><script>show_words('_MSG318');</script></A></P></td>
+                      </tr>
+                  </table></td>
+                </tr>
+              </table>
+              <br>
+              <br>
+              <a name="status_wireless"></a><br>
+              <table width="100%" border="0" cellpadding="5" cellspacing="0" bgcolor="#000000">
+                <tr>
+                  <td bgcolor="#C5CEDA" class="headerbg2"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                    <tr>
+                      <td width="79%" class="textheader"><script>show_words('_Wireless')</script></td>
+                      <td width="21%"><input name="button" type="button" id="close_btn6" class="ButtonHelp" onclick="javascript:window.close();" value="" />
+							<script>$('#close_btn6').val(get_words('_Close'));</script>
+                      </td>
+                    </tr>
+                  </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td><table width="100%" border="0" cellpadding="5" cellspacing="1">
+                      <tr>
+                        <td bgcolor="#F0F0F0"><P><script>show_words('_MSG352')</script></P>
+                            <P> <script>show_words('_MSG353')</script></P>
+                          <P> <script>show_words('_MSG354')</script></P>
+                          <P> <A HREF="help_status.htm"><script>show_words('_MSG318');</script></A></P></td>
+                      </tr>
+                  </table></td>
+                </tr>
+              </table>
+              <br>
+              <br></td>
+          </tr>
+      </table></td>
+    <td background="bg1_r.gif">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><img src="c1_bl.gif" width="21" height="20" /></td>
+    <td align="right" background="bg1_b.gif"><img src="copyright.png" width="264" height="20" /></td>
+    <td><img src="c1_br.gif" width="21" height="20" /></td>
+  </tr>
+</table>
+</BODY>
+</HTML>

@@ -1,0 +1,404 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>
+<model_name>WNCE2001</model_name>
+<lang>PR</lang>
+<lang_ver>1.0.0.1</lang_ver>
+<lang_date>2010-03-02</lang_date>
+<LUP001>选择语言</LUP001>
+<LUP002>English Deutsch 中文 한국어 Русский Español Polski Français Italiano Svenska Dansk Nederlands Ελληνικά Norsk Čeština Slovenščina Português Magyar Română Suomi Slovenčina</LUP002>
+<LUP003>English German Chinese Korean Russian Spanish Polish French Italian Swedish Danish Dutch Greek Norwegian Czech Slovenian Portuguese Hungarian Romanian Finnish Slovak</LUP003>
+<LUP004>应用</LUP004>
+<LUP005>WPS</LUP005>
+<LUP006>设置</LUP006>
+<LUP007>无线设置</LUP007>
+<LUP008></LUP008>
+<LUP009>维护</LUP009>
+<LUP010></LUP010>
+<LUP011>备份设置</LUP011>
+<LUP012>设置密码</LUP012>
+<LUP013>高级</LUP013>
+<LUP014>在线支持</LUP014>
+<LUP015>知识库</LUP015>
+<LUP016>文档</LUP016>
+<LUP017>注销</LUP017>
+<LUP018></LUP018>
+<LUP019></LUP019>
+<WP0001>感谢您购买 NETGEAR </WP0001>
+<WP0002> 无线路由器. 确保定期使用固件升级助手从NETGEAR获取为此产品提供的功能和改进.&lt;br&gt;&lt;br&gt;</WP0002>
+<WP0003>要获得</WP0003>
+<WP0004>此设备提供的优势,请使用有此图标的无线适配器.</WP0004>
+<WP0005>不再显示此信息</WP0005>
+<WP0006>关闭窗口</WP0006>
+<WPS001>增加WPS客户端设备</WPS001>
+<WPS002></WPS002>
+<WPS003>选择设置方式</WPS003>
+<WPS004></WPS004>
+<WPS005>你可以按路由器上的WPS按钮, 或者按下面的按钮(软件模拟按钮).</WPS005>
+<WPS006>PIN代码</WPS006>
+<WPS007></WPS007>
+<WPS008></WPS008>
+<WPS009>成功连接</WPS009>
+<WPS010></WPS010>
+<WPS011>点击OK回到WPS页面...</WPS011>
+<WPS012>故障</WPS012>
+<WPS013></WPS013>
+<WPS014></WPS014>
+<WPS015></WPS015>
+<WPS016></WPS016>
+<WPS017></WPS017>
+<WPS018>网卡的PIN代码是</WPS018>
+<WPS019></WPS019>
+<WPS020> 下一步 </WPS020>
+<WPS022></WPS022>
+<WPSH01></WPSH01>
+<WPSH02></WPSH02>
+<WPSH03></WPSH03>
+<WPSH04></WPSH04>
+<SWS001>无线设置</SWS001>
+<SWS002>无线网络 </SWS002>
+<SWS003>无线网络标识(SSID)</SWS003>
+<SWS004>地区</SWS004>
+<SWS005>非洲</SWS005>
+<SWS006>亚洲</SWS006>
+<SWS007>澳大利亚</SWS007>
+<SWS008>加拿大</SWS008>
+<SWS009>欧洲</SWS009>
+<SWS010>以色列</SWS010>
+<SWS011>日本</SWS011>
+<SWS012>韩国</SWS012>
+<SWS013>中东</SWS013>
+<SWS014>墨西哥</SWS014>
+<SWS015>南美洲</SWS015>
+<SWS016>美国</SWS016>
+<SWS017>模式</SWS017>
+<SWS018>最大300Mbps</SWS018>
+<SWS019>最大270Mbps</SWS019>
+<SWS020>最大145Mbps</SWS020>
+<SWS021>最大130Mbps</SWS021>
+<SWS022>最大54Mbps</SWS022>
+<SWS023>最大150Mbps</SWS023>
+<SWS024>最大65Mbps</SWS024>
+<SWS025>b和g</SWS025>
+<SWS026>仅g</SWS026>
+<SWS027>仅b</SWS027>
+<SWS028>安全选项</SWS028>
+<SWS029>无</SWS029>
+<SWS030>WEP</SWS030>
+<SWS031>WPA-PSK[TKIP]</SWS031>
+<SWS032>WPA2-PSK[AES]</SWS032>
+<SWS033>安全加密(WEP)</SWS033>
+<SWS034>加密强度</SWS034>
+<SWS035>64位</SWS035>
+<SWS036>128位</SWS036>
+<SWS037>安全加密(WEP)密钥</SWS037>
+<SWS038>密码</SWS038>
+<SWS039>生成</SWS039>
+<SWS040>密钥1</SWS040>
+<SWS041>密钥2</SWS041>
+<SWS042>密钥3</SWS042>
+<SWS043>密钥4</SWS043>
+<SWS044>(8到63个字符或者64个十六进制数字)</SWS044>
+<SWS045></SWS045>
+<SWS046>频道</SWS046>
+<SWS047></SWS047>
+<SWS048>信号强度</SWS048>
+<SWS049></SWS049>
+<SWS050></SWS050>
+<SWS051></SWS051>
+<SWS052></SWS052>
+<SWS053></SWS053>
+<SWS054></SWS054>
+<SWSW01>警告：地区选择错误时，有可能会违犯适用法律。是否同意按照这些设置进行操作</SWSW01>
+<SWSW02></SWSW02>
+<SWSW03></SWSW03>
+<SWSW04></SWSW04>
+<SWSW05></SWSW05>
+<SWSE01>密码中使用了不允许的字符</SWSE01>
+<SWSE02>使用了不允许用于SSID的字符。</SWSE02>
+<SWSE03>密钥最长为 </SWSE03>
+<SWSE04>密码过长，最大长度应为63个字符。</SWSE04>
+<SWSE05>密码长度不足，至少应为8个字符。</SWSE05>
+<SWSE06>SSID不能为空！</SWSE06>
+<SWSE07> 字符。</SWSE07>
+<SWSE08>密钥无效。密钥长度应为26位十六进制（0到9及A到F）字符。</SWSE08>
+<SWSE09></SWSE09>
+<SWSE10>密钥无效。密钥长度应为10位十六进制（0到9及A到F）字符。</SWSE10>
+<SWSH01>&lt;body bgColor=#0099cc&gt;&lt;br&gt;&lt;P&gt;&lt;font size=\"4\"&gt;&lt;B&gt;无线设置帮助&lt;/B&gt;&lt;/font&gt;&lt;/P&gt;&lt;p&gt;&lt;b&gt;注意：&lt;/b&gt;为保证本产品符合当地政府规定，同时与类似产品兼容，必须正确设置工作频道和地区。&lt;p&gt;&lt;b&gt;正确安放路由器，优化无线连接性能 &lt;/b&gt;&lt;/p&gt;&lt;p&gt;路由器的实际安放情况将对无线连接的工作距离（或者说工作范围）产生显著影响。为求最佳工作效果，请按以下原则安放路由器：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;靠近计算机工作范围的中心部位， &lt;li&gt;放到高处，比如放到高台上， &lt;li&gt;远离潜在干扰源，例如计算机、微波炉和无绳电话， &lt;li&gt;天线拉直并且直立向上， &lt;li&gt;远离大块金属面。&lt;/ul&gt;&lt;p&gt;&lt;b&gt;注意：&lt;/b&gt;上述方针需切实遵守，否则可能显著降低性能，甚至无法以无线方式连接到路由器。&lt;/p&gt;&lt;A name=network&gt;&lt;/A&gt;&lt;HR&gt;&lt;P&gt;&lt;B&gt;无线网络&lt;/B&gt;&lt;/P&gt;&lt;P&gt;无线网络标识（SSID）&lt;/p&gt;&lt;P&gt;SSID可以简单理解为无线网络的名称，默认为NETGEAR，不过本公司强烈建议您将自己的无线网络标识（SSID）更改为其它值，以免与附近的其他无线网络混淆。修改SSID时，请在本框中输入一个最多不超过32个字符的字母数字字符串。本名称区分大小写。比如, NETGEAR和netGEAR就是不同的。&lt;/p&gt;  &lt;P&gt;地区 &lt;P&gt;请从下拉列表中选择您所在的地区，在中国使用的用户，请选择“ &lt;b&gt;亚洲&lt;/b&gt; ”或“&lt;b&gt; 中国&lt;/b&gt; ”。本框显示的是本无线设备的指定工作地区。除了此处列出的地区之外，在其它地区使用本路由器可能属于非法行为。 &lt;P&gt;频道 &lt;P&gt;默认为“自动”。无线路由器将自动搜索当前可用的最佳频道。您也可以指定无线网络工作的频道，可选的频道中，优先选择1、6、11（与相邻频道重叠最小）。&lt;/P&gt;</SWSH01>
+<SWSH02></SWSH02>
+<SWSH03>&lt;P&gt;模式&lt;/P&gt;选择所需的无线模式。选项如下： &lt;UL&gt;  &lt;LI&gt;最大54 Mbps -- 传统模式，此模式下b/g网络的最高速度不超过54 Mbps。 &lt;LI&gt;最大130Mbps -- 邻区友好模式，当附近存在多个无线网络时，最高速度不超过130Mbps。&lt;LI&gt;最大300Mbps - 性能模式，与NETGEAR Wireless-N 无线适配器配合使用，最高速度可达300Mbps。&lt;/LI&gt;&lt;/UL&gt;&lt;P&gt;默认为“最大130Mbps ”，适用与所有11b和11g无线工作站。&lt;/P&gt;</SWSH03>
+<SWSH04>&lt;HR&gt;&lt;a name=security &gt;&lt;/a&gt;&lt;p&gt;&lt;b&gt;安全选项&lt;/b&gt;&lt;/p&gt;&lt;ul&gt;&lt;li&gt;无 ——无数据加密&lt;li&gt;WEP（有线等效加密）——采用WEP 64位或者128位数据加密 &lt;li&gt;WPA-PSK（预共享密钥Wi-Fi保护访问）——采用WPA-PSK标准加密，加类型TKIP。TKIP即“Temporal Key Integrity Protocol”（临时密钥完整性协议），它利用更强大的加密方法，并结合“消息完整性代码”(MIC) 来防御黑客的攻击&lt;li&gt;WPA2-PSK [AES]（预共享密钥Wi-Fi保护访问，版本2）——采用WPA2-PSK标准加密，加密类型AES。AES即“Advanced Encryption System”（高级加密系统），其利用对称 128 位块数据加密&lt;li&gt;WPA-PSK [TKIP] + WPA2-PSK [AES] ——允许客户端使用WPA-PSK [TKIP]或者WPA2-PSK [AES]. &lt;/ul&gt;&lt;HR&gt;&lt;a name=wep_auth &gt;&lt;/a&gt;&lt;p&gt;&lt;b&gt;安全加密（WEP）&lt;/b&gt;&lt;/p&gt;&lt;p&gt;认证类型&lt;/p&gt;&lt;p&gt;一般情况下本栏可保留缺省值“自动”。默认值无法正常工作时，请选择适当的值：“开放系统”或者“共享密钥”。具体采用哪种方法，请参考您的无线网卡说明书。&lt;/p&gt;&lt;p&gt;加密强度&lt;/p&gt;&lt;p&gt;请选择WEP加密强度：&lt;/p&gt;&lt;ul&gt;&lt;li&gt;64位（有时也称为40位）加密 &lt;li&gt;128位加密&lt;/ul&gt;&lt;HR&gt;&lt;a name=wepkey &gt;&lt;/a&gt;&lt;p&gt;&lt;b&gt;安全加密（WEP）密钥&lt;/b&gt;&lt;/p&gt;&lt;p&gt;在启用了WEP之后，用户可手工输入或者采用程序自动生成这四个数据加密密钥。在网络中的无线客户端上，必须准确输入密钥的数值，才能成功连接。&lt;/p&gt;&lt;p&gt;WEP加密有两种设置方法：&lt;/p&gt;&lt;ol&gt;&lt;li&gt;&lt;p&gt;&lt;b&gt;&lt;i&gt;自动生成密钥（密码短语）&lt;/i&gt;&lt;/b&gt;&lt;p&gt;请在“密码短语”框中输入一个词语或者一组可打印字符，然后单击“生成”按钮，路由器即可自动四个生成WEP密钥。用户选择其中任意一个，作为此无线网络的加密密钥。&lt;li&gt;&lt;p&gt;&lt;b&gt;&lt;i&gt;手工输入模式&lt;/i&gt;&lt;/b&gt;  从四个密钥中选择需要使用的一个，然后在所选的密钥框中输入网络的匹配WEP密钥信息。输入时遵循以下规则：&lt;p&gt;64位WEP ——输入十位十六进制数字（0-9和A-F之间的任意组合）。 &lt;p&gt;128位WEP ——输入二十六位十六进制数字（ 0-9和A-F之间的任意组合）。 &lt;/ol&gt;&lt;p&gt;&lt;b&gt;注意！&lt;/b&gt;以Windows XP SP2操作系统为例，无线管理工具默认密钥为“密钥1”，如果您不熟悉计算机中选择其他密钥的方法，请在设置加密时选择“密钥1”即可。&lt;p&gt;设置完毕请单击“应用”，如此方可保存本菜单中的设置。&lt;HR&gt;&lt;a name=wpa-psk &gt;&lt;/a&gt;&lt;p&gt;&lt;b&gt;安全加密（WPA-PSK、WPA2-PSK、WPA-PSK + WPA2-PSK）&lt;/b&gt;&lt;/p&gt;&lt;p&gt;选择相应的加密方式，在本框中输入长度介于8 ~ 63个字符之间的口令。&lt;/p&gt;&lt;HR&gt;&lt;p&gt;&lt;b&gt;要保存或取消更改&lt;/b&gt;&lt;/p&gt;&lt;p&gt;单击 &lt;b&gt;应用&lt;/b&gt; ，变更即可生效。&lt;p&gt;单击 &lt;b&gt;取消&lt;/b&gt; 之后即可返回此前的设置。&lt;/P&gt;&lt;/body&gt;</SWSH04>
+<SWSH05></SWSH05>
+<SWSH06></SWSH06>
+<SWSH07></SWSH07>
+<SWSH08></SWSH08>
+<SWSH09></SWSH09>
+<SIAS001></SIAS001>
+<SIAS002></SIAS002>
+<SIAS003>使用静态IP地址</SIAS003>
+<SIAS004>IP地址</SIAS004>
+<SIAS005>IP子网掩码</SIAS005>
+<SIAS006>网关IP地址</SIAS006>
+<SIAS007>主域名服务器</SIAS007>
+<SIAS008>从域名服务器</SIAS008>
+<SIASE01>IP地址无效，请重新输入！</SIASE01>
+<SIASE02>子网掩码无效，请重新输入！</SIASE02>
+<SIASE03>网关IP地址无效，请重新输入！</SIASE03>
+<SIASE04>IP地址与网关地址必须在同一子网！</SIASE04>
+<SIASE05>主域名服务器地址无效，请重新输入！</SIASE05>
+<SIASE06>从域名服务器地址无效，请重新输入！</SIASE06>
+<SIASH01></SIASH01>
+<SIASH02></SIASH02>
+<SIASH03></SIASH03>
+<SIASH04></SIASH04>
+<SIASH05></SIASH05>
+<SIASH06></SIASH06>
+<SIASH07></SIASH07>
+<SIASH08></SIASH08>
+<SIASH09></SIASH09>
+<MDS001></MDS001>
+<MDS002>硬件版本</MDS002>
+<MDS003>固件版本</MDS003>
+<MDS004>GUI语言版本</MDS004>
+<MDS005>连接状态</MDS005>
+<MDS006></MDS006>
+<MDS007>连接</MDS007>
+<MDS008>断开连接</MDS008>
+<MDS009>连接速度</MDS009>
+<MDS010>局域网端口</MDS010>
+<MDS011>MAC 地址</MDS011>
+<MDS012>IP地址</MDS012>
+<MDS013></MDS013>
+<MDS014>子网掩码</MDS014>
+<MDS015>缺省网关</MDS015>
+<MDS016>域名服务器</MDS016>
+<MDS017>无线端口</MDS017>
+<MDS018>无线网络标识(SSID)</MDS018>
+<MDS019>地区</MDS019>
+<MDS020>模式</MDS020>
+<MDS021>显示统计信息</MDS021>
+<MDS022>系统启动时间</MDS022>
+<MDS023></MDS023>
+<MDS024>天</MDS024>
+<MDS025>端口</MDS025>
+<MDS026>状态</MDS026>
+<MDS027>数据包发送数目</MDS027>
+<MDS028>数据包接收数目</MDS028>
+<MDS029>冲突数目</MDS029>
+<MDS030>发送字节数</MDS030>
+<MDS031>接收字节数</MDS031>
+<MDS032>启动时间</MDS032>
+<MDS033>局域网</MDS033>
+<MDS034>链接断开</MDS034>
+<MDS035>全双工</MDS035>
+<MDS036>半双工</MDS036>
+<MDS037>无线局域网</MDS037>
+<MDS038>轮询时间间隔</MDS038>
+<MDS039>(秒)</MDS039>
+<MDS040>设置时间间隔</MDS040>
+<MDS041>停止</MDS041>
+<MDS042></MDS042>
+<MDS043>DHCP服务器</MDS043>
+<MDS044>获得租用时间</MDS044>
+<MDS045>租用到期时间</MDS045>
+<MDS046>小时</MDS046>
+<MDS047>分钟</MDS047>
+<MDS048>秒</MDS048>
+<MDS049>释放</MDS049>
+<MDS050>更新</MDS050>
+<MDS051>关闭窗口</MDS051>
+<MDS052></MDS052>
+<MDS053></MDS053>
+<MDS054></MDS054>
+<MDS055></MDS055>
+<MDS056></MDS056>
+<MDS057></MDS057>
+<MDS058></MDS058>
+<MDS059></MDS059>
+<MDS060></MDS060>
+<MDSH01></MDSH01>
+<MDSH02></MDSH02>
+<MDSH03></MDSH03>
+<MDSH04></MDSH04>
+<MDSH05></MDSH05>
+<MDSH06></MDSH06>
+<MDSH07></MDSH07>
+<MDSH08></MDSH08>
+<MDSH09></MDSH09>
+<MDSH10></MDSH10>
+<MDSH11></MDSH11>
+<MDSH12></MDSH12>
+<MDSH13></MDSH13>
+<MDSH14></MDSH14>
+<MDSH15></MDSH15>
+<MDSH16></MDSH16>
+<MDSH17></MDSH17>
+<MDSH18></MDSH18>
+<MDSH19></MDSH19>
+<MDSH20></MDSH20>
+<MDSH21></MDSH21>
+<MDSH22></MDSH22>
+<MBS001>备份设置</MBS001>
+<MBS002>保存一份当前设置</MBS002>
+<MBS003> 备份 </MBS003>
+<MBS004>从文件中恢复已保存设置</MBS004>
+<MBS005>恢复</MBS005>
+<MBS006>恢复出厂缺省设置</MBS006>
+<MBS007>擦除</MBS007>
+<MBS008>加载出厂缺省设置之后,当前所有设置均会被擦除</MBS008>
+<MBS009>确实要恢复设置吗?</MBS009>
+<MBS010> 是 </MBS010>
+<MBS011> 否 </MBS011>
+<MBSW01>警告！从配置文件中恢复设置之后，当前所有设置均会被擦除。确实要恢复设置吗？</MBSW01>
+<MBSW02></MBSW02>
+<MBSW03></MBSW03>
+<MBSW04>请选择正确的配置文件。</MBSW04>
+<MBSW05>请分配正确的文件。 （文件格式为*.cfg）</MBSW05>
+<MBSE01>文件名不能为空！</MBSE01>
+<MBSH01>&lt;body bgcolor=#0099cc &gt;&lt;br&gt;&lt;p&gt;&lt;font size=4&gt;&lt;b&gt;备份设置帮助&lt;/b&gt;&lt;/font&gt;&lt;/p&gt;&lt;p&gt;通过此页面可以备份、恢复和擦除路由器的当前设置。 &lt;/p&gt;&lt;p&gt;路由器正常工作之后应对其信息进行备份以便发生故障时使用。所备份的设置信息将作为一个文件保存在计算机上。用户可从该文件中对路由器设置进行恢复。&lt;/p&gt;&lt;a name=save&gt;&lt;/a&gt;&lt;p&gt;要针对当前设置创建一个备份文件：&lt;ol&gt;&lt;li&gt;单击 &lt;b&gt;备份&lt;/b&gt; 。&lt;/li&gt;&lt;li&gt; 如果浏览器尚未设置为自动保存下载的文件，则应规定文件保存路径，并可根据需要对文件进行重命名，然后单击 &lt;b&gt;保存&lt;/b&gt; 。&lt;br&gt;如果浏览器已设置为自动保存下载的文件，则文件会保存到硬盘上浏览器默认的下载目的路径，所用文件名为 &lt;b&gt;</MBSH01>
+<MBSH02>&lt;/b&gt; ，保存时若要修改为其他文件名、请用字母或数字命名。 &lt;/li&gt;&lt;/ol&gt;&lt;hr&gt;&lt;p&gt;&lt;b&gt;要点！&lt;/b&gt;在开始恢复设置或者擦除路由器配置之后、路由器重启完成之前切勿对其进行任何操作，如访问因特网、关闭路由器、关闭计算机等等！设置的恢复或者路由器配置的擦除只需几分钟即可完成。测试灯（√）停止闪烁之后，请等待几秒钟，然后再对路由器进行操作。 &lt;/p&gt;&lt;hr&gt;&lt;a name=restore&gt;&lt;/a&gt;&lt;p&gt;要从备份文件中恢复设置：&lt;ol&gt;&lt;li&gt; 单击 &lt;b&gt;浏览&lt;/b&gt; 。&lt;/li&gt;&lt;li&gt; 找到并选中此前保存的备份文件（缺省情况下为 &lt;i&gt;&lt;b&gt;</MBSH02>
+<MBSH03></MBSH03>
+<MBSH04>&lt;/b&gt;&lt;/i&gt; )。&lt;/li&gt;&lt;li&gt;单击 &lt;b&gt;恢复&lt;/b&gt; 。 &lt;br&gt;此时会弹出一个窗口通知您路由器已成功恢复到此前的设置。此后路由器将重新启动。时间大概需要一分钟。&lt;br&gt;&lt;b&gt;要点！&lt;/b&gt;路由器重启完成之前切勿对其进行任何操作，如访问因特网、关闭路由器、关闭计算机等等！测试灯（√）停止闪烁之后，请等待几秒钟，然后再对路由器进行操作。&lt;li&gt;关闭消息窗口。&lt;/li&gt;&lt;/ol&gt;&lt;a name=revert&gt;&lt;/a&gt;&lt;p&gt;要擦除当前设置并将路由器重新设定为原始出厂缺省设置：&lt;ul&gt;&lt;li&gt;单击 &lt;b&gt;擦除&lt;/b&gt; 。&lt;br&gt;&lt;b&gt;要点！&lt;/b&gt;路由器重启完成之前切勿对其进行任何操作，如联机、关闭路由器、关闭计算机等等！测试灯（√）停止闪烁之后，请等待几秒钟，然后再对路由器进行操作。 &lt;/ul&gt;&lt;p&gt;擦除了路由器的当前设置之后，路由器密码为：&lt;i&gt;&lt;b&gt;password&lt;/b&gt;&lt;/i&gt; ，局域网IP地址为 &lt;b&gt;192.168.1.1&lt;/b&gt; ，路由器将作为局域网上的DHCP服务器，同时作为因特网上的DHCP客户端。&lt;/p&gt;&lt;/a&gt;&lt;/body&gt;</MBSH04>
+<MSP001>密码</MSP001>
+<MSP002>当前密码</MSP002>
+<MSP003>设置密码</MSP003>
+<MSP004>重复新密码</MSP004>
+<MSPE01>密码的最大长度为32个字符！</MSPE01>
+<MSPE02>新密码不匹配！</MSPE02>
+<MSPE03>旧密码错误！</MSPE03>
+<MSPH01>&lt;body bgcolor=#0099cc &gt;&lt;br&gt;&lt;P&gt;&lt;font size=4&gt;&lt;B&gt;设置密码帮助&lt;/B&gt;&lt;/font&gt;&lt;/P&gt;&lt;p&gt;通过 &lt;i&gt;设置密码&lt;/i&gt; 页面可以对 &lt;i&gt;设置&lt;/i&gt; 页面的访问密码密码进行修改。&lt;p&gt;&lt;b&gt;注意！&lt;/b&gt; 这里的密码不是您的ISP帐户密码，而是登录路由器设置界面的管理密码。&lt;/p&gt; &lt;p&gt; 要更改密码：&lt;ol&gt; &lt;li&gt;键入旧密码：&lt;BR&gt;本路由器的缺省密码为：password。&lt;li&gt;键入新密码，并且在 &lt;b&gt;重复新密码&lt;/b&gt; 框中重新键入新密码以进行确认。 &lt;br&gt;&lt;b&gt;注意！&lt;/B&gt;密码一定要写下来并保存在安全的地方。如果不慎遗失密码，只能将设备复位，并重新进行设置。  &lt;li&gt;单击 &lt;b&gt;应用&lt;/b&gt; 更改密码，也可以单击 &lt;b&gt;取消&lt;/b&gt; 保持当前密码不变。&lt;/ol&gt;&lt;p&gt;&lt;b&gt;注意：&lt;/b&gt; 如果您此前曾经备份过路由器设置，则此时应该重新进行备份，以保证设置文件中可以包括新密码。&lt;/p&gt;&lt;/body&gt;</MSPH01>
+<MFU001>检查固件更新</MFU001>
+<MFU002>路由器正在检查NETGEAR服务器， 查看是否有可用于路由器的固件更新。&lt;br&gt; &lt;br&gt;这大约要用</MFU002>
+<MFU003>秒，请等待……</MFU003>
+<MFU004>在登陆时检测新版本</MFU004>
+<MFU005>取消</MFU005>
+<MFU006>无因特网连接</MFU006>
+<MFU007>检测到无因特网连接,路由器不能检测到提供固件升级的NETGEAR 服务器. 配置完因特网连接后,进入'路由器更新'页查看已升级的固件.</MFU007>
+<MFU008> 确定 </MFU008>
+<MFU009>检测固件版本</MFU009>
+<MFU010>没有可用的新固件版本。</MFU010>
+<MFU011>这张网页将在几秒钟内自动跳转到相应的页面。</MFU011>
+<MFU012>固件升级助手</MFU012>
+<MFU013></MFU013>
+<MFU014>发现新固件版本。 要现在升级新版本吗？</MFU014>
+<MFU015>当前固件版本</MFU015>
+<MFU016>新固件版本</MFU016>
+<MFU017> 检测 </MFU017>
+<MFU018>从您的硬盘上找到并选中升级文件:</MFU018>
+<MFU019>上传</MFU019>
+<MFU020>警告!正在上传的固件版本是比当前固件版本更早。</MFU020>
+<MFU021>当前版本</MFU021>
+<MFU022>更新版本：</MFU022>
+<MFU023>注意：固件升级将花</MFU023>
+<MFU024> 固件升级需数分钟.&lt;br&gt;请勿关闭电源或按复位键.</MFU024>
+<MFU025>当前GUI语言版本</MFU025>
+<MFU026>新GUI语言版本</MFU026>
+<MFU027>版本说明</MFU027>
+<MFU028>警告！你正在下载一个比你使用的版本V还要老的</MFU028>
+<MFU029> 版本V固件</MFU029>
+<MFU030></MFU030>
+<MFU031>警告!您正在尝试上传 </MFU031>
+<MFU032> ，与现有的</MFU032>
+<MFU033>固件</MFU033>
+<MFU034>不同。</MFU034>
+<MFU035>全球通用固件</MFU035>
+<MFU036>非全球通用固件</MFU036>
+<MFU037></MFU037>
+<MFUW01>固件升级可包含一些有用的功能。确实要关闭自动检测功能吗？关闭此功能后，可以通过路由器升级网页重新启用此功能。</MFUW01>
+<MFUW02></MFUW02>
+<MFUW03></MFUW03>
+<MFUW04>警告!您正下载的固件的适用区域与您当前所用固件的不同.</MFUW04>
+<MFUW05></MFUW05>
+<MFUE01>文件名为空。请浏览硬盘并选择升级文件！</MFUE01>
+<MFUE02>内存分配失败。建议将路由器重启后再次升级，或者恢复到出厂默认设置。</MFUE02>
+<MFUE03>因特网连接不可用</MFUE03>
+<MFUE04>没有可用的新固件版本。</MFUE04>
+<MFUE05>内存不足，无法进行固件升级</MFUE05>
+<MFUE06>内存不足，无法进行GUI语言升级</MFUE06>
+<MFUE07>内存不足，无法执行版本检查</MFUE07>
+<MFUE08>无法从 NETGEAR 服务器下载固件。 请查看因特网连接。</MFUE08>
+<MFUE09>无法从Netgear服务器下载GUI语言文件。</MFUE09>
+<MFUE10>无法获得最新版本信息</MFUE10>
+<MFUE11>固件无效</MFUE11>
+<MFUE12>GUI语言文件无效</MFUE12>
+<MFUE13>固件不可用</MFUE13>
+<MFUE14>GUI语言文件不可用</MFUE14>
+<MFUE15>此固件文件不正确!请再次获取固件文件,确定是用于此产品的正确固件.</MFUE15>
+<MFUE16>无法连接到Netgear服务器</MFUE16>
+<MFUE17>固件升级失败</MFUE17>
+<MFUE18>GUI语言文件升级失败</MFUE18>
+<MFUE19>登录 Netgear 服务器失败</MFUE19>
+<MFUE20>请分配正确文件。 文件格式为*.</MFUE20>
+<MFUE21></MFUE21>
+<MFUE23></MFUE23>
+<MFUE24></MFUE24>
+<MFUE25></MFUE25>
+<MFUE26></MFUE26>
+<MFUE27></MFUE27>
+<MFUE30></MFUE30>
+<MFUH01>&lt;body bgcolor=#0099cc&gt;&lt;br&gt; &lt;P&gt;&lt;font size=4&gt;&lt;B&gt;固件升级助手帮助&lt;/B&gt;&lt;/font&gt;&lt;/P&gt;&lt;p&gt;路由器可自动检测是否在因特网上新版本的固件。&lt;p&gt;如果你想现在检测单击 &lt;b&gt;是&lt;/b&gt; 。&lt;br&gt;或者&lt;br&gt;如果你现在不想检测新版本单击 &lt;b&gt;否&lt;/b&gt; 。&lt;p&gt;如果你想稍后检测新版本，你可以通过 &lt;i&gt;路由器升级&lt;/i&gt; 页完成。&lt;p&gt;如果你下次登入时不想看到此信息，选择不再显示此信息复选框，单击 &lt;b&gt;否&lt;/b&gt; 。&lt;/body&gt;</MFUH01>
+<MFUH02></MFUH02>
+<AWS001>高级无线设置</AWS001>
+<AWS002>碎片限值(256-2346)</AWS002>
+<AWS003>CTS/RTS限值(1-2347)</AWS003>
+<AWS004>报头模式</AWS004>
+<AWS005>长报头</AWS005>
+<AWS006>短报头</AWS006>
+<AWSE01>碎片长度值超出 [256 - 2346]范围。</AWSE01>
+<AWSE02>RTS 阈值超出[1 - 2347]范围。</AWSE02>
+<AWSH01>&lt;body bgcolor=#0099cc&gt;&lt;P&gt;&lt;font size=4&gt;&lt;B&gt;高级无线设置帮助&lt;/B&gt;&lt;/font&gt;&lt;/P&gt;&lt;P&gt;&lt;B&gt;警告: &lt;/B&gt;本无线路由器的设置已配置到最佳。如无NETGEAR技术支持人员指导，切勿对其进行更改。如更改不当，则有可能发生意外，从而致使路由器无法工作。&lt;HR&gt;&lt;A name=settings&gt;&lt;/A&gt;&lt;P&gt;&lt;B&gt;无线路由器设置&lt;/B&gt;&lt;/P&gt;&lt;P&gt;启用无线路由器无线收发功能&lt;P&gt;路由器的无线功能可以由用户选择启用或禁用。路由器前面板上的无线指示灯会显示无线接入点的当前状态。无线功能启用时，路由器面板上无线指示灯闪亮，客户端可以无线连接到路由器；无线功能禁用时，无线指示灯熄灭，无线客户端无法搜索到此无线网络。&lt;/P&gt; &lt;P&gt;启用SSID广播&lt;P&gt;启用了本选项之后，无线路由器会向所有无线工作站广播其无线网络标识（SSID）。这样附近的计算机或其他无线客户端即可搜索到本路由器的无线信号，通过选择正确的无线网络标识来连接到本接入点。&lt;/P&gt;&lt;p&gt;若关闭SSID广播，附近的计算机或其他无线客户端会搜索到一个名字为空的无线网络，用户需要手动输入SSID，如果与路由器无线设置中的字符成功匹配，即可顺利连接。&lt;/p&gt;&lt;P&gt;启用WMM&lt;/P&gt;&lt;P&gt;WMM（无线多媒体）是802.11e标准的一个子集。WMM允许无线流量因数据类别的不同而具有不同优先级。诸如视频或音频等与时间相关的信息，其优先级高于普通流量。为使WMM正确运作，无线客户端必须也支持WMM。&lt;/p&gt;&lt;p&gt;碎片限值、CTS/RTS限值、报头模式&lt;p&gt;这些设置属于保留设置，仅用于无线测试及高级配置。切勿更改这些设置。&lt;HR&gt;&lt;A name=access&gt;&lt;/A&gt;&lt;P&gt;&lt;B&gt;无线网卡访问列表&lt;/B&gt;&lt;/P&gt;&lt;P&gt;默认情况下，配置正确的无线网卡均可访问用户的无线网络。为了提高安全性，用户可根据无线网卡的MAC地址，仅允许特定的无线网卡访问自己的无线网络。从“无线设置”菜单中，单击“设置访问列表”按钮即可显示“无线访问列表”菜单。&lt;/P&gt;&lt;P&gt;&lt;B&gt;要保存或取消更改&lt;/B&gt;&lt;/P&gt;&lt;P&gt;&lt;/B&gt;单击 &lt;B&gt;应用 &lt;/B&gt;，变更即可生效。&lt;BR&gt;单击 &lt;B&gt;取消&lt;/B&gt; 即可返回此前的设置。&lt;/P&gt;&lt;/body&gt;</AWSH01>
+<LGT001>再见</LGT001>
+<LGT002>注销</LGT002>
+<LGT003>谢谢您使用NETGEAR的路由器Web配置程序</LGT003>
+<OTH001> 否 </OTH001>
+<OTH002>重要的更新</OTH002>
+<OTH003>正在检查 JavaScript 支持情况</OTH003>
+<OTH004>本路由器大量采用 JavaScript 以增强用户界面功能。</OTH004>
+<OTH005>如本页面短时间内没有更换为新页面，则表明您的浏览器并不支持 JavaScript。</OTH005>
+<OTH006>此时请您启用浏览器的JavaScript支持，或者使用其它浏览器。</OTH006>
+<OTH007>http://www.netgear.com.cn/support/index.asp</OTH007>
+<OTH008>正在更新设置</OTH008>
+<OTHE01>故障</OTHE01>
+<OTHE02>未知错误：</OTHE02>
+<OTHE03>400不良请求</OTHE03>
+<OTHE04>本服务器不支持您的客户端请求的操作。</OTHE04>
+<OTHE05>401未授权</OTHE05>
+<OTHE06>到本资源的访问被拒绝，您的客户端未提供正确的认证。</OTHE06>
+<OTHE07>404未找到</OTHE07>
+<OTHE08>请将浏览器升级到版本4或者版本4以上，这样才能使用本设置工具(而且只有这样才能从因特网上看到大量优秀的网站!)</OTHE08>
+<OTHE09>在管理这个路由器.</OTHE09>
+<OTHE10>请联系系统管理员,索要正确信息.</OTHE10>
+<OTHE11>系统认证失败.</OTHE11>
+<OTHE12>警告</OTHE12>
+<CA001></CA001>
+<CA002></CA002>
+<CA003></CA003>
+<CA004></CA004>
+<CA005></CA005>
+<CA006></CA006>
+<CA007></CA007>
+<CA008></CA008>
+<CA009></CA009>
+<CA010></CA010>
+<CA011></CA011>
+<CA012></CA012>
+<CA013>刷新</CA013>
+<CA014></CA014>
+<CA015>上一步</CA015>
+<CA016></CA016>
+<CA017></CA017>
+<CA018></CA018>
+<CA019></CA019>
+<CA020></CA020>
+<CA021></CA021>
+<CA022></CA022>
+<CA023></CA023>
+<CA024></CA024>
+<CA025></CA025>
+<CA026></CA026>
+<CA027></CA027>
+<CA028></CA028>
+<CA029></CA029>
+<CA030></CA030>
+<CA031></CA031>
+<CA032></CA032>
+</root>

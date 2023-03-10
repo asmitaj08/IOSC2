@@ -1,0 +1,1113 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;">
+<title>TRENDNET | modelName | Advanced Setting</title>
+<link rel="stylesheet" href="style.css" type="text/css">
+<script language="JavaScript" src="uk.js"></script>
+
+<script language="JavaScript" src="public_js/public.js"></script>
+<script language="Javascript" src="js/jquery-1.3.2.min.js"></script>
+<script language="Javascript" src="js/xml.js"></script>
+<script language="Javascript" src="js/object.js"></script>
+<SCRIPT LANGUAGE="JavaScript">
+	var dev_info = get_router_info();
+
+	var hw_version 	= dev_info.hw_ver;
+	var version 	= dev_info.fw_ver;
+	var model		= dev_info.model;
+	var login_Info 	= dev_info.login_info;
+	var cli_mac 	= dev_info.cli_mac;
+
+	var param = {
+		url: "get_set.ccp",
+		arg: ""
+	};
+	param.arg = "ccp_act=get&num_inst=7";
+	param.arg +="&oid_1=IGD_LANDevice_i_WLANConfiguration_i_&inst_1=11100";
+	param.arg +="&oid_2=IGD_LANDevice_i_WLANConfiguration_i_WEP_&inst_2=11110";
+	param.arg +="&oid_3=IGD_LANDevice_i_WLANConfiguration_i_WEP_WEPKey_i_&inst_3=11110";
+	param.arg +="&oid_4=IGD_LANDevice_i_WLANConfiguration_i_WPA_&inst_4=11110";
+	param.arg +="&oid_5=IGD_LANDevice_i_WLANConfiguration_i_WPA_PSK_&inst_5=11111";
+	param.arg +="&oid_6=IGD_LANDevice_i_WLANConfiguration_i_WPA_EAP_i_&inst_6=11110";
+	param.arg +="&oid_7=IGD_LANDevice_i_WLANConfiguration_i_WPS_&inst_7=11110";
+
+	get_config_obj(param);
+
+	var curr_wifi_status = config_val("wpsCfg_Status_");
+	var wifi_std = config_val("lanWlanCfg_Standard_");
+	var iswps = config_val("wpsCfg_Enable_");
+	function loadSettings(){
+		get_by_id("wps_enable").value = iswps;
+		//alert(get_by_id("wps_enable").value+","+config_val("wpsCfg_Enable_"));
+
+		/* for CmoGet, inert value to related field at first */
+		var s_mode = "0";			//0->disable, 1->wep, 2->wpa1, 3->wpa2, 4->auto
+		if(config_val("lanWlanCfg_SecurityMode_"))
+			s_mode = config_val("lanWlanCfg_SecurityMode_");
+
+		var wep_auth_mode = "0";	//0->open, 1->psk
+		if(config_val("wepInfo_AuthenticationMode_"))
+			wep_auth_mode = config_val("wepInfo_AuthenticationMode_");
+
+		var wep_key_len = "0";		//0->64, 1->128
+		if(config_val("wepInfo_KeyLength_"))
+			wep_key_len = config_val("wepInfo_KeyLength_");
+
+		var wpa_auth_mode = "0";
+		if(config_val("wpaInfo_AuthenticationMode_"))
+			wpa_auth_mode = config_val("wpaInfo_AuthenticationMode_");
+
+		//alert(s_mode);
+		if(s_mode == "0")
+			get_by_id("wlan0_security").value = "disable";
+		else if(s_mode == "1")	//wep
+		{
+			get_by_id("wlan0_security").value = "wep_";
+			if(wep_auth_mode == "0")
+				get_by_id("wlan0_security").value += "open_";
+			else if(wep_auth_mode == "1")
+				get_by_id("wlan0_security").value += "share_";
+
+			if(wep_key_len == "0")
+				get_by_id("wlan0_security").value += "64";
+			else if(wep_key_len == "1")
+				get_by_id("wlan0_security").value += "128";
+		}
+		else if(s_mode == "2")	//wpa1
+		{
+			get_by_id("wlan0_security").value = "wpa_";
+			if(wpa_auth_mode == "0")
+				get_by_id("wlan0_security").value += "psk";
+			else
+				get_by_id("wlan0_security").value += "eap";
+		}
+		else if(s_mode == "3")	//wpa2
+		{
+			get_by_id("wlan0_security").value = "wpa2_";
+			if(wpa_auth_mode == "0")
+				get_by_id("wlan0_security").value += "psk";
+			else
+				get_by_id("wlan0_security").value += "eap";
+		}
+		else if(s_mode == "4")	//wpa2auto
+		{
+			get_by_id("wlan0_security").value = "wpa2auto_";
+			if(wpa_auth_mode == "0")
+				get_by_id("wlan0_security").value += "psk";
+			else
+				get_by_id("wlan0_security").value += "eap";
+		}
+
+		//alert(get_by_id("wlan0_security").value);
+		/* while wireless disable, close all table and display none */
+		var wlan0_enable = "0";
+		if(config_val("lanWlanCfg_Enable_"))
+			wlan0_enable = config_val("lanWlanCfg_Enable_");
+		if(wlan0_enable == "0"){
+			set_selectIndex(0,get_by_id("wep_type"));
+			get_by_id("wep_type").disabled = true;
+			get_by_id("apply").disabled = true;
+			close_security_table();
+			return;
+		}
+
+		//wep_key_len-->0-->5,1-->13
+		var wlan0_security= get_by_id("wlan0_security").value;
+		set_checked("open",get_by_name("auth_type"));
+		set_checked("psk",get_by_name("eap_type"));
+		if(wlan0_security == "disable"){
+			set_selectIndex(0,get_by_id("wep_type"));
+		}else if(wlan0_security == "wep_open_64"){
+			set_selectIndex(1,get_by_id("wep_type"));
+			set_checked("open",get_by_name("auth_type"));
+			set_selectIndex(5,get_by_id("wep_key_len"));
+		}else if(wlan0_security == "wep_open_128"){
+			set_selectIndex(1,get_by_id("wep_type"));
+			set_checked("open",get_by_name("auth_type"));
+			set_selectIndex(13,get_by_id("wep_key_len"));
+		}else if(wlan0_security == "wep_share_64"){
+			set_selectIndex(1,get_by_id("wep_type"));
+			set_checked("share",get_by_name("auth_type"));
+			set_selectIndex(5,get_by_id("wep_key_len"));
+		}else if(wlan0_security == "wep_share_128"){
+			set_selectIndex(1,get_by_id("wep_type"));
+			set_checked("share",get_by_name("auth_type"));
+			set_selectIndex(13,get_by_id("wep_key_len"));
+		}else if(wlan0_security == "wpa_psk"){
+			set_selectIndex(2,get_by_id("wep_type"));
+			set_checked("psk",get_by_name("eap_type"));
+		}else if(wlan0_security == "wpa_eap"){
+			set_selectIndex(2,get_by_id("wep_type"));
+			set_checked("eap",get_by_name("eap_type"));
+		}else if(wlan0_security == "wpa2_psk"){
+			set_selectIndex(3,get_by_id("wep_type"));
+			set_checked("psk",get_by_name("eap_type"));
+		}else if(wlan0_security == "wpa2_eap"){
+			set_selectIndex(3,get_by_id("wep_type"));
+			set_checked("eap",get_by_name("eap_type"));
+		}else if(wlan0_security == "wpa2auto_psk"){
+			set_selectIndex(4,get_by_id("wep_type"));
+			set_checked("psk",get_by_name("eap_type"));
+		}else if(wlan0_security == "wpa2auto_eap"){
+			set_selectIndex(4,get_by_id("wep_type"));
+			set_checked("eap",get_by_name("eap_type"));
+		}
+
+		//set_selectIndex("<% CmoGetCfg("wlan0_wep_display","none"); %>", get_by_id("wlan0_wep_display"));
+		//set_checked("<% CmoGetCfg("wlan0_wep_default_key","none"); %>", get_by_name("wlan0_wep_default_key"));
+		//set_checked("<% CmoGetCfg("wlan0_psk_cipher_type","none"); %>", get_by_name("wlan0_psk_cipher_type"));
+		get_by_id("wlan0_wep_display").selectedIndex = config_val("wepInfo_KeyType_");
+		set_checked(config_val("wepInfo_KeyIndex_"), get_by_name("wlan0_wep_default_key"));
+		get_by_name("wlan0_psk_cipher_type")[config_val("wpaInfo_EncryptionMode_")].checked = true;
+		//set_checked(config_val("wpaInfo_EncryptionMode_"), get_by_name("wlan0_psk_cipher_type"));
+
+		var radiusIP = config_str_multi("wpaEap_RadiusServerIP_");
+		var radiusPort = config_str_multi("wpaEap_RadiusServerPort_");
+		var radiusPSK = config_str_multi("wpaEap_RadiusServerPSK_");
+
+		if(radiusIP && (radiusIP[0]!=null))
+			get_by_id("wlan0_eap_radius_server_0").value = radiusIP[0]+"/";
+		else
+			get_by_id("wlan0_eap_radius_server_0").value = "0.0.0.0/";
+
+		if(radiusPort && (radiusPort[0]!=null))
+			get_by_id("wlan0_eap_radius_server_0").value += radiusPort[0]+"/";
+		else
+			get_by_id("wlan0_eap_radius_server_0").value += "1812/";
+
+		if(radiusPSK && (radiusPSK[0]!=null))
+			get_by_id("wlan0_eap_radius_server_0").value += radiusPSK[0];
+
+		var temp_r0 = get_by_id("wlan0_eap_radius_server_0").value;
+		var Dr0 = temp_r0.split("/");
+		if(Dr0.length>1){
+			get_by_id("radius_ip1").value=Dr0[0];
+			get_by_id("radius_port1").value=Dr0[1];
+			get_by_id("radius_pass1").value=Dr0[2];
+		}
+
+		if(radiusIP && (radiusIP[1]!=null))
+			get_by_id("wlan0_eap_radius_server_1").value = radiusIP[1]+"/";
+		else
+			get_by_id("wlan0_eap_radius_server_1").value = "0.0.0.0/";
+
+		if(radiusPort && (radiusPort[1]!=null))
+			get_by_id("wlan0_eap_radius_server_1").value += radiusPort[1]+"/";
+		else
+			get_by_id("wlan0_eap_radius_server_1").value += "1812/";
+
+		if(radiusPSK && (radiusPSK[1]!=null))
+			get_by_id("wlan0_eap_radius_server_1").value += radiusPSK[1];
+
+		var temp_r1 = get_by_id("wlan0_eap_radius_server_1").value;
+		var Dr1 = temp_r1.split("/");
+		if(Dr1.length>1){
+			get_by_id("radius_ip2").value=Dr1[0];
+			get_by_id("radius_port2").value=Dr1[1];
+			get_by_id("radius_pass2").value=Dr1[2];
+		}
+
+		var key64Hex = config_str_multi("wepKey_KeyHEX64_");
+		var key64Ascii = config_str_multi("wepKey_KeyASCII64_");
+		var key128Hex = config_str_multi("wepKey_KeyHEX128_");
+		var key128Ascii = config_str_multi("wepKey_KeyASCII128_");
+
+		for(var i=1; i<=4; i++)
+		{
+			if(key64Hex)
+				get_by_id("key"+i+"_64_hex").value = key64Hex[i-1];
+			else
+				get_by_id("key"+i+"_64_hex").value = "0000000000";
+
+			if(key64Ascii)
+				get_by_id("key"+i+"_64_ascii").value = key64Ascii[i-1];
+			else
+				get_by_id("key"+i+"_64_ascii").value = "00000";
+
+			if(key128Hex)
+				get_by_id("key"+i+"_128_hex").value = key128Hex[i-1];
+			else
+				get_by_id("key"+i+"_128_hex").value = "00000000000000000000000000";
+
+			if(key128Ascii)
+				get_by_id("key"+i+"_128_ascii").value = key128Ascii[i-1];
+			else
+				get_by_id("key"+i+"_128_ascii").value = "0000000000000";
+		}
+
+		get_by_id("wlan0_psk_pass_phrase").value = config_val("wpaPSK_KeyPassphrase_");
+		get_by_id("wpapsk2").value = config_val("wpaPSK_KeyPassphrase_");
+
+		change_wep_key_fun();
+		show_authentication();
+	}
+
+	function change_wep_key_fun(){
+
+		var key_length = get_by_id("wep_key_len").selectedIndex;
+		var key_type = get_by_id("wlan0_wep_display").value;
+
+		get_by_id("key1_64_ascii").style.display = "none";
+		get_by_id("key2_64_ascii").style.display = "none";
+		get_by_id("key3_64_ascii").style.display = "none";
+		get_by_id("key4_64_ascii").style.display = "none";
+		get_by_id("key1_128_ascii").style.display = "none";
+		get_by_id("key2_128_ascii").style.display = "none";
+		get_by_id("key3_128_ascii").style.display = "none";
+		get_by_id("key4_128_ascii").style.display = "none";
+		get_by_id("key1_64_hex").style.display = "none";
+		get_by_id("key2_64_hex").style.display = "none";
+		get_by_id("key3_64_hex").style.display = "none";
+		get_by_id("key4_64_hex").style.display = "none";
+		get_by_id("key1_128_hex").style.display = "none";
+		get_by_id("key2_128_hex").style.display = "none";
+		get_by_id("key3_128_hex").style.display = "none";
+		get_by_id("key4_128_hex").style.display = "none";
+
+		get_by_id("key1_"+ key_num_array[key_length] +"_"+ key_type).style.display = "";
+		get_by_id("key2_"+ key_num_array[key_length] +"_"+ key_type).style.display = "";
+		get_by_id("key3_"+ key_num_array[key_length] +"_"+ key_type).style.display = "";
+		get_by_id("key4_"+ key_num_array[key_length] +"_"+ key_type).style.display = "";
+	}
+
+	function show_wpa_settings(){
+		var eap_type = get_by_name("eap_type");
+
+		get_by_id("show_wpa_psk1").style.display = "none";
+		get_by_id("show_wpa_psk2").style.display = "none";
+		get_by_id("show_wpa_eap1").style.display = "none";
+		get_by_id("show_wpa_eap2").style.display = "none";
+
+		if (eap_type[0].checked){
+			get_by_id("show_wpa_psk1").style.display = "";
+			get_by_id("show_wpa_psk2").style.display = "";
+		}else if (eap_type[1].checked){
+			get_by_id("show_wpa_eap1").style.display = "";
+			get_by_id("show_wpa_eap2").style.display = "";
+		}
+	}
+
+	function close_security_table(){
+		get_by_id("setting_wep1").style.display = "none";
+		get_by_id("setting_wep2").style.display = "none";
+		get_by_id("setting_wep3").style.display = "none";
+		get_by_id("setting_wep4").style.display = "none";
+		get_by_id("setting_wep5").style.display = "none";
+		get_by_id("setting_wep6").style.display = "none";
+		get_by_id("setting_wep7").style.display = "none";
+		get_by_id("show_wpa_psk1").style.display = "none";
+		get_by_id("show_wpa_psk2").style.display = "none";
+		get_by_id("show_wpa_eap1").style.display = "none";
+		get_by_id("show_wpa_eap2").style.display = "none";
+	}
+
+	function show_authentication(){
+		var wep_type = get_by_id("wep_type");
+
+		get_by_id("setting_wpa1").style.display = "none";
+		get_by_id("setting_wpa2").style.display = "none";
+
+		close_security_table();
+		if (wep_type.selectedIndex == 1){
+			get_by_id("setting_wep1").style.display = "";
+			get_by_id("setting_wep2").style.display = "";
+			get_by_id("setting_wep3").style.display = "";
+			get_by_id("setting_wep4").style.display = "";
+			get_by_id("setting_wep5").style.display = "";
+			get_by_id("setting_wep6").style.display = "";
+			get_by_id("setting_wep7").style.display = "";
+
+			/* if wps-enable, only display/set key-1 */
+			if(get_by_id("wps_enable").value == 1){
+				set_checked("1", get_by_name("wlan0_wep_default_key"));
+			/* if wps-disable, show key-2~key-4 */	
+			}else{
+				get_by_id("setting_wep5").style.display = "";
+				get_by_id("setting_wep6").style.display = "";
+				get_by_id("setting_wep7").style.display = "";
+			}
+		}else if (wep_type.selectedIndex > 1){
+			get_by_id("setting_wpa1").style.display = "";
+			get_by_id("setting_wpa2").style.display = "";
+			show_wpa_settings();
+		}
+	}
+
+	function check_wpa_psk(){
+		var psk1_value = get_by_id("wlan0_psk_pass_phrase").value;
+		var psk2_value = get_by_id("wpapsk2").value;
+
+		if (psk1_value != psk2_value){	// when the Passphrase does not match the Confirmed Passphrase
+			alert(msg[MSG11]);
+			return false;
+		}else if (psk1_value.length < 8){	// when the length of the Passpharse is less than 8 characters
+			alert(msg[MSG12]);
+			return false;
+		}else if (psk1_value.length > 63){
+			if(!isHex(psk1_value))
+			{
+				alert(msg[MSG13]);
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	function check_wpa_eap(){
+		var ip1 = get_by_id("radius_ip1").value;
+    	var ip2 = get_by_id("radius_ip2").value;
+
+    	var radius1_msg = replace_msg(all_ip_addr_msg,get_words('_RadiusServer1'));
+    	var radius2_msg = replace_msg(all_ip_addr_msg,get_words('_RadiusServer2'));
+
+    	var temp_ip1 = new addr_obj(ip1.split("."), radius1_msg, false, false);
+        var temp_ip2 = new addr_obj(ip2.split("."), radius2_msg, true, false);
+        var temp_radius1 = new raidus_obj(temp_ip1, get_by_id("radius_port1").value, get_by_id("radius_pass1").value);
+        var temp_radius2 = new raidus_obj(temp_ip2, get_by_id("radius_port2").value, get_by_id("radius_pass2").value);
+
+        if (!check_radius(temp_radius1)){
+    		return false;
+    	}else if (ip2 != "" && ip2 != "0.0.0.0"){
+    		if (!check_radius(temp_radius2)){
+    			return false;
+    		}
+    	}
+
+    	return true;
+	}
+
+	function check_wpa_settings(){
+		var eap_type = get_by_name("eap_type");
+
+		if (eap_type[0].checked){
+			return check_wpa_psk();
+		}else if (eap_type[1].checked){
+			return check_wpa_eap();
+		}
+	}
+
+	function send_request(){
+		var security_array = new Array("disable", "wep", "wpa", "wpa2","wpa2auto");
+		var key_length = get_by_id("wep_key_len").selectedIndex;
+		var wep_type = get_by_id("wep_type");
+		var is_submit = false;
+
+		/** 20120911 Silvia add to follow WPS2.0
+		if (iswps == 1)
+		{
+			if (wep_type.selectedIndex == 1){
+				if(confirm(get_words('msg_wps_sec_01')) == false)
+					return;
+				else{
+					$('#wps_enable').val(0);
+					toDisableWPSSetting("form3Inner");
+				}
+			} else if (wep_type.selectedIndex > 1){
+				if (get_checked_value(get_by_name("wlan0_psk_cipher_type")) == "tkip"){
+					if (confirm(get_words("msg_wps_sec_02")) == false)
+						return;
+					else{
+						$('#wps_enable').val(0);
+						toDisableWPSSetting("form4Inner");
+					}
+				}
+			}
+		}
+		**/
+		if (wep_type.selectedIndex == 0){
+			get_by_id("wlan0_security").value = "disable";
+			is_submit = true;
+		}else if (wep_type.selectedIndex == 1){
+			if(wifi_std == "2")
+			{
+				alert(get_words('_MSG24'));
+				return;
+			}
+			if (check_wep_key()){
+				get_by_id("wlan0_security").value = "wep_"+ get_checked_value(get_by_name("auth_type")) +"_"+ key_num_array[key_length];
+				send_key_value(key_num_array[key_length]);
+				is_submit = true;
+			}
+			// while wps enable, only support wep-key-1
+			if (get_checked_value(get_by_name("auth_type"))== "open"){
+				if(get_by_id("wps_enable").value == 1){
+					if (get_checked_value(get_by_name("wlan0_wep_default_key"))!= 1){
+						alert(msg[MSG56]);
+						is_submit = false;
+					}
+				}
+/**
+			}else if (get_checked_value(get_by_name("auth_type"))== "share"){
+				if(get_by_id("wps_enable").value == 1){
+					if(confirm(get_words('_MSG25'))){
+						get_by_id("wps_enable").value = 0;
+						get_by_id("reboot_type").value = "reboot";
+						toDisableWPSSetting("form3Inner");
+					}else{
+						is_submit = false;
+					}
+				}
+**/
+			}
+
+		}else if (wep_type.selectedIndex > 1){
+			if(wifi_std == "2")
+			{
+				if (get_checked_value(get_by_name("wlan0_psk_cipher_type")) == "tkip" ||
+					get_checked_value(get_by_name("wlan0_psk_cipher_type")) == "both")
+				{
+					alert(get_words('_MSG24'));
+					return;
+				}
+			}
+
+			if (check_wpa_settings()){
+				is_submit = true;
+				get_by_id("wlan0_security").value = security_array[wep_type.selectedIndex] +"_"+ get_checked_value(get_by_name("eap_type"));
+				//eap
+				if(get_checked_value(get_by_name("eap_type")) == "eap"){
+					var r_ip_0 = get_by_id("radius_ip1").value;
+					var r_port_0 = get_by_id("radius_port1").value;
+					var r_pass_0 = get_by_id("radius_pass1").value;
+					var dat0 = r_ip_0 +"/"+ r_port_0 +"/"+ r_pass_0;
+					get_by_id("wlan0_eap_radius_server_0").value = dat0;
+
+					var r_ip_1 = get_by_id("radius_ip2").value;
+					var r_port_1 = get_by_id("radius_port2").value;
+					var r_pass_1 = get_by_id("radius_pass2").value;
+					var dat1 = r_ip_1 +"/"+ r_port_1 +"/"+ r_pass_1;
+					get_by_id("wlan0_eap_radius_server_1").value = dat1;
+					if(get_by_id("wps_enable").value == 1){
+						if(confirm(get_words('_MSG26'))){
+							get_by_id("wps_enable").value = 0;
+							get_by_id("reboot_type").value = "reboot";
+							toDisableWPSSetting("form4Inner");
+						}else{
+							is_submit = false;
+						}
+					}
+				}
+				//check if cipher auto is checked, that will close wps function. 
+				//if(get_checked_value(get_by_name("wlan0_psk_cipher_type")) == "both"){
+				//	if(confirm("The Auto Cipher Type cannot be supported by WPS. Use this configuration will cause WPS be disabled. Are you sure you want to continue with the new setting?")){
+				//		get_by_id("wps_enable").value = 0;
+				//	}else{
+				//		is_submit = false;
+				//	}
+				//}
+			}
+		}else{
+			get_by_id("asp_temp_37").value = get_by_id("wlan0_psk_pass_phrase").value;
+		}
+
+		if (is_submit){
+			var s_type = get_by_id("wep_type").selectedIndex;
+			var s_type_obj = get_by_name("lanWlanCfg_SecurityMode_1.1.1.0.0");
+			for (var i=0; i<s_type_obj.length; i++)
+			{
+				s_type_obj[i].value = s_type;
+			}
+
+			//alert(s_type);
+			switch(s_type)
+			{
+				case 0:
+					//copyDataToDataModelFormat_DISABLE();
+					send_submit("form2");
+					break;
+				case 1:
+					//alert("case 1");
+					copyDataToDataModelFormat_WEP();
+					if(curr_wifi_status == "0")
+						toSetWPSStatusAsConfigured("form3Inner");
+					send_submit("form3");
+					break;
+
+				case 2:
+				case 3:
+				case 4:
+					copyDataToDataModelFormat_WPA();
+					if(curr_wifi_status == "0")
+						toSetWPSStatusAsConfigured("form4Inner");
+					send_submit("form4");
+					break;
+				default:
+					break;
+			}
+			//send_submit("form1");
+		}
+	}
+	function send_key_value(key_length){
+		var key_type = get_by_id("wlan0_wep_display").value;
+		get_by_id("wlan0_wep"+ key_length +"_key_1").value = get_by_id("key1_"+ key_length +"_"+ key_type).value;
+		get_by_id("wlan0_wep"+ key_length +"_key_2").value = get_by_id("key2_"+ key_length +"_"+ key_type).value;
+		get_by_id("wlan0_wep"+ key_length +"_key_3").value = get_by_id("key3_"+ key_length +"_"+ key_type).value;
+		get_by_id("wlan0_wep"+ key_length +"_key_4").value = get_by_id("key4_"+ key_length +"_"+ key_type).value;
+
+		get_by_id("asp_temp_37").value = get_by_id("wlan0_wep"+ key_length +"_key_1").value;
+		get_by_id("asp_temp_38").value = get_by_id("wlan0_wep"+ key_length +"_key_2").value;
+		get_by_id("asp_temp_39").value = get_by_id("wlan0_wep"+ key_length +"_key_3").value;
+		get_by_id("asp_temp_40").value = get_by_id("wlan0_wep"+ key_length +"_key_4").value;
+		
+	}
+
+	function copyDataToDataModelFormat_WEP()
+	{
+		if(get_checked_value(get_by_name("auth_type")) == "open")
+			get_by_id("wepInfo_AuthenticationMode_1.1.1.1.0").value = "0";
+		else
+			get_by_id("wepInfo_AuthenticationMode_1.1.1.1.0").value = "1";
+			
+		//get_by_id("wepInfo_AuthenticationMode_1.1.1.1.0").value = get_checked_value(get_by_name("auth_type"));
+
+		get_by_id("wepInfo_KeyType_1.1.1.1.0").value = get_by_id("wlan0_wep_display").selectedIndex;
+
+		/*
+		if(get_checked_value(get_by_name("wep_key_len")) == "5")
+			get_by_id("wepInfo_KeyLength_1.1.1.1.0").value = "0";
+		else
+			get_by_id("wepInfo_KeyLength_1.1.1.1.0").value = "1";
+		*/
+		get_by_id("wepInfo_KeyLength_1.1.1.1.0").value = get_by_id("wep_key_len").selectedIndex;
+		
+		get_by_id("wepInfo_KeyIndex_1.1.1.1.0").value = get_checked_value(get_by_name("wlan0_wep_default_key"));
+
+		for(var i=1; i<=4; i++)
+		{
+			get_by_id("wepKey_KeyHEX64_1.1.1.1."+i).value = get_by_id("key"+i+"_64_hex").value;
+			get_by_id("wepKey_KeyHEX128_1.1.1.1."+i).value = get_by_id("key"+i+"_128_hex").value;
+			get_by_id("wepKey_KeyASCII64_1.1.1.1."+i).value = get_by_id("key"+i+"_64_ascii").value;
+			get_by_id("wepKey_KeyASCII128_1.1.1.1."+i).value = get_by_id("key"+i+"_128_ascii").value;
+		}
+	}
+
+	function copyDataToDataModelFormat_WPA()
+	{
+		if(get_checked_value(get_by_name("eap_type")) == "psk")
+			get_by_id("wpaInfo_AuthenticationMode_1.1.1.1.0").value = "0";
+		else
+			get_by_id("wpaInfo_AuthenticationMode_1.1.1.1.0").value = "1";
+
+		if(get_checked_value(get_by_name("wlan0_psk_cipher_type")) == "tkip")
+			get_by_id("wpaInfo_EncryptionMode_1.1.1.1.0").value = "0";
+		else if(get_checked_value(get_by_name("wlan0_psk_cipher_type")) == "aes")
+			get_by_id("wpaInfo_EncryptionMode_1.1.1.1.0").value = "1";
+		else
+			get_by_id("wpaInfo_EncryptionMode_1.1.1.1.0").value = "2";
+
+		get_by_id("wpaPSK_KeyPassphrase_1.1.1.1.1").value = get_by_id("wlan0_psk_pass_phrase").value;
+		
+		for(var i=1; i<=2; i++)
+		{
+			get_by_id("wpaEap_RadiusServerIP_1.1.1.1."+i).value = get_by_id("radius_ip"+i).value;
+			get_by_id("wpaEap_RadiusServerPort_1.1.1.1."+i).value = get_by_id("radius_port"+i).value;
+			get_by_id("wpaEap_RadiusServerPSK_1.1.1.1."+i).value = get_by_id("radius_pass"+i).value;
+		}
+	}
+
+	function toSetWPSStatusAsConfigured(id)
+	{
+		get_by_id(id).innerHTML += '<input type="hidden" name="wpsCfg_Status_1.1.1.1.0" id="wpsCfg_Status_1.1.1.1.0" value="1">';
+	}
+
+	function toDisableWPSSetting(id)
+	{
+		get_by_id(id).innerHTML = '<input type="hidden" name="wpsCfg_Enable_1.1.1.1.0" id="wpsCfg_Enable_1.1.1.1.0" value="0">';
+		get_by_id(id).innerHTML += '<input type="hidden" name="ccpSubEvent2" value="CCP_SUB_WPS">';
+	}
+</SCRIPT>
+</head>
+
+<body onLoad="MM_preloadImages('but_tools_1.gif','but_main_1.gif','but_wireless_1.gif','but_status_1.gif','but_routing_1.gif','but_access_1.gif','but_management_1.gif','but_wizard_1.gif');loadSettings()">
+<table width="750" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="21"><img src="c1_tl.gif" width="21" height="21" /></td>
+    <td width="708" background="bg1_t.gif"><img src="top_1.gif" width="390" height="21" /></td>
+    <td width="21"><img src="c1_tr.gif" width="21" height="21" /></td>
+  </tr>
+  <tr>
+    <td valign="top" background="bg1_l.gif"><img src="top_2.gif" width="21" height="69" /></td>
+    <td background="bg.gif"><table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="13%"><img src="logo.gif" /></td>
+        <td width="87%" align="right"><img src="description.gif" /></td>
+      </tr>
+    </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="20%" height="429" valign="top"><table width="56%" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td onclick="location.href='lan.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG749');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>	
+				</a></td>
+              </tr>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='wireless_basic.htm'">
+				<table class="menu_tb">
+				<tr>
+					<td class="menu_sel_nw"></td>
+					<td class="menu_sel_n"></td>
+					<td class="menu_sel_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_w"></td>
+					<td class="menu_sel_m"><b>&nbsp;&nbsp;<script>show_words('_Wireless')</script></td>
+					<td class="menu_sel_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_sw"></td>
+					<td class="menu_sel_s"></td>
+					<td class="menu_sel_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><table width="100%" border="0" cellpadding="2" class="submenubg">
+                    <tr>
+                      <td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td width="87%"><a href="wireless_basic.htm" class="submenus"><b><script>show_words('_Basic');</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="wireless_auth.htm" class="submenus"><b><u><script>show_words('_Security');</script></u></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="wireless_advanced.htm" class="submenus"><b><script>show_words('_Advanced');</script></b></a></td>
+                    </tr>
+<!--DEF	CONFIG_WPS-->  <tr><td align="right"><font color="#FFFFFF">&bull;</font></td>
+<!--DEF CONFIG_WPS-->    <td><a href="wlan_wps.htm" class="submenus"><b><script>show_words('_WiFiSetup');</script></b></a></td></tr>
+                </table></td>
+              </tr>
+			  <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='status.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG748')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='static_routing.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG747')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='filters.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Access')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='snmp.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG746')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='restart.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Tools')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="show_wizard('wizard.htm',login_Info)">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wizard')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="15" height="15"></td>
+              </tr>
+            </table>
+            <p>&nbsp;</p>
+              <p>&nbsp;</p></td>
+            <td width="2%"><img src="spacer.gif" width="15" height="15" /></td>
+            <td width="78%" valign="top"><table width="98%" border="0" cellpadding="0" cellspacing="0" class="tabBigTitle">
+                <tr>
+                  <td class="headerbg2"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                      <tr>
+                        <td width="79%"><font color="#FFFFFF" class="textheader" style="margin-left:0; padding-left:0"><script>show_words('_Security')</script></font></td>
+                        <td width="21%"><input name="button" type="button" id="help_btn" class="ButtonHelp" onclick="MM_openBrWindow('help_wlan.htm#wireless_WEP','','scrollbars=yes,resizable=yes,width=800,height=550')" value="" />
+								<script>$('#help_btn').val(get_words('_Help'));</script>
+                        </td>
+                      </tr>
+                  </table></td>
+                </tr>
+                <tr>
+                  <td valign="top">
+				  <form id="form4" name="form4" method="post" action="get_set.ccp">
+				    <input type="hidden" name="ccp_act" value="set">
+					<input type="hidden" name="ccpSubEvent" value="CCP_SUB_WIRELESS">
+					<input type="hidden" name="nextPage" value="wireless_auth.htm">
+					<input type="hidden" name="lanWlanCfg_SecurityMode_1.1.1.0.0" id="lanWlanCfg_SecurityMode_1.1.1.0.0" value="">
+					<input type="hidden" name="wpaInfo_AuthenticationMode_1.1.1.1.0" id="wpaInfo_AuthenticationMode_1.1.1.1.0" value="">
+					<input type="hidden" name="wpaInfo_EncryptionMode_1.1.1.1.0" id="wpaInfo_EncryptionMode_1.1.1.1.0" value="">
+					<input type="hidden" name="wpaPSK_KeyPassphrase_1.1.1.1.1" id="wpaPSK_KeyPassphrase_1.1.1.1.1" value="">
+					<input type="hidden" name="wpaEap_RadiusServerIP_1.1.1.1.1" id="wpaEap_RadiusServerIP_1.1.1.1.1" value="">
+					<input type="hidden" name="wpaEap_RadiusServerPort_1.1.1.1.1" id="wpaEap_RadiusServerPort_1.1.1.1.1" value="">
+					<input type="hidden" name="wpaEap_RadiusServerPSK_1.1.1.1.1" id="wpaEap_RadiusServerPSK_1.1.1.1.1" value="">
+					
+					<input type="hidden" name="wpaEap_RadiusServerIP_1.1.1.1.2" id="wpaEap_RadiusServerIP_1.1.1.1.2" value="">
+					<input type="hidden" name="wpaEap_RadiusServerPort_1.1.1.1.2" id="wpaEap_RadiusServerPort_1.1.1.1.2" value="">
+					<input type="hidden" name="wpaEap_RadiusServerPSK_1.1.1.1.2" id="wpaEap_RadiusServerPSK_1.1.1.1.2" value="">
+					<span id="form4Inner"></span>
+				  </form>
+				  
+				  <form id="form3" name="form3" method="post" action="get_set.ccp">
+				    <input type="hidden" name="ccp_act" value="set">
+					<input type="hidden" name="ccpSubEvent" value="CCP_SUB_WIRELESS">
+					<input type="hidden" name="nextPage" value="wireless_auth.htm">
+					<input type="hidden" name="lanWlanCfg_SecurityMode_1.1.1.0.0" id="lanWlanCfg_SecurityMode_1.1.1.0.0" value="">
+					<input type="hidden" name="wepInfo_AuthenticationMode_1.1.1.1.0" id="wepInfo_AuthenticationMode_1.1.1.1.0" value="">
+					<input type="hidden" name="wepInfo_KeyType_1.1.1.1.0" id="wepInfo_KeyType_1.1.1.1.0" value="">
+					<input type="hidden" name="wepInfo_KeyLength_1.1.1.1.0" id="wepInfo_KeyLength_1.1.1.1.0" value="">
+					<input type="hidden" name="wepInfo_KeyIndex_1.1.1.1.0" id="wepInfo_KeyIndex_1.1.1.1.0" value="">
+					<input type="hidden" name="wepKey_KeyHEX64_1.1.1.1.1" id="wepKey_KeyHEX64_1.1.1.1.1" value="">
+					<input type="hidden" name="wepKey_KeyHEX128_1.1.1.1.1" id="wepKey_KeyHEX128_1.1.1.1.1" value="">
+					<input type="hidden" name="wepKey_KeyASCII64_1.1.1.1.1" id="wepKey_KeyASCII64_1.1.1.1.1" value="">
+					<input type="hidden" name="wepKey_KeyASCII128_1.1.1.1.1" id="wepKey_KeyASCII128_1.1.1.1.1" value="">
+
+					<input type="hidden" name="wepKey_KeyHEX64_1.1.1.1.2" id="wepKey_KeyHEX64_1.1.1.1.2" value="">
+					<input type="hidden" name="wepKey_KeyHEX128_1.1.1.1.2" id="wepKey_KeyHEX128_1.1.1.1.2" value="">
+					<input type="hidden" name="wepKey_KeyASCII64_1.1.1.1.2" id="wepKey_KeyASCII64_1.1.1.1.2" value="">
+					<input type="hidden" name="wepKey_KeyASCII128_1.1.1.1.2" id="wepKey_KeyASCII128_1.1.1.1.2" value="">
+
+					<input type="hidden" name="wepKey_KeyHEX64_1.1.1.1.3" id="wepKey_KeyHEX64_1.1.1.1.3" value="">
+					<input type="hidden" name="wepKey_KeyHEX128_1.1.1.1.3" id="wepKey_KeyHEX128_1.1.1.1.3" value="">
+					<input type="hidden" name="wepKey_KeyASCII64_1.1.1.1.3" id="wepKey_KeyASCII64_1.1.1.1.3" value="">
+					<input type="hidden" name="wepKey_KeyASCII128_1.1.1.1.3" id="wepKey_KeyASCII128_1.1.1.1.3" value="">
+
+					<input type="hidden" name="wepKey_KeyHEX64_1.1.1.1.4" id="wepKey_KeyHEX64_1.1.1.1.4" value="">
+					<input type="hidden" name="wepKey_KeyHEX128_1.1.1.1.4" id="wepKey_KeyHEX128_1.1.1.1.4" value="">
+					<input type="hidden" name="wepKey_KeyASCII64_1.1.1.1.4" id="wepKey_KeyASCII64_1.1.1.1.4" value="">
+					<input type="hidden" name="wepKey_KeyASCII128_1.1.1.1.4" id="wepKey_KeyASCII128_1.1.1.1.4" value="">
+					
+					<span id="form3Inner"></span>
+				  </form>
+				  <form id="form2" name="form2" method="post" action="get_set.ccp">
+				    <input type="hidden" name="ccp_act" value="set">
+					<input type="hidden" name="ccpSubEvent" value="CCP_SUB_WIRELESS">
+					<input type="hidden" name="nextPage" value="wireless_auth.htm">
+					<input type="hidden" name="lanWlanCfg_SecurityMode_1.1.1.0.0" id="lanWlanCfg_SecurityMode_1.1.1.0.0" value="">
+				  </form>
+
+				  <form id="form1" name="form1" method="post" action="apply.cgi">
+                    <input type="hidden" id="html_response_page" name="html_response_page" value="back.htm">
+                    <input type="hidden" id="html_response_message" name="html_response_message" value="The setting is saved.">
+                    <input type="hidden" id="html_response_return_page" name="html_response_return_page" value="wireless_auth.htm">
+                    <input type="hidden" id="wlan0_security" name="wlan0_security" value="">
+                    <input type="hidden" id="wlan0_eap_radius_server_0" name="wlan0_eap_radius_server_0" value="">
+                    <input type="hidden" id="wlan0_eap_radius_server_1" name="wlan0_eap_radius_server_1" value="">
+                    <input type="hidden" id="reboot_type" name="reboot_type" value="reboot">                    
+                    <input type="hidden" name="wps_enable" id="wps_enable" value='<% CmoGetCfg("wps_enable","none"); %>'>
+                    <input type="hidden" id="asp_temp_37" name="asp_temp_37" value='<% CmoGetCfg("asp_temp_37","hex"); %>'>
+                    <input type="hidden" id="asp_temp_38" name="asp_temp_38" value='<% CmoGetCfg("asp_temp_38","hex"); %>'>
+                    <input type="hidden" id="asp_temp_39" name="asp_temp_39" value='<% CmoGetCfg("asp_temp_39","hex"); %>'>
+                    <input type="hidden" id="asp_temp_40" name="asp_temp_40" value='<% CmoGetCfg("asp_temp_40","hex"); %>'>
+                    <table width="98%" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#333333">
+                      <tr>
+                        <td width="154" align="right" class="bgblue"><script>show_words('_AuthType')</script></td>
+                        <td width="383"  class="bggrey"><font face="Arial" size="2">
+                          <select id="wep_type" name="wep_type" onChange="show_authentication()">
+                            <option value="0"> <script>show_words('_Disable')</script> </option>
+                            <option value="1"> <script>show_words('_WEP')</script> </option>
+                            <option value="2"> <script>show_words('_WPA')</script> </option>
+                            <option value="3"> <script>show_words('_WPA2')</script> </option>
+                            <option value="4"> <script>show_words('_WPAauto')</script> </option>
+                          </select>
+                        </font> </td>
+                      </tr>
+                       
+                       
+                       <tr id="setting_wep1"  style="display:none">
+                         <td width="154" align="right" bgcolor="#CCCCCC" class="bgblue"><font face="Arial"><script>show_words('_WEP')</script>&nbsp;</font></td>
+                         <td bgcolor="#CCCCCC" class="bggrey">
+                           <input type=radio name="auth_type" value="open">
+                           <script>show_words('_OpenSys')</script>
+                           <input type=radio name="auth_type" value="share">
+                           <script>show_words('_SharedKey')</script> </td>
+                      </tr>
+                       <tr id="setting_wep2"  style="display:none">
+                         <td width="154" align="right" bgcolor="#CCCCCC" class="bgblue"><font face="Arial"><script>show_words('_Mode')</script>&nbsp;</font></td>
+                         <td width="383" bgcolor="#CCCCCC" class="bggrey"><select id="wlan0_wep_display" name="wlan0_wep_display" onChange="change_wep_key_fun()">
+                             <option value="hex"><script>show_words('_HEX')</script></option>
+                             <option value="ascii"><script>show_words('_ASCII')</script></option>
+                           </select>                         </td>
+                       </tr>
+                       <tr id="setting_wep3" style="display:none">
+                         <td width="154" align="right" bgcolor="#CCCCCC" class="bgblue"><font face="Arial"><script>show_words('_WEPkey')</script>&nbsp;</font></td>
+                         <td width="383" bgcolor="#CCCCCC" class="bggrey"><font face="Arial" size="2">
+                           <select size="1" name="wep_key_len" id="wep_key_len" onChange="change_wep_key_fun();">
+                             <option value="5"><script>show_words('_64bit')</script></option>
+                             <option value="13"><script>show_words('_128bit')</script></option>
+                           </select>
+                         </font></td>
+                       </tr>
+                       <tr id="setting_wep4" style="display:none">
+                         <td width="154" align="right" bgcolor="#CCCCCC" class="bgblue"><font face="Arial"><script>show_words('_Key')</script> 1&nbsp;</font></td>
+                         <td width="383" bgcolor="#CCCCCC" class="bggrey"><input type="radio" value="1" name="wlan0_wep_default_key">
+                             <input type="text" id="key1_64_hex" name="key1_64_hex" maxlength="10" size="15" value="" style="display:none">
+                             <input type="text" id="key1_128_hex" name="key1_128_hex" maxlength="26" size="31" value="" style="display:none ">
+                             <input type="text" id="key1_64_ascii" name="key1_64_ascii" maxlength="5" size="10" value="" style="display:none ">
+                             <input type="text" id="key1_128_ascii" name="key1_128_ascii" maxlength="13" size="18" value="" style="display:none ">
+                             <input type="hidden" id="wlan0_wep64_key_1" name="wlan0_wep64_key_1" value='<% CmoGetCfg("wlan0_wep64_key_1","hex"); %>'>
+                             <input type="hidden" id="wlan0_wep128_key_1" name="wlan0_wep128_key_1" value='<% CmoGetCfg("wlan0_wep128_key_1","hex"); %>'>                         </td>
+                       </tr>
+                       <tr id="setting_wep5" style="display:none">
+                         <td width="154" align="right" bgcolor="#CCCCCC" class="bgblue"><font face="Arial"><script>show_words('_Key')</script> 2&nbsp;</font></td>
+                         <td width="383" bgcolor="#CCCCCC" class="bggrey"><input type="radio" value="2" name="wlan0_wep_default_key">
+                             <input type="text" id="key2_64_hex" name="key2_64_hex" maxlength="10" size="15" value="" style="display:none ">
+                             <input type="text" id="key2_128_hex" name="key2_128_hex" maxlength="26" size="31" value="" style="display:none ">
+                             <input type="text" id="key2_64_ascii" name="key2_64_ascii" maxlength="5" size="10" value="" style="display:none ">
+                             <input type="text" id="key2_128_ascii" name="key2_128_ascii" maxlength="13" size="18" value="" style="display:none ">
+                             <input type="hidden" id="wlan0_wep64_key_2" name="wlan0_wep64_key_2" value='<% CmoGetCfg("wlan0_wep64_key_2","hex"); %>'>
+                             <input type="hidden" id="wlan0_wep128_key_2" name="wlan0_wep128_key_2" value='<% CmoGetCfg("wlan0_wep128_key_2","hex"); %>'>                         </td>
+                       </tr>
+                       <tr id="setting_wep6"  style="display:none">
+                         <td width="154" align="right" bgcolor="#CCCCCC" class="bgblue"><font face="Arial"><script>show_words('_Key')</script> 3&nbsp;</font></td>
+                         <td width="383" bgcolor="#CCCCCC" class="bggrey"><input type="radio" value="3" name="wlan0_wep_default_key">
+                             <input type="text" id="key3_64_hex" name="key3_64_hex" maxlength="10" size="15" value="" style="display:none ">
+                             <input type="text" id="key3_128_hex" name="key3_128_hex" maxlength="26" size="31" value="" style="display:none ">
+                             <input type="text" id="key3_64_ascii" name="key3_64_ascii" maxlength="5" size="10" value="" style="display:none ">
+                             <input type="text" id="key3_128_ascii" name="key3_128_ascii" maxlength="13" size="18" value="" style="display:none ">
+                             <input type="hidden" id="wlan0_wep64_key_3" name="wlan0_wep64_key_3" value='<% CmoGetCfg("wlan0_wep64_key_3","hex"); %>'>
+                             <input type="hidden" id="wlan0_wep128_key_3" name="wlan0_wep128_key_3" value='<% CmoGetCfg("wlan0_wep128_key_3","hex"); %>'>                         </td>
+                       </tr>
+                       <tr id="setting_wep7" style="display:none">
+                         <td width="154" align="right" bgcolor="#CCCCCC" class="bgblue"><font face="Arial"><script>show_words('_Key')</script> 4&nbsp;</font></td>
+                         <td width="383" bgcolor="#CCCCCC" class="bggrey"><input type="radio" value="4" name="wlan0_wep_default_key">
+                             <input type="text" id="key4_64_hex" name="key4_64_hex" maxlength="10" size="15" value="" style="display:none ">
+                             <input type="text" id="key4_128_hex" name="key4_128_hex" maxlength="26" size="31" value="" style="display:none ">
+                             <input type="text" id="key4_64_ascii" name="key4_64_ascii" maxlength="5" size="10" value="" style="display:none ">
+                             <input type="text" id="key4_128_ascii" name="key4_128_ascii" maxlength="13" size="18" value="" style="display:none ">
+                             <input type="hidden" id="wlan0_wep64_key_4" name="wlan0_wep64_key_4" value='<% CmoGetCfg("wlan0_wep64_key_4","hex"); %>'>
+                             <input type="hidden" id="wlan0_wep128_key_4" name="wlan0_wep128_key_4" value='<% CmoGetCfg("wlan0_wep128_key_4","hex"); %>'>                         </td>
+                      </tr>
+                       <tr id="setting_wpa1" style="display:none">
+                         <td align="right" class="bgblue"><script>show_words('_PSKEAP')</script></td>
+                         <td class="bggrey">
+                           <input name="eap_type" type="radio" value="psk" onClick="show_wpa_settings()">
+                           <script>show_words('_PSK')</script>
+                           <input name="eap_type" type="radio" value="eap" onClick="show_wpa_settings()">
+                           <script>show_words('_EAP')</script>  </td>
+                      </tr>
+                       <tr id="setting_wpa2" style="display:none">
+                         <td align="right" class="bgblue"><script>show_words('_CipherType')</script></td>
+                         <td class="bggrey">
+                           <input name="wlan0_psk_cipher_type" type="radio" value="tkip">
+                           <script>show_words('_TKIP')</script>
+                           <input name="wlan0_psk_cipher_type" type="radio" value="aes">
+                           <script>show_words('_AES')</script>
+                           <input name="wlan0_psk_cipher_type" type="radio" value="both">
+                           <script>show_words('_Auto')</script>  </td>
+                      </tr>
+                       <tr id="show_wpa_psk1" style="display:none" bgcolor="#CCCCCC">
+                         <td align="right" bgcolor="#CCCCCC" class="bgblue"><font face="Arial"><script>show_words('_Passphrase')</script> :</font></td>
+                         <td class="bggrey"><input type="password" id="wlan0_psk_pass_phrase" name="wlan0_psk_pass_phrase" size="40" maxlength="64" value=""></td>
+                       </tr>
+                       <tr id="show_wpa_psk2" style="display:none" bgcolor="#CCCCCC">
+                         <td align="right" bgcolor="#CCCCCC" class="bgblue"><font face="Arial"><script>show_words('_ConfirmPassphrase')</script> :</font></td>
+                         <td class="bggrey"><input type="password" name="wpapsk2" id="wpapsk2" size="40" maxlength="64" value="">                         </td>
+                       </tr>
+                      <tr  id="show_wpa_eap1" style="display:none" bgcolor="#CCCCCC">
+                        <td align="right" valign="top" bgcolor="#CCCCCC" class="bgblue"><script>show_words('_RadiusServer1')</script></td>
+                        <td class="bggrey"><table width="100%" border="0" cellpadding="2" cellspacing="1">
+                           <tr>
+                             <td width="19%"  class="bggrey"><script>show_words('_IP')</script></td>
+                             <td width="81%"  class="bggrey"><input id="radius_ip1" name="radius_ip1" size="16" maxlength="15"></td>
+                           </tr>
+                           <tr>
+                             <td class="bggrey"><script>show_words('_Port')</script></td>
+                             <td class="bggrey"><input type="text" id="radius_port1" name="radius_port1" size="5" maxlength="5"></td>
+                           </tr>
+                           <tr>
+                             <td nowrap class="bggrey"><script>show_words('_SharedSecret')</script></td>
+                             <td class="bggrey"><input type="password" id="radius_pass1" name="radius_pass1" size="32" maxlength="64"></td>
+                           </tr>
+                         </table></td>
+                       </tr>
+                      <tr  id="show_wpa_eap2" style="display:none" bgcolor="#CCCCCC">
+                        <td align="right" valign="top" bgcolor="#CCCCCC" class="bgblue"><script>show_words('_RadiusServer2')</script><br>
+(<script>show_words('_optional')</script>)</td>
+                        <td class="bggrey"><table width="100%" border="0" cellpadding="2" cellspacing="1">
+                           <tr>
+                             <td width="20%"  class="bggrey"><script>show_words('_IP')</script></td>
+                             <td width="80%" class="bggrey"><input id="radius_ip2" name="radius_ip2" size="16" maxlength="15"></td>
+                           </tr>
+                           <tr>
+                             <td class="bggrey"><script>show_words('_Port')</script></td>
+                             <td class="bggrey"><input type="text" id="radius_port2" name="radius_port2" size="5" maxlength="5"></td>
+                           </tr>
+                           <tr>
+                             <td nowrap class="bggrey"><script>show_words('_SharedSecret')</script></td>
+                             <td class="bggrey"><input type="password" id="radius_pass2" name="radius_pass2" size="32" maxlength="64"></td>
+                           </tr>
+                         </table></td>
+                       </tr>
+                       
+                      <tr>
+                        <td class="bgblue">&nbsp;</td>
+                        <td class="bggrey2"><input name="cancel" type="button" class="ButtonSmall" id="cancel" onClick="window.location='wireless_auth.htm'" value="">
+								<script>$('#cancel').val(get_words('_Cancel'));</script>
+                          <input name="apply" type="button" class="ButtonSmall" id="apply" onClick="send_request()" value="">
+								<script>$('#apply').val(get_words('_Apply'));</script>
+                          <input id="clear" name="clear" type="button" class="ButtonSmall" onClick="window.location='wireless_auth.htm'" value=""><script>$('#clear').val(get_words('_Clear'));</script></td>
+                      </tr>
+                    </table>
+                    <input type="hidden" id="restore_wireless" name="restore_wireless">
+                  </form>
+                    <br>
+                  </td>
+                </tr>
+            </table></td>
+          </tr>
+      </table></td>
+    <td background="bg1_r.gif">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><img src="c1_bl.gif" width="21" height="20" /></td>
+    <td align="right" background="bg1_b.gif"><img src="copyright.png" width="264" height="20" /></td>
+    <td><img src="c1_br.gif" width="21" height="20" /></td>
+  </tr>
+</table>
+<script>
+var login_who=login_Info;
+    if(login_who != "w")
+    {
+        get_by_id("cancel").disabled = "true";
+        get_by_id("apply").disabled = "true";
+		get_by_id("clear").disabled = "true";
+    }
+</script>
+</body>
+</html>

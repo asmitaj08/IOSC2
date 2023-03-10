@@ -1,0 +1,961 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;">
+<title>TRENDNET | modelName | Access | Protocol Filters</title>
+<link rel="stylesheet" href="style.css" type="text/css">
+<script language="JavaScript" src="uk.js"></script>
+
+<script language="JavaScript" src="public_js/public.js"></script>
+<script language="Javascript" src="js/jquery-1.3.2.min.js"></script>
+<script language="Javascript" src="js/xml.js"></script>
+<script language="Javascript" src="js/object.js"></script>
+<SCRIPT LANGUAGE="JavaScript">
+	var dev_info = get_router_info();
+
+	var hw_version 	= dev_info.hw_ver;
+	var version 	= dev_info.fw_ver;
+	var model		= dev_info.model;
+	var login_Info 	= dev_info.login_info;
+	var cli_mac 	= dev_info.cli_mac;
+	
+	var param = {
+		url: "get_set.ccp",
+		arg: ""
+	};
+	
+	param.arg = "ccp_act=get&num_inst=2";
+	param.arg +="&oid_1=IGD_IPFilter_i_&inst_1=10000";
+	param.arg +="&oid_2=IGD_LANDevice_i_LANHostConfigManagement_&inst_2=11100";
+	get_config_obj(param);
+	
+	var current_rules = 0;
+	var array_rules_enable 		= config_str_multi("ipFilter_Enable_");
+	var array_rules_name 		= config_str_multi("ipFilter_Name_");
+	var array_rules_protocol	= config_str_multi("ipFilter_Protocol_");
+	var array_rules_portstart	= config_str_multi("ipFilter_PortStart_");
+	var array_rules_portend		= config_str_multi("ipFilter_PortEnd_");
+	var array_rules_ipstart		= config_str_multi("ipFilter_IPAddressStart_");
+	var array_rules_ipend		= config_str_multi("ipFilter_IPAddressEnd_");
+
+	if(array_rules_name != null)
+		current_rules = array_rules_name.length;
+		
+	var array_rules_inst 		= config_inst_multi("IGD_IPFilter_i_");
+
+	var DataArray = new Array();
+	var rule_max_num = 20;
+	
+	var lan_ip = config_val("lanHostCfg_IPAddress_");
+	var lan_mask = config_val("lanHostCfg_SubnetMask_");
+	
+	function DataShow(){
+		set_blockservice();
+		for (var i=0; i<DataArray.length;i++){
+			var port_word = DataArray[i].Start_port;
+			var protocol_word = DataArray[i].Protocol;
+						
+						
+			if(parseInt(DataArray[i].End_port,10) >= parseInt(DataArray[i].Start_port,10)){
+				port_word = port_word +"-"+ DataArray[i].End_port;
+			}
+			
+			var port_IP = DataArray[i].Start_ip;
+			if(ip_num(DataArray[i].End_ip.split(".")) >= ip_num(DataArray[i].Start_ip.split("."))){
+				port_IP = port_IP +"-"+ DataArray[i].End_ip;
+			}
+			
+			
+			var enable_name = "enable"+i;
+			document.write("<tr bgcolor=\"#F0F0F0\" onClick=\"edit_row("+ i +")\">");
+			document.write("<td align=\"center\"><input type=\"checkbox\" id=\""+ enable_name +"\" name=\""+ enable_name +"\" value=\"1\"></td>");
+			document.write("<td>"+ DataArray[i].Name +"</td>");
+			document.write("<td>"+ DataArray[i].Protocol +"</td>");
+			document.write("<td>"+ port_word +"</td>");
+			document.write("<td>"+ port_IP +"</td>");
+			
+			document.write("</tr>\n");
+			check_box_enabled(i);
+		}
+	}
+	
+	function check_box_enabled(num){
+		var array_num = num;
+		get_by_id("enable"+num).checked = false;
+		get_by_id("enable"+num).disabled = true;
+		if(parseInt(DataArray[array_num].Enable,10)==1){
+			get_by_id("enable"+num).checked = true;
+		}
+	}
+	
+	function set_blockservice(){
+		var index = 0;
+		/*
+		for (var i = 0; i < rule_max_num; i++){
+			var k=i;
+			if(i<10){
+				k="0"+i;
+			}
+			var temp_pf = get_by_id("block_service_" + k).value.split("/");
+			if (temp_pf.length > 1){
+				if(temp_pf[1].length > 0){
+					DataArray[DataArray.length++] = new Data(temp_pf[0],temp_pf[1], temp_pf[2], temp_pf[3],temp_pf[4],temp_pf[5],temp_pf[6],temp_pf[7],index);
+					index++;
+				}
+			}
+		}
+		*/
+
+		for (var i = 0; i < current_rules; i++){
+			if(array_rules_name[i].length > 0){
+				var protocol_name = "";
+				if(array_rules_protocol[i] == "0")
+					protocol_name = "TCP";
+				else if(array_rules_protocol[i] == "1")
+					protocol_name = "UDP";
+				else
+					protocol_name = "Any";
+				
+				DataArray[DataArray.length++] = new Data(array_rules_enable[i]
+														,array_rules_name[i]
+														,protocol_name
+														,array_rules_portstart[i]
+														,array_rules_portend[i]
+														,array_rules_ipstart[i]
+														,array_rules_ipend[i]
+														,"always",i);
+			}
+		}
+
+	}
+	
+	//0/name/both/0/0/0.0.0.0/0.0.0.0/always
+	function Data(enable, name, protocol, start_port, end_port, start_ip, end_ip, schedule, onList) 
+	{
+		this.Enable = enable;
+		this.Name = name;
+		this.Protocol = protocol;
+		this.Start_port = start_port;
+		this.End_port = end_port;
+		this.Start_ip = start_ip;
+		this.End_ip = end_ip;
+		this.Schedule = schedule;
+		this.OnList = onList ;
+	}
+
+	function New_Data(start_port, end_port, start_ip, end_ip)
+	{
+		this.Start_port = start_port;
+		this.End_port = end_port;
+		this.Start_ip = start_ip;
+		this.End_ip = end_ip;
+	}
+		
+ 	function del_row(){
+        var index = parseInt(get_by_id("edit_row").value,10);
+        if(confirm(addstr(msg[MSG16],get_words('_ProtocolFilter')))){
+        	for(i=index ; i<DataArray.length-1 ;i++){
+				DataArray[i].Enable = DataArray[i+1].Enable;
+				DataArray[i].Name = DataArray[i+1].Name;
+				DataArray[i].Protocol = DataArray[i+1].Protocol;
+				DataArray[i].Start_port = DataArray[i+1].Start_port;
+				DataArray[i].End_port = DataArray[i+1].End_port;
+				DataArray[i].Start_ip = DataArray[i+1].Start_ip;
+				DataArray[i].End_ip = DataArray[i+1].End_ip;
+				DataArray[i].Schedule = DataArray[i+1].Schedule;
+				DataArray[i].OnList = DataArray[i+1].OnList;
+			}
+			--DataArray.length;
+			save_to_cfg();
+			get_by_id("reboot_type").value = get_words('__filter');
+			
+			get_by_id("inst_1").value = "1."+ array_rules_inst[index][1] +".0.0.0";
+			send_submit("form3");
+			return true;
+        }
+        return false;
+    }
+   
+    function edit_row(row){
+    	var row_obj = get_by_id("table1").rows[row+1];        
+        var enable = get_by_name("enable");
+        var port;
+        var ip_range;
+        
+        if (get_by_id("enable" + row).checked){
+        	enable[0].checked = true;
+        }else{
+        	enable[1].checked = true;
+        }
+        get_by_id("protocol_name").value = get_row_data(row_obj, 1);
+        temp_data = get_row_data(row_obj, 2).split(" ");
+        set_selectIndex(temp_data[0], get_by_id("protocol"));
+        
+        port = get_row_data(row_obj, 3).split("-");
+        get_by_id("start_port").value = port[0];
+        if (port.length > 1){
+        	get_by_id("end_port").value = port[1];
+        }else{
+        	get_by_id("end_port").value = "";
+        }
+        
+        ip_range = get_row_data(row_obj, 4).split("-");
+        get_by_id("start_ip").value = ip_range[0];
+        if (ip_range.length > 1){
+        	get_by_id("end_ip").value = ip_range[1];
+        }else{
+        	get_by_id("end_ip").value = "";
+        }
+    	    	    	        
+        get_by_id("edit_row").value = row;
+        get_by_id("add").disabled = true;
+        get_by_id("update").disabled = false;
+        get_by_id("del").disabled = false;
+        change_color("table1", row+1);
+    	var login_who=login_Info;
+	    if(login_who != "w")
+    	{
+        	get_by_id("add").disabled  = "true";
+        	get_by_id("del").disabled  = "true";
+        	get_by_id("cancel").disabled  = "true";
+        	get_by_id("update").disabled  = "true";
+    	}
+
+	}
+    
+    function clear_row(){
+        get_by_id("edit_row").value = "-1";
+        change_color("table1", -1);
+        location.href = "protocol_filter.htm";
+    }
+    
+	function send_request()
+	{		
+		var rule_enable = get_checked_value(get_by_name("enable"));
+		var protocol_name = get_by_id("protocol_name").value;
+		var protocol_type = get_by_id("protocol").value;
+		var start_port = get_by_id("start_port").value;
+		var end_port = get_by_id("end_port").value;
+		var start_ip = get_by_id("start_ip").value;
+		var end_ip = get_by_id("end_ip").value;
+		
+		var start_ip_addr_msg = replace_msg(all_ip_addr_msg,get_words('_StartIPaddr'));
+		var end_ip_addr_msg = replace_msg(all_ip_addr_msg,get_words('_EndIPaddr'));
+		
+		var temp_start_ip_obj = new addr_obj(start_ip.split("."), start_ip_addr_msg, true, false);
+		var temp_end_ip_obj = new addr_obj(end_ip.split("."), end_ip_addr_msg, true, false);
+		
+		//var temp_LAN_ip_obj = new addr_obj(get_by_id("cur_ipaddr").value.split("."), all_ip_addr_msg, false, false);
+		//var temp_mask_obj = new addr_obj(get_by_id("cur_netmask").value.split("."), subnet_mask_msg, false, false);
+		var temp_LAN_ip_obj = new addr_obj(lan_ip.split("."), all_ip_addr_msg, false, false);
+		var temp_mask_obj = new addr_obj(lan_mask.split("."), subnet_mask_msg, false, false);
+		
+		//timeline check
+		var tcp_timeline = "";
+		var udp_timeline = "";
+		var ip_timeline = ""; 
+		
+		var check_port2 = function(port){
+			var temp_port = port.split(" ");
+    
+			if (isNaN(port) || port == "" || temp_port.length > 1 || (parseInt(port) < 1 || parseInt(port) > 65535)){
+				return false;
+			}
+			return true;
+		};
+		//alert(array_rules_portstart.length);
+		
+		//confirm input start port and end port not equal
+
+		if (protocol_name == ""){
+			alert(msg[MSG18]);
+			return false;
+		}
+		
+		if (!check_port2(start_port)){
+			alert(msg[MSG25]);	
+			return false;
+		}
+			
+		if (!check_port2(end_port)){
+				alert(msg[MSG25]);	
+				return false;
+		}
+		
+		if(get_by_id("start_ip").value != "")
+		{
+			if (!check_address(temp_start_ip_obj))
+			{
+				return false;
+			}
+			if (!check_domain(temp_LAN_ip_obj, temp_mask_obj, temp_start_ip_obj))
+			{
+               	alert(addstr(msg[MSG3], get_words('_StartIPaddr')));
+              	return false;
+            }
+			if(start_ip == "0.0.0.0")
+				end_ip = "0.0.0.0";
+		}
+		else
+		{
+			set_checked("0", get_by_name("enable"));
+			start_ip = "0.0.0.0";
+			end_ip = "0.0.0.0";
+		}
+		
+		if (get_by_id("end_ip").value != "")
+		{
+			if (!check_address(temp_end_ip_obj)){
+				return false;
+			}
+			
+			if (!check_domain(temp_LAN_ip_obj, temp_mask_obj, temp_end_ip_obj)){
+				alert(addstr(msg[MSG3],get_words('_EndIPaddr')));
+				return false;
+			}
+			if(end_ip == "0.0.0.0")
+            	start_ip = "0.0.0.0";
+		}
+		else
+		{
+			set_checked("0", get_by_name("enable"));
+            start_ip = "0.0.0.0";
+			end_ip = "0.0.0.0";
+		}
+					
+		if(start_ip != "" && start_ip != "0.0.0.0" && end_ip != "" && end_ip != "0.0.0.0")
+		{
+			if (!check_ip_order(temp_start_ip_obj, temp_end_ip_obj)){
+				alert(msg[MSG4]);
+				return false;
+			}
+		}
+
+		//add input value to timeline
+		if(rule_enable == "1")
+		{
+			if((end_port != "") && (start_port != end_port))
+			{
+				if((protocol_type  == "TCP") || (protocol_type  == "Any"))
+				{
+					if(check_timeline(tcp_timeline)== true)
+						tcp_timeline = add_into_timeline(tcp_timeline, start_port, end_port);
+				}
+				else if((protocol_type  == "UDP") || (protocol_type  == "Any"))
+				{
+					if(check_timeline(udp_timeline)== true)
+						udp_timeline = add_into_timeline(udp_timeline, start_port, end_port);
+				}
+			}
+			else
+			{
+				if((protocol_type  == "TCP") || (protocol_type  == "Any"))
+				{
+					if(check_timeline(tcp_timeline)== true)
+						tcp_timeline = add_into_timeline(tcp_timeline, start_port, "");
+				}
+				else if((protocol_type  == "UDP") || (protocol_type  == "Any"))
+				{
+					if(check_timeline(udp_timeline)== true)
+						udp_timeline = add_into_timeline(udp_timeline, start_port, "");
+				}
+
+			}
+		}
+
+		
+		var index = "";
+		index = parseInt(get_by_id("edit_row").value,10);
+		//double name check
+		for(i=0;i<DataArray.length;i++)
+		{
+			if(DataArray[i].Name == protocol_name)
+			{
+				if(DataArray[i].Name != "" && index==(DataArray[i].OnList))
+				{
+					continue;
+				}
+				else
+				{
+					alert(addstr(msg[MSG41],"Filter name"));
+					return false;
+				}			
+			}
+			
+			//add Timeline check
+			if((index == "NaN") || (index != DataArray[i].OnList))
+			{
+				if(DataArray[i].Enable == "1")
+				{
+					if((DataArray[i].Protocol == "TCP") || (DataArray[i].Protocol == "Any"))
+					{
+						if((DataArray[i].End_port != "") && (DataArray[i].Start_port != DataArray[i].End_port))
+						{
+							if(check_timeline(tcp_timeline)== true)
+								tcp_timeline = add_into_timeline(tcp_timeline, DataArray[i].Start_port, DataArray[i].End_port);
+						}
+						else
+						{
+							if(check_timeline(tcp_timeline)== true)
+								tcp_timeline = add_into_timeline(tcp_timeline, DataArray[i].Start_port, "");
+						}
+								
+					}					
+					if((DataArray[i].Protocol == "UDP") || (DataArray[i].Protocol == "Any"))
+					{
+						if((DataArray[i].End_port != "") && (DataArray[i].Start_port != DataArray[i].End_port))
+						{
+							if(check_timeline(udp_timeline)== true)
+								udp_timeline = add_into_timeline(udp_timeline, DataArray[i].Start_port, DataArray[i].End_port);
+						}
+						else
+						{
+							if(check_timeline(udp_timeline)== true)
+								udp_timeline = add_into_timeline(udp_timeline, DataArray[i].Start_port, "");
+						}
+							
+					}
+
+					//check timeline
+					if(check_timeline(udp_timeline)== false)
+					{
+						alert(get_words('_MSG76'));
+						return false;
+					}
+					if(check_timeline(tcp_timeline)== false)
+					{
+						alert(get_words('_MSG76'));
+						return false;
+					}
+					
+				}
+			}
+		}
+
+			/*if((DataArray[i].Protocol == protocol_type) || (DataArray[i].Protocol == "Any"))
+			{
+				if ((ip_start == DataArray[i].Start_ip) && (ip_end == DataArray[i].End_ip) && (port_start == DataArray[i].Start_port) && (port_end == DataArray[i].End_port))
+				{
+		            if(index==(DataArray[i].OnList))
+					{
+		            	continue;
+					}
+					else{		// if add a new port forwarding
+						alert(addstr(msg[MSG28],""));	
+						return false;
+					}
+				}
+			}
+			*/
+			/*
+			if(DataArray[i].Protocol == get_by_id("protocol").value){
+				var port_start = parseInt(get_by_id("start_port").value);
+				var port_end = parseInt(get_by_id("end_port").value);
+				if (((port_start >= DataArray[i].Start_port) && (port_start <= DataArray[i].End_port)) || 
+		            ((port_end >= DataArray[i].Start_port) && (port_end <= DataArray[i].End_port)) || 
+		            ((DataArray[i].Start_port >= port_start) && (DataArray[i].Start_port <= port_end)) || 
+		            ((DataArray[i].End_port >= port_start) && (DataArray[i].End_port <= port_end))){
+		            if(index==(DataArray[i].OnList)){
+		            	continue;
+					}else{		// if add a new port forwarding
+						alert(addstr(msg[MSG28],""));	
+						return false;
+					}
+				}
+			}*/
+		
+		//save data ::edit
+		if(index > -1){
+			DataArray[index].Enable = get_checked_value(get_by_name("enable"));
+			DataArray[index].Name = protocol_name;
+			DataArray[index].Protocol = get_by_id("protocol").value;
+			DataArray[index].Start_port = start_port;
+			DataArray[index].End_port = end_port;
+			DataArray[index].Start_ip = start_ip;
+			DataArray[index].End_ip = end_ip;
+			update_filter(index);
+		}else{//save add data
+			var max_num = DataArray.length;
+			if(parseInt(max_num,10)>rule_max_num){
+				alert(get_words('_MSG40')+" "+ rule_max_num)
+				return false;
+			}
+			DataArray[DataArray.length++] = new Data(get_checked_value(get_by_name("enable")), protocol_name, get_by_id("protocol").value, start_port, end_port, start_ip, end_ip, "Always", DataArray.length);
+			add_filter();
+		}
+		save_to_cfg();
+		get_by_id("reboot_type").value = get_words('__filter');
+    	return true;
+	}
+
+	function save_to_cfg(){
+		for(k=0; k<rule_max_num; k++){
+			var now_num = k;
+			if(parseInt(k,10)<10){
+				now_num = "0"+k;
+			}
+			var temp_block = "";
+			if(k<DataArray.length){
+				temp_block = DataArray[k].Enable +"/"+ DataArray[k].Name + "/" + DataArray[k].Protocol
+					+ "/" + DataArray[k].Start_port + "/" + DataArray[k].End_port
+					+ "/" + DataArray[k].Start_ip +"/"+ DataArray[k].End_ip + "/" + DataArray[k].Schedule;
+			}
+			get_by_id("block_service_"+now_num).value = temp_block;
+		}
+	}
+	
+	function config_submit_items(instStr)
+	{
+		get_by_id("submit_items").innerHTML = '<input type="hidden" name="ipFilter_Enable_'+instStr+'" id="ipFilter_Enable_'+instStr+'" value="">';
+		get_by_id("submit_items").innerHTML += '<input type="hidden" name="ipFilter_Name_'+instStr+'" id="ipFilter_Name_'+instStr+'" value="">';
+		get_by_id("submit_items").innerHTML += '<input type="hidden" name="ipFilter_Protocol_'+instStr+'" id="ipFilter_Protocol_'+instStr+'" value="">';
+		get_by_id("submit_items").innerHTML += '<input type="hidden" name="ipFilter_PortStart_'+instStr+'" id="ipFilter_PortStart_'+instStr+'" value="">';
+		get_by_id("submit_items").innerHTML += '<input type="hidden" name="ipFilter_PortEnd_'+instStr+'" id="ipFilter_PortEnd_'+instStr+'" value="">';
+		get_by_id("submit_items").innerHTML += '<input type="hidden" name="ipFilter_IPAddressStart_'+instStr+'" id="ipFilter_IPAddressStart_'+instStr+'" value="">';
+		get_by_id("submit_items").innerHTML += '<input type="hidden" name="ipFilter_IPAddressEnd_'+instStr+'" id="ipFilter_IPAddressEnd_'+instStr+'" value="">';
+
+		get_by_id("ipFilter_Enable_"+instStr).value = get_checked_value(get_by_name("enable"));
+		get_by_id("ipFilter_Name_"+instStr).value = get_by_id("protocol_name").value;
+		get_by_id("ipFilter_Protocol_"+instStr).value = get_by_id("protocol").selectedIndex;
+		get_by_id("ipFilter_PortStart_"+instStr).value = get_by_id("start_port").value;
+		get_by_id("ipFilter_PortEnd_"+instStr).value = get_by_id("end_port").value;
+		get_by_id("ipFilter_IPAddressStart_"+instStr).value = get_by_id("start_ip").value;
+		get_by_id("ipFilter_IPAddressEnd_"+instStr).value = get_by_id("end_ip").value;		
+	}
+	
+	function add_filter()
+	{
+		param.arg = "ccp_act=queryInst&num_inst=1";
+		param.arg +="&oid_1=IGD_IPFilter_i_&inst_1=10000";
+		get_config_obj(param);
+		var instStr = config_val("newInst");
+		config_submit_items(instStr);
+		send_submit("form2");
+	}
+	
+	function update_filter(index)
+	{
+		var instStr = "1."+ array_rules_inst[index][1] +".0.0.0";
+		config_submit_items(instStr);
+		send_submit("form2");
+	}
+</SCRIPT>
+</head>
+<body onLoad="MM_preloadImages('but_wizard_1.gif','but_status_1.gif','but_tools_1.gif','but_main_1.gif','but_wireless_1.gif','but_routing_1.gif','but_access_1.gif','but_management_1.gif','but_help1_1.gif');">
+<table width="750" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="21"><img src="c1_tl.gif" width="21" height="21" /></td>
+    <td width="708" background="bg1_t.gif"><img src="top_1.gif" width="390" height="21" /></td>
+    <td width="21"><img src="c1_tr.gif" width="21" height="21" /></td>
+  </tr>
+  <tr>
+    <td valign="top" background="bg1_l.gif"><img src="top_2.gif" width="21" height="69" /></td>
+    <td background="bg.gif"><table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="13%"><img src="logo.gif" /></td>
+        <td width="87%" align="right"><img src="description.gif" /></td>
+      </tr>
+    </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="20%" height="429" valign="top"><table width="56%" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td onclick="location.href='lan.htm'"> 
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');"> 
+				<tr> 
+					<td class="menu_nw"></td> 
+					<td class="menu_n"></td> 
+					<td class="menu_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_w"></td> 
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG749');</script></td> 
+					<td class="menu_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sw"></td> 
+					<td class="menu_s"></td> 
+					<td class="menu_se"></td> 
+				</tr> 
+				</table>	
+				</a></td> 
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='wireless_basic.htm'"> 
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');"> 
+				<tr> 
+					<td class="menu_nw"></td> 
+					<td class="menu_n"></td> 
+					<td class="menu_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_w"></td> 
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wireless');</script></td> 
+					<td class="menu_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sw"></td> 
+					<td class="menu_s"></td> 
+					<td class="menu_se"></td> 
+				</tr> 
+				</table> 
+				</td> 
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='status.htm'"> 
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');"> 
+				<tr> 
+					<td class="menu_nw"></td> 
+					<td class="menu_n"></td> 
+					<td class="menu_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_w"></td> 
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG748');</script></td> 
+					<td class="menu_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sw"></td> 
+					<td class="menu_s"></td> 
+					<td class="menu_se"></td> 
+				</tr> 
+				</table> 
+				</td> 
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='static_routing.htm'"> 
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');"> 
+				<tr> 
+					<td class="menu_nw"></td> 
+					<td class="menu_n"></td> 
+					<td class="menu_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_w"></td> 
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG747');</script></td> 
+					<td class="menu_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sw"></td> 
+					<td class="menu_s"></td> 
+					<td class="menu_se"></td> 
+				</tr> 
+				</table> 
+				</td> 
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='filters.htm'"> 
+				<table class="menu_tb"> 
+				<tr> 
+					<td class="menu_sel_nw"></td> 
+					<td class="menu_sel_n"></td> 
+					<td class="menu_sel_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sel_w"></td> 
+					<td class="menu_sel_m"><b>&nbsp;&nbsp;<script>show_words('_Access');</script></td> 
+					<td class="menu_sel_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sel_sw"></td> 
+					<td class="menu_sel_s"></td> 
+					<td class="menu_sel_se"></td> 
+				</tr> 
+				</table> 
+				</td> 
+              </tr>
+              <tr>
+                <td><table width="100%" border="0" cellpadding="2" class="submenubg">
+                    <tr>
+                      <td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td width="87%"><a href="filters.htm" class="submenus"><b><u><script>show_words('_Filter')</script> </u></b></a></td>
+                    </tr>
+                    <!--<tr>
+                  <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                  <td><a href="inbound_filter.htm" class="submenus"><b><script>show_words('_MSG736')</script> </b></a></td>
+                </tr>-->
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="virtual_server.htm" class="submenus"><b><script>show_words('_VirtualSer')</script> </b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="special_ap.htm" class="submenus"><b><script>show_words('_SpecialAP')</script> </b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="dmz.htm" class="submenus"><b><script>show_words('_DMZ')</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="firewall_setting.htm" class="submenus"><b><script>show_words('_FirewallRule')</script></b></a></td>
+                    </tr>
+                </table></td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='snmp.htm'"> 
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');"> 
+				<tr> 
+					<td class="menu_nw"></td> 
+					<td class="menu_n"></td> 
+					<td class="menu_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_w"></td> 
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG746');</script></td> 
+					<td class="menu_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sw"></td> 
+					<td class="menu_s"></td> 
+					<td class="menu_se"></td> 
+				</tr> 
+				</table> 
+				</td> 
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='restart.htm'"> 
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');"> 
+				<tr> 
+					<td class="menu_nw"></td> 
+					<td class="menu_n"></td> 
+					<td class="menu_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_w"></td> 
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Tools');</script></td> 
+					<td class="menu_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sw"></td> 
+					<td class="menu_s"></td> 
+					<td class="menu_se"></td> 
+				</tr> 
+				</table> 
+				</td> 
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="show_wizard('wizard.htm',login_Info)"> 
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');"> 
+				<tr> 
+					<td class="menu_nw"></td> 
+					<td class="menu_n"></td> 
+					<td class="menu_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_w"></td> 
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wizard');</script></td> 
+					<td class="menu_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sw"></td> 
+					<td class="menu_s"></td> 
+					<td class="menu_se"></td> 
+				</tr> 
+				</table> 
+				</td> 
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="15" height="15"></td>
+              </tr>
+            </table>
+            <p>&nbsp;</p>
+              <p>&nbsp;</p></td>
+            <td width="2%"><img src="spacer.gif" width="15" height="15" /></td>
+            <td width="78%" valign="top"><table width="98%" border="0" cellpadding="0" cellspacing="0" class="tabBigTitle">
+                <tr>
+                  <td class="headerbg2"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                      <tr>
+                        <td width="79%"><font color="#FFFFFF" class="textheader" style="margin-left:0; padding-left:0"><script>show_words('_Filter')</script></font></td>
+                        <td width="21%"><input name="button" type="button" id="help_btn" class="ButtonHelp" onclick="MM_openBrWindow('help_access.htm#access_protocol_filter','','scrollbars=yes,resizable=yes,width=800,height=550')" value="  " />
+								<script>$('#help_btn').val(get_words('_Help'));</script>
+                        </td>
+                      </tr>
+                  </table></td>
+                </tr>
+                <tr>
+                  <td valign="top">
+				  <form id="form3" name="form3" method="post" action="get_set.ccp">
+					<input type="hidden" name="ccp_act" value="del">
+					<input type="hidden" name="ccpSubEvent" value="CCP_SUB_IPFILTER">
+					<input type="hidden" name="nextPage" value="protocol_filter.htm">	
+					<input type="hidden" name="num_inst" id="num_inst" value="1">
+					<input type="hidden" name="oid_1" id="oid_1" value="IGD_IPFilter_i_">
+					<input type="hidden" name="inst_1" id="inst_1" value="">
+				  </form>
+				  
+				  <form id="form2" name="form2" method="post" action="get_set.ccp">
+					<input type="hidden" name="ccp_act" value="set">
+					<input type="hidden" name="ccpSubEvent" value="CCP_SUB_IPFILTER">
+					<input type="hidden" name="nextPage" value="protocol_filter.htm">	
+					<span id="submit_items">
+					</span>
+				  </form>
+				  
+				  <form id="form1" name="form1" method="post" action="apply.cgi">
+                    <input type="hidden" name="html_response_page" value="back.htm">
+                    <input type="hidden" name="html_response_message" value="Settings Saved">
+                    <input type="hidden" name="html_response_return_page" value="protocol_filter.htm">
+                    <input type="hidden" id="reboot_type" name="reboot_type" value="none">
+                    <input type="hidden" id="cur_ipaddr" name="cur_ipaddr" value='<% CmoGetCfg("lan_ipaddr","none"); %>'>
+                    <input type="hidden" id="cur_netmask" name="cur_netmask" value='<% CmoGetCfg("lan_netmask","none"); %>'>
+                    <input type="hidden" id="block_service_00" name="block_service_00" value='<% CmoGetCfg("block_service_00","none"); %>'>
+                    <input type="hidden" id="block_service_01" name="block_service_01" value='<% CmoGetCfg("block_service_01","none"); %>'>
+                    <input type="hidden" id="block_service_02" name="block_service_02" value='<% CmoGetCfg("block_service_02","none"); %>'>
+                    <input type="hidden" id="block_service_03" name="block_service_03" value='<% CmoGetCfg("block_service_03","none"); %>'>
+                    <input type="hidden" id="block_service_04" name="block_service_04" value='<% CmoGetCfg("block_service_04","none"); %>'>
+                    <input type="hidden" id="block_service_05" name="block_service_05" value='<% CmoGetCfg("block_service_05","none"); %>'>
+                    <input type="hidden" id="block_service_06" name="block_service_06" value='<% CmoGetCfg("block_service_06","none"); %>'>
+                    <input type="hidden" id="block_service_07" name="block_service_07" value='<% CmoGetCfg("block_service_07","none"); %>'>
+                    <input type="hidden" id="block_service_08" name="block_service_08" value='<% CmoGetCfg("block_service_08","none"); %>'>
+                    <input type="hidden" id="block_service_09" name="block_service_09" value='<% CmoGetCfg("block_service_09","none"); %>'>
+                    <input type="hidden" id="block_service_10" name="block_service_10" value='<% CmoGetCfg("block_service_10","none"); %>'>
+                    <input type="hidden" id="block_service_11" name="block_service_11" value='<% CmoGetCfg("block_service_11","none"); %>'>
+                    <input type="hidden" id="block_service_12" name="block_service_12" value='<% CmoGetCfg("block_service_12","none"); %>'>
+                    <input type="hidden" id="block_service_13" name="block_service_13" value='<% CmoGetCfg("block_service_13","none"); %>'>
+                    <input type="hidden" id="block_service_14" name="block_service_14" value='<% CmoGetCfg("block_service_14","none"); %>'>
+                    <input type="hidden" id="block_service_15" name="block_service_15" value='<% CmoGetCfg("block_service_15","none"); %>'>
+                    <input type="hidden" id="block_service_16" name="block_service_16" value='<% CmoGetCfg("block_service_16","none"); %>'>
+                    <input type="hidden" id="block_service_17" name="block_service_17" value='<% CmoGetCfg("block_service_17","none"); %>'>
+                    <input type="hidden" id="block_service_18" name="block_service_18" value='<% CmoGetCfg("block_service_18","none"); %>'>
+                    <input type="hidden" id="block_service_19" name="block_service_19" value='<% CmoGetCfg("block_service_19","none"); %>'>
+                    <input type="hidden" id="edit_row" name="edit_row">
+                    <table width="98%" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#333333">
+                      <tr>
+                        <td align="right" valign="top" nowrap bgcolor="#FFFFFF" class="bgblue"><script>show_words('_Filters')</script></td>
+                        <td width="80%" valign="top"  class="bggrey"><script>show_words('_MSG3')</script> <br>
+                                  <br>
+                                  <table width="100%" border="0" cellpadding="3" cellspacing="0">
+                                    <tr>
+                                      <td width="5%"><input type=radio name=filters value=0 onClick="location.href='filters.htm'"></td>
+                                      <td><b><script>show_words('_MacFilter')</script></b></td>
+                                      <td width="50%">&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                      <td><input type=radio name="filters" onClick="location.href='domain_filter.htm'"></td>
+                                      <td><b><script>show_words('_DomainUrlBlocking')</script></b></td>
+                                      <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                      <td><input type="radio" name="filters" checked></td>
+                                      <td><b><u><script>show_words('_Protocol_IP_Filters')</script></u></b></td>
+                                      <td>&nbsp;</td>
+                                    </tr>
+                                </table></td>
+                      </tr>
+                    </table>
+                    <br>
+                    <table width="98%" height="137" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#333333">
+                      <tr>
+                        <td height="10" colspan="2" bgcolor="#FFFFFF" class="greybluebg"><script>show_words('_ifmsg1')</script></td>
+                      </tr>
+                      <tr>
+                        <td width="140" height="10" align="right" nowrap bgcolor="#FFFFFF" class="bgblue"><font face="Arial"><script>show_words('_Enabled')</script></font></td>
+                        <td width="80%" class="bggrey"><font face="Arial">
+                          <input type="radio" name="enable" value="1">
+                          </font><script>show_words('_Enabled')</script>&nbsp;&nbsp;&nbsp;
+                          <input type="radio" name="enable" value="0">
+                            <script>show_words('_Disabled')</script></td>
+                      </tr>
+                      <tr>
+                        <td width="140" height="10" align="right" bgcolor="#FFFFFF" class="bgblue"><font face="Arial"><script>show_words('_Name')</script></font></td>
+                        <td class="bggrey"><input type="text" id="protocol_name" name="protocol_name" size="32" maxlength="31"></td>
+                      </tr>
+                      <tr>
+                        <td width="140" height="10" align="right" bgcolor="#FFFFFF" class="bgblue"><font face="Arial"><script>show_words('_Protocol')</script></font></td>
+                        <td class="bggrey"><font face="Arial">
+                          <select size="1" id="protocol" name="protocol">
+                            <option value="TCP"><script>show_words('_TCP')</script></option>
+                            <option value="UDP"><script>show_words('_UDP')</script></option>
+                            <option value="Any">*</option>
+                          </select>
+                        </font></td>
+                      </tr>
+                      <tr>
+                        <td width="140" height="10" align="right" bgcolor="#FFFFFF" class="bgblue"><font face="Arial"><script>show_words('_Port')</script> </font></td>
+                        <td class="bggrey"><font face="Arial">
+                          <input type="text" id="start_port" name="start_port" size="6" maxlength="5">
+                          -
+                          <input type="text" id="end_port" name="end_port" size="6" maxlength="5">
+                        </font></td>
+                      </tr>
+                      <tr>
+                        <td width="140" height="10" align="right" bgcolor="#FFFFFF" class="bgblue"><font face="Arial"><script>show_words('_IPRange')</script> </font></td>
+                        <td class="bggrey"><font face="Arial">
+                          <input type="text" id="start_ip" name="start_ip" size="16" maxlength="15">
+                          -
+                          <input type="text" id="end_ip" name="end_ip" size="16" maxlength="15">
+                        </font></td>
+                      </tr>
+                      <tr>
+                        <td height="10" align="right" bgcolor="#FFFFFF" class="bgblue">&nbsp;</td>
+                        <td bgcolor="#FFFFFF" class="bggrey2"><input name="add" type="button" class="ButtonSmall" id="add" onClick="return send_request()" value="">
+								<script>$('#add').val(get_words('_Add'));</script>
+                            <input name="update" type="button" disabled class="ButtonSmall" id="update" onClick="return send_request()" value="">
+									<script>$('#update').val(get_words('_update'));</script>
+                            <br>
+                        <input name="del" type="button" disabled class="ButtonSmall" id="del" onClick="return del_row()" value="">
+									<script>$('#del').val(get_words('_Delete'));</script>
+                            <input id="cancel" name="cancel" type="button" class="ButtonSmall" onClick="clear_row()" value="">
+								<script>$('#cancel').val(get_words('_Cancel'));</script>
+                        </td>
+                      </tr>
+                    </table>
+                  </form>
+                    <br>
+                    <table width="98%" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#333333" id="table1">
+                      <tr align="center" bgcolor="#DDDDDD">
+                        <td width="40" bgcolor="#DDDDDD">&nbsp;</td>
+                        <td width="130" bgcolor="#DDDDDD"><b><script>show_words('_Name')</script></b></td>
+                        <td width="110" bgcolor="#DDDDDD"><b><script>show_words('_Protocol')</script></b></td>
+                        <td width="130" bgcolor="#DDDDDD"><b><script>show_words('_PortRange')</script></b></td>
+                        <td width="300" bgcolor="#DDDDDD"><b><script>show_words('_IPRange')</script></b></td>
+                      </tr>
+                      <script>DataShow();</script>
+                    </table>
+                    <br>
+                  </td>
+                </tr>
+            </table></td>
+          </tr>
+      </table></td>
+    <td background="bg1_r.gif">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><img src="c1_bl.gif" width="21" height="20" /></td>
+    <td align="right" background="bg1_b.gif"><img src="copyright.png" width="264" height="20" /></td>
+    <td><img src="c1_br.gif" width="21" height="20" /></td>
+  </tr>
+</table>
+<script>
+var login_who=login_Info;
+    if(login_who != "w")
+    {
+		get_by_id("add").disabled  = "true";
+        get_by_id("del").disabled  = "true";
+        get_by_id("cancel").disabled  = "true";
+        get_by_id("update").disabled  = "true";
+	}
+</script>
+</body>
+</html>

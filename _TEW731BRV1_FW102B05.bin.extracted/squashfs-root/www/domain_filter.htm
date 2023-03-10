@@ -1,0 +1,645 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;">
+<title>TRENDNET | modelName | Access | Domain Blocking</title>
+<link rel="stylesheet" href="style.css" type="text/css">
+<script language="JavaScript" src="uk.js"></script>
+
+<script language="JavaScript" src="public_js/public.js"></script>
+<script language="Javascript" src="js/jquery-1.3.2.min.js"></script>
+<script language="Javascript" src="js/xml.js"></script>
+<script language="Javascript" src="js/object.js"></script>
+<SCRIPT LANGUAGE="JavaScript">
+	var dev_info = get_router_info();
+
+	var hw_version 	= dev_info.hw_ver;
+	var version 	= dev_info.fw_ver;
+	var model		= dev_info.model;
+	var login_Info 	= dev_info.login_info;
+	var cli_mac 	= dev_info.cli_mac;
+	
+	var param = {
+		url: "get_set.ccp",
+		arg: ""
+	};
+	param.arg = "ccp_act=get&num_inst=2";
+	param.arg +="&oid_1=IGD_URLFilter_&inst_1=11000";
+	param.arg +="&oid_2=IGD_URLFilter_URLList_i_&inst_2=11000";
+	get_config_obj(param);
+	
+	var current_rules = 0;
+	var array_rules_name = config_str_multi("urlFilterList_ManagedURL_");
+	if(array_rules_name != null)
+		current_rules = array_rules_name.length;
+		
+	var array_rules_inst 		= config_inst_multi("IGD_URLFilter_URLList_i_");
+	
+	function loadSettings(){
+		var act = "0";
+		if(config_val("urlFilter_Action_"))
+			act = config_val("urlFilter_Action_");
+			
+		set_checked(act, get_by_name("url_domain_filter_type"));
+		
+		tbox=get_by_id("blocked_domain_list");
+		var tempkeyword;
+		/*
+		for(i=0;i<40;i++){
+			var k = i;
+			if(i<10){
+				k="0"+k;
+			}
+			if(get_by_id("url_domain_filter_"+k).value.length>0){
+				tempkeyword=decodeURIComponent(get_by_id("url_domain_filter_"+k).value)
+				tbox.options[i]=new Option(tempkeyword,tempkeyword);
+				get_by_id("url_domain_filter_"+k).value ="";
+			}
+		}
+		*/
+		
+		for(i=0; i<current_rules;i++)
+		{
+			tempkeyword=decodeURIComponent(array_rules_name[i]);
+			tbox.options[i]=new Option(tempkeyword,tempkeyword);
+			//get_by_id("url_domain_filter_"+k).value ="";
+		}
+		
+		show_table();
+	}
+	
+	function enable_del_button(){
+		if (get_by_id("blocked_domain_list").length > 0){
+			get_by_id("del_blocked").disabled = false;
+		}
+	}
+	
+	function show_table(){
+	
+		var mode = get_by_name("url_domain_filter_type");
+		var tbox=get_by_id("blocked_domain_list");
+		var blocked_domain_list = get_by_id("blocked_domain_list");
+		get_by_id("blocked_table").style.display = "none";
+		get_by_id("blocked_table2").style.display = "none";
+		if(!mode[0].checked){
+			get_by_id("blocked_table").style.display = "";	
+			get_by_id("blocked_table2").style.display = "";
+			for(i=0;i < blocked_domain_list.length;i++){
+			var k=i;
+			if(k<10){
+				k="0"+i;
+			}
+			get_by_id("url_domain_filter_"+k).value = get_by_id("blocked_domain_list").options[i].value;
+		}
+		}
+	}
+	
+	function send_request(act){
+		var mode = get_by_name("url_domain_filter_type");
+		var blocked_domain = get_by_id("blocked_domain").value;
+		var blocked_domain_list = get_by_id("blocked_domain_list");
+		
+		if (!mode[0].checked){
+			if (blocked_domain != ""){
+				for (var i = 0; i < blocked_domain_list.length; i++){
+					if (blocked_domain == blocked_domain_list.options[i].value){
+						alert(addstr(msg[MSG23],get_words('__domain')));
+						get_by_id("blocked_domain").value="";
+						return;
+					}
+				}
+			}
+		}
+		
+		if(act=="delete"){
+			var del_select_index=get_by_id("blocked_domain_list").selectedIndex;
+			var k=del_select_index;
+			get_by_id("blocked_domain_list").options[get_by_id("blocked_domain_list").selectedIndex]=null;			
+			k = (k<10)? "0"+del_select_index : k;
+						
+			var tmp_index = del_select_index;
+			for(i=del_select_index;i < blocked_domain_list.length;i++){
+				tmp_index = i;
+				tmp_index=(tmp_index<10)? "0"+i : tmp_index;
+				get_by_id("url_domain_filter_"+tmp_index).value = get_by_id("blocked_domain_list").options[i].value;				
+			}
+			tmp_index=(blocked_domain_list.length < 10)? "0"+blocked_domain_list.length : blocked_domain_list.length;
+			get_by_id("url_domain_filter_"+tmp_index).value = "";		
+		}else{
+			var tbox=get_by_id("blocked_domain_list");
+			var tbox_length=get_by_id("blocked_domain_list").length;
+			var domain_t = get_by_id("blocked_domain").value;
+			var is_legal_domain = false;
+			var if_blank_in_domain = false;
+			
+			// deny empty string
+			if(domain_t.length != 0){
+				for(var i=0;i<domain_t.length;i++){
+					if(domain_t.charAt(i) == " "){						
+						alert(get_words('li_msg143')+" '"+domain_t+"' "+get_words('li_msg144'));
+						break;
+					}
+					if(i==domain_t.length-1)
+						is_legal_domain = true;
+				}
+			}
+			if(is_legal_domain)
+				tbox.options[tbox_length]=new Option(domain_t,domain_t);
+			get_by_id("blocked_domain").value ="";
+			//send_submit("form1");
+		}
+		
+		if(act!="delete")
+		{
+		//save to Text
+		for(i=0;i < blocked_domain_list.length;i++){
+			var k=i;
+			if(k<10){
+				k="0"+i;
+			}
+			get_by_id("url_domain_filter_"+k).value = get_by_id("blocked_domain_list").options[i].value;
+		}
+			//send_submit("form1");
+		}
+	}
+	
+		function apply(){			
+		send_submit("form1");
+	}
+	
+	function add_url()
+	{
+		var mode = get_by_name("url_domain_filter_type");
+		var blocked_domain = get_by_id("blocked_domain").value;
+		var temp_url = format_url(get_by_id("blocked_domain").value);
+		var blocked_domain_list = get_by_id("blocked_domain_list");
+		var block_domain_url;
+		
+		if (!mode[0].checked){
+			if (temp_url != ""){
+				for (var i = 0; i < blocked_domain_list.length; i++){
+					block_domain_url = format_url(blocked_domain_list.options[i].value);
+					if (temp_url == block_domain_url){
+						alert(addstr(msg[MSG23],get_words('__domain')));
+						get_by_id("blocked_domain").value="";
+						return;
+					}
+				}
+			}
+		}
+		
+		if(temp_url.length != 0){
+			for(var i=0;i<temp_url.length;i++){
+				if((temp_url.charAt(i) == " ") ||
+					(temp_url.charAt(i) == ";") ||
+					(temp_url.charAt(i) == "~")){						
+					alert(get_words('li_msg143')+" '"+temp_url+"' "+get_words('li_msg144'));
+					return;
+				}
+			}
+		}
+		
+		param.arg = "ccp_act=queryInst&num_inst=1";
+		param.arg +="&oid_1=IGD_URLFilter_URLList_i_&inst_1=11000";
+		get_config_obj(param);
+		var instStr = config_val("newInst");
+		
+		get_by_id("submit_items").innerHTML = '<input type="hidden" name="urlFilterList_ManagedURL_'+instStr+'" id="urlFilterList_ManagedURL_'+instStr+'" value="">';
+		
+		get_by_id("urlFilterList_ManagedURL_"+instStr).value = blocked_domain;
+		send_submit("form2");
+
+	}
+	
+	function del_url()
+	{
+		var index = get_by_id("blocked_domain_list").selectedIndex;
+		get_by_id("inst_1").value = "1.1."+ array_rules_inst[index][2] +".0.0";
+		send_submit("form3");
+	}
+	
+	function set_filter_action()
+	{
+		get_by_id("urlFilter_Action_1.1.0.0.0").value = get_checked_value(get_by_name("url_domain_filter_type"));
+		send_submit("form4");
+	}
+
+</SCRIPT>
+</head>
+<body onLoad="MM_preloadImages('but_wizard_1.gif','but_status_1.gif','but_tools_1.gif','but_main_1.gif','but_wireless_1.gif','but_routing_1.gif','but_access_1.gif','but_management_1.gif');loadSettings()">
+<table width="750" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="21"><img src="c1_tl.gif" width="21" height="21" /></td>
+    <td width="708" background="bg1_t.gif"><img src="top_1.gif" width="390" height="21" /></td>
+    <td width="21"><img src="c1_tr.gif" width="21" height="21" /></td>
+  </tr>
+  <tr>
+    <td valign="top" background="bg1_l.gif"><img src="top_2.gif" width="21" height="69" /></td>
+    <td background="bg.gif"><table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="13%"><img src="logo.gif" /></td>
+        <td width="87%" align="right"><img src="description.gif" /></td>
+      </tr>
+    </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="20%" height="429" valign="top"><table width="56%" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td onclick="location.href='lan.htm'"> 
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');"> 
+				<tr> 
+					<td class="menu_nw"></td> 
+					<td class="menu_n"></td> 
+					<td class="menu_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_w"></td> 
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG749');</script></td> 
+					<td class="menu_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sw"></td> 
+					<td class="menu_s"></td> 
+					<td class="menu_se"></td> 
+				</tr> 
+				</table>	
+				</a></td> 
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='wireless_basic.htm'"> 
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');"> 
+				<tr> 
+					<td class="menu_nw"></td> 
+					<td class="menu_n"></td> 
+					<td class="menu_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_w"></td> 
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wireless');</script></td> 
+					<td class="menu_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sw"></td> 
+					<td class="menu_s"></td> 
+					<td class="menu_se"></td> 
+				</tr> 
+				</table> 
+				</td> 
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='status.htm'"> 
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');"> 
+				<tr> 
+					<td class="menu_nw"></td> 
+					<td class="menu_n"></td> 
+					<td class="menu_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_w"></td> 
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG748');</script></td> 
+					<td class="menu_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sw"></td> 
+					<td class="menu_s"></td> 
+					<td class="menu_se"></td> 
+				</tr> 
+				</table> 
+				</td> 
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='static_routing.htm'"> 
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');"> 
+				<tr> 
+					<td class="menu_nw"></td> 
+					<td class="menu_n"></td> 
+					<td class="menu_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_w"></td> 
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG747');</script></td> 
+					<td class="menu_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sw"></td> 
+					<td class="menu_s"></td> 
+					<td class="menu_se"></td> 
+				</tr> 
+				</table> 
+				</td> 
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='filters.htm'"> 
+				<table class="menu_tb"> 
+				<tr> 
+					<td class="menu_sel_nw"></td> 
+					<td class="menu_sel_n"></td> 
+					<td class="menu_sel_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sel_w"></td> 
+					<td class="menu_sel_m"><b>&nbsp;&nbsp;<script>show_words('_Access');</script></td> 
+					<td class="menu_sel_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sel_sw"></td> 
+					<td class="menu_sel_s"></td> 
+					<td class="menu_sel_se"></td> 
+				</tr> 
+				</table> 
+				</td>
+              </tr>
+              <tr>
+                <td><table width="100%" border="0" cellpadding="2" class="submenubg">
+                    <tr>
+                      <td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td width="87%"><a href="filters.htm" class="submenus"><b><u><script>show_words('_Filter');</script> </u></b></a></td>
+                    </tr>
+                    <!--<tr>
+                  <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                  <td><a href="inbound_filter.htm" class="submenus"><b><script>show_words('_MSG736');</script> </b></a></td>
+                </tr>-->
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="virtual_server.htm" class="submenus"><b><script>show_words('_VirtualSer');</script> </b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="special_ap.htm" class="submenus"><b><script>show_words('_SpecialAP');</script> </b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="dmz.htm" class="submenus"><b><script>show_words('_DMZ');</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="firewall_setting.htm" class="submenus"><b><script>show_words('_FirewallRule');</script></b></a></td>
+                    </tr>
+                </table></td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='snmp.htm'"> 
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');"> 
+				<tr> 
+					<td class="menu_nw"></td> 
+					<td class="menu_n"></td> 
+					<td class="menu_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_w"></td> 
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG746');</script></td> 
+					<td class="menu_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sw"></td> 
+					<td class="menu_s"></td> 
+					<td class="menu_se"></td> 
+				</tr> 
+				</table> 
+				</td> 
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='restart.htm'"> 
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');"> 
+				<tr> 
+					<td class="menu_nw"></td> 
+					<td class="menu_n"></td> 
+					<td class="menu_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_w"></td> 
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Tools');</script></td> 
+					<td class="menu_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sw"></td> 
+					<td class="menu_s"></td> 
+					<td class="menu_se"></td> 
+				</tr> 
+				</table> 
+				</td> 
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="show_wizard('wizard.htm',login_Info)"> 
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');"> 
+				<tr> 
+					<td class="menu_nw"></td> 
+					<td class="menu_n"></td> 
+					<td class="menu_ne"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_w"></td> 
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wizard');</script></td> 
+					<td class="menu_e"></td> 
+				</tr> 
+				<tr> 
+					<td class="menu_sw"></td> 
+					<td class="menu_s"></td> 
+					<td class="menu_se"></td> 
+				</tr> 
+				</table> 
+				</td> 
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="15" height="15"></td>
+              </tr>
+            </table>
+            </td>
+            <td width="2%"><img src="spacer.gif" width="15" height="15" /></td>
+            <td width="78%" valign="top"><table width="98%" border="0" cellpadding="0" cellspacing="0" class="tabBigTitle">
+                <tr>
+                  <td class="headerbg2"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                    <tr>
+                      <td width="79%"><font color="#FFFFFF" class="textheader" style="margin-left:0; padding-left:0"><script>show_words('_Filter');</script> </font></td>
+                      <td width="21%"><input name="button" type="button" id="help_btn" class="ButtonHelp" onclick="MM_openBrWindow('help_access.htm#access_domain_filter','','scrollbars=yes,resizable=yes,width=800,height=550')" value="" />
+							<script>$('#help_btn').val(get_words('_Help'));</script>
+                      </td>
+                    </tr>
+                  </table>                    </td>
+                </tr>
+                <tr>
+                  <td valign="top">
+				  <form id="form4" name="form4" method="post" action="get_set.ccp">
+				  
+					<input type="hidden" name="ccp_act" value="set">
+					<input type="hidden" name="ccpSubEvent" value="CCP_SUB_URLFILTER">
+					<input type="hidden" name="nextPage" value="domain_filter.htm">	
+					<input type="hidden" name="urlFilter_Action_1.1.0.0.0" id="urlFilter_Action_1.1.0.0.0" value="">
+				  </form>
+				  <form id="form3" name="form3" method="post" action="get_set.ccp">
+					<input type="hidden" name="ccp_act" value="del">
+					<input type="hidden" name="ccpSubEvent" value="CCP_SUB_URLFILTER">
+					<input type="hidden" name="nextPage" value="domain_filter.htm">	
+					<input type="hidden" name="num_inst" id="num_inst" value="1">
+					<input type="hidden" name="oid_1" id="oid_1" value="IGD_URLFilter_URLList_i_">
+					<input type="hidden" name="inst_1" id="inst_1" value="">
+				  </form>
+				  <form id="form2" name="form2" method="post" action="get_set.ccp">
+					<input type="hidden" name="ccp_act" value="set">
+					<input type="hidden" name="ccpSubEvent" value="CCP_SUB_URLFILTER">
+					<input type="hidden" name="nextPage" value="domain_filter.htm">	
+					<span id="submit_items">
+					</span>
+				  </form>
+				  <form id="form1" name="form1" method="post" action="apply.cgi">
+                    <input type="hidden" name="html_response_page" value="back.htm">
+                    <input type="hidden" name="html_response_message" value="Settings Saved">
+                    <input type="hidden" name="html_response_return_page" value="domain_filter.htm">
+                    <input type="hidden" id="reboot_type" name="reboot_type" value="filter">
+                    <input type="hidden" id="url_domain_filter_00" name="url_domain_filter_00" value='<% CmoGetCfg("url_domain_filter_00","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_01" name="url_domain_filter_01" value='<% CmoGetCfg("url_domain_filter_01","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_02" name="url_domain_filter_02" value='<% CmoGetCfg("url_domain_filter_02","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_03" name="url_domain_filter_03" value='<% CmoGetCfg("url_domain_filter_03","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_04" name="url_domain_filter_04" value='<% CmoGetCfg("url_domain_filter_04","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_05" name="url_domain_filter_05" value='<% CmoGetCfg("url_domain_filter_05","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_06" name="url_domain_filter_06" value='<% CmoGetCfg("url_domain_filter_06","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_07" name="url_domain_filter_07" value='<% CmoGetCfg("url_domain_filter_07","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_08" name="url_domain_filter_08" value='<% CmoGetCfg("url_domain_filter_08","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_09" name="url_domain_filter_09" value='<% CmoGetCfg("url_domain_filter_09","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_10" name="url_domain_filter_10" value='<% CmoGetCfg("url_domain_filter_10","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_11" name="url_domain_filter_11" value='<% CmoGetCfg("url_domain_filter_11","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_12" name="url_domain_filter_12" value='<% CmoGetCfg("url_domain_filter_12","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_13" name="url_domain_filter_13" value='<% CmoGetCfg("url_domain_filter_13","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_14" name="url_domain_filter_14" value='<% CmoGetCfg("url_domain_filter_14","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_15" name="url_domain_filter_15" value='<% CmoGetCfg("url_domain_filter_15","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_16" name="url_domain_filter_16" value='<% CmoGetCfg("url_domain_filter_16","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_17" name="url_domain_filter_17" value='<% CmoGetCfg("url_domain_filter_17","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_18" name="url_domain_filter_18" value='<% CmoGetCfg("url_domain_filter_18","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_19" name="url_domain_filter_19" value='<% CmoGetCfg("url_domain_filter_19","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_20" name="url_domain_filter_20" value='<% CmoGetCfg("url_domain_filter_20","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_21" name="url_domain_filter_21" value='<% CmoGetCfg("url_domain_filter_21","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_22" name="url_domain_filter_22" value='<% CmoGetCfg("url_domain_filter_22","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_23" name="url_domain_filter_23" value='<% CmoGetCfg("url_domain_filter_23","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_24" name="url_domain_filter_24" value='<% CmoGetCfg("url_domain_filter_24","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_25" name="url_domain_filter_25" value='<% CmoGetCfg("url_domain_filter_25","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_26" name="url_domain_filter_26" value='<% CmoGetCfg("url_domain_filter_26","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_27" name="url_domain_filter_27" value='<% CmoGetCfg("url_domain_filter_27","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_28" name="url_domain_filter_28" value='<% CmoGetCfg("url_domain_filter_28","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_29" name="url_domain_filter_29" value='<% CmoGetCfg("url_domain_filter_29","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_30" name="url_domain_filter_30" value='<% CmoGetCfg("url_domain_filter_30","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_31" name="url_domain_filter_31" value='<% CmoGetCfg("url_domain_filter_31","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_32" name="url_domain_filter_32" value='<% CmoGetCfg("url_domain_filter_32","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_33" name="url_domain_filter_33" value='<% CmoGetCfg("url_domain_filter_33","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_34" name="url_domain_filter_34" value='<% CmoGetCfg("url_domain_filter_34","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_35" name="url_domain_filter_35" value='<% CmoGetCfg("url_domain_filter_35","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_36" name="url_domain_filter_36" value='<% CmoGetCfg("url_domain_filter_36","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_37" name="url_domain_filter_37" value='<% CmoGetCfg("url_domain_filter_37","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_38" name="url_domain_filter_38" value='<% CmoGetCfg("url_domain_filter_38","none"); %>'>
+                    <input type="hidden" id="url_domain_filter_39" name="url_domain_filter_39" value='<% CmoGetCfg("url_domain_filter_39","none"); %>'>                   
+                     <table width="98%" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#333333">
+						<tr>
+                        <td align="right" valign="top" nowrap class="bgblue"><script>show_words('_Filters');</script></td>
+                        <td width="80%" class="bggrey"><script>show_words('_MSG3');</script> <br>
+                                  <br>
+                                  <table width="100%" border="0" cellpadding="3" cellspacing="0">
+                                    <tr>
+                                      <td width="5%"><input type="radio" name="filters" onClick="location.href='filters.htm'"></td>
+                                      <td width="40%"><b><script>show_words('_MacFilter');</script></b></td>
+                                      <td width="5%">&nbsp;</td>
+                                      <td width="50%">&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                      <td><input type="radio" name="filters" checked></td>
+                                      <td colspan="2"><b><u><script>show_words('_DomainUrlBlocking');</script></u></b></td>
+                                      <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                      <td><input type="radio" name="filters" onClick="location.href='protocol_filter.htm'"></td>
+                                      <td colspan="2"><b><script>show_words('_Protocol_IP_Filters');</script></b></td>
+                                      <td>&nbsp;</td>
+                                    </tr>
+                                </table></td>
+                      </tr>
+                      <tr>
+                        <td align="right" valign="top" class="bgblue"><script>show_words('_MSG739');</script> </td>
+                        <td class="bggrey"><table width="100%" border="0" cellpadding="3" cellspacing="1">
+                            <tr>
+                              <td width="7%" valign="top"><input type=radio name="url_domain_filter_type" value="0" onClick="show_table()"></td>
+                              <td width="93%" valign="top"><script>show_words('_Disabled');</script></td>
+                            </tr>
+                            
+                            <tr>
+                              <td valign="top"><input type=radio name="url_domain_filter_type" value="1" onClick="show_table()"></td>
+                              <td valign="top"><b><script>show_words('_Allow');</script></b> <script>show_words('_MSG6');</script></td>
+                            </tr>
+                            
+                            <tr>
+                              <td valign="top"><input type=radio name="url_domain_filter_type" value="2" onClick="show_table()"></td>
+                              <td valign="top"><b><script>show_words('_Deny');</script></b> <script>show_words('_MSG6');</script></td>
+                            </tr>
+                        </table>
+                          <span class="bggrey2">
+                          <input id="apply" name="apply" type="button" class="ButtonSmall" value="" onclick="set_filter_action();">
+								<script>$('#apply').val(get_words('_Apply'));</script>
+                        </span></td>
+                      </tr>
+                      
+                      <tr id="blocked_table">
+                        <td align="right" valign="top" class="bgblue"><script>show_words('_MSG740');</script></td>
+                        <td  class="bggrey"><table width="100%" border="0" cellpadding="3" cellspacing="0">
+                            <tr>
+                              <td width="84%" align="right"><input type=text id="blocked_domain" name="blocked_domain" size=32 maxlength=39></td>
+                              <td width="16%">&nbsp;</td>
+                            </tr>
+                            <tr>
+                              <td align="right"><select id="blocked_domain_list" name="blocked_domain_list" size=5 onclick="enable_del_button();">
+                                </select>                              </td>
+                              <td valign="top"><input type="button" value="" id="del_blocked" name="del_blocked" onclick="del_url();" disabled></td>
+										<script>$('#del_blocked').val(get_words('_Delete'));</script>
+                            </tr>
+                        </table></td>
+                      </tr>
+                      <tr id="blocked_table2">
+                        <td align="right" valign="top" class="bgblue">&nbsp;</td>
+                      <td class="bggrey2"><input name="add" type="button" class="ButtonSmall" id="add2" onClick="add_url();" value="">
+							<script>$('#add2').val(get_words('_Add'));</script>
+                            <input id="cancel" name="cancel" type="button" class="ButtonSmall" onClick="location.href='domain_filter.htm'" value=""></td>
+									<script>$('#cancel').val(get_words('_Cancel'));</script>
+                      </tr>
+                    </table>
+                  </form>
+                    <br>
+                  </td>
+                </tr>
+            </table></td>
+          </tr>
+      </table></td>
+    <td background="bg1_r.gif">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><img src="c1_bl.gif" width="21" height="20" /></td>
+    <td align="right" background="bg1_b.gif"><img src="copyright.png" width="264" height="20" /></td>
+    <td><img src="c1_br.gif" width="21" height="20" /></td>
+  </tr>
+</table>
+<script>
+var login_who=login_Info;
+    if(login_who != "w")
+	{
+		get_by_id("apply").disabled = "true";
+		get_by_id("add2").disabled = "true";
+		get_by_id("cancel").disabled = "true";
+	}
+</script>
+</body>
+</html>

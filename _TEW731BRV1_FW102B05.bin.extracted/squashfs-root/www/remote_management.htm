@@ -1,0 +1,588 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;">
+<title>TRENDNET | modelName | Management | Remote Management</title>
+<link rel="stylesheet" href="style.css" type="text/css">
+<script language="JavaScript" src="uk.js"></script>
+
+<script language="JavaScript" src="public_js/public.js"></script>
+<script language="Javascript" src="js/jquery-1.3.2.min.js"></script>
+<script language="Javascript" src="js/xml.js"></script>
+<script language="Javascript" src="js/object.js"></script>
+<SCRIPT LANGUAGE="JavaScript">
+	var dev_info = get_router_info();
+
+	var hw_version 	= dev_info.hw_ver;
+	var version 	= dev_info.fw_ver;
+	var model		= dev_info.model;
+	var login_Info 	= dev_info.login_info;
+	var cli_mac 	= dev_info.cli_mac;
+	
+	var param = {
+		url: "get_set.ccp",
+		arg: ""
+	};
+	param.arg = "ccp_act=get&num_inst=2";
+	param.arg +="&oid_1=IGD_AdministratorSettings_&inst_1=11000";
+	param.arg +="&oid_2=IGD_AdvNetwork_&inst_2=11000";
+	
+	get_config_obj(param);	
+	
+	function loadSettings(){
+		var rm_enable = "0";
+		if(config_val("adminCfg_RemoteManagementEnable_"))
+			rm_enable = config_val("adminCfg_RemoteManagementEnable_");
+			
+		set_checked(rm_enable, get_by_name("remote_http_management_enable"));
+		
+		var ip1 = config_val("adminCfg_RemoteAdminIPStart_");
+		var ip2 = config_val("adminCfg_RemoteAdminIPEnd_");
+		if(ip1 != null)
+		{
+			get_by_id("remote_http_management_ipaddr_range").value = ip1;
+			if(ip2 != null)
+				get_by_id("remote_http_management_ipaddr_range").value += "-" + ip2;
+		}
+		else
+			get_by_id("remote_http_management_ipaddr_range").value = ""; 
+		
+		var ipadd_range_array = get_by_id("remote_http_management_ipaddr_range").value.split("-");
+		get_by_id("http_ip1").value = ipadd_range_array[0];
+		if(ipadd_range_array.length>1){
+			get_by_id("http_ip2").value = ipadd_range_array[1];
+		}
+		
+		if(config_val("adminCfg_RemoteAdminHttpPort_")!=null)
+			get_by_id("remote_http_management_port").value = config_val("adminCfg_RemoteAdminHttpPort_");
+		
+		var wan_ping = "0";
+		if(config_val("advNetwork_WanPingEnable_"))
+			wan_ping = config_val("advNetwork_WanPingEnable_");
+
+		set_checked(wan_ping, get_by_name("wan_port_ping_response_enable"));
+		
+		var upnp = "0";
+		if(config_val("advNetwork_UpnpEnable_"))
+			upnp = config_val("advNetwork_UpnpEnable_");
+			
+		set_checked(upnp, get_by_name("upnp_enable"));
+		
+		var l2tp = "0";
+		if(config_val("advNetwork_ALGL2TPEnable_"))
+			l2tp = config_val("advNetwork_ALGL2TPEnable_");
+			
+		set_checked(l2tp, get_by_name("l2tp_pass_through"));
+		
+		var pptp = "0";
+		if(config_val("advNetwork_ALGPPTPEnable_"))
+			pptp = config_val("advNetwork_ALGPPTPEnable_");
+			
+		set_checked(pptp, get_by_name("pptp_pass_through"));
+		
+		var ipsec = "0";
+		if(config_val("advNetwork_ALGIPSECEnable_"))
+			ipsec = config_val("advNetwork_ALGIPSECEnable_");
+			
+		set_checked(ipsec, get_by_name("ipsec_pass_through"));
+		
+		var mcast = "0";
+		if(config_val("advNetwork_MulticastEnable_"))
+			mcast = config_val("advNetwork_MulticastEnable_");
+			
+		set_checked(mcast, get_by_name("multicast_stream_enable"));
+
+		check_http();
+	}
+	
+	function check_http()
+	{
+		if(get_by_name("remote_http_management_enable")[0].checked)
+		{
+			get_by_id("remote_http_management_port").disabled = false;
+			get_by_id("http_ip1").disabled = false;
+			get_by_id("http_ip2").disabled = false;
+		}
+		else
+		{
+			get_by_id("remote_http_management_port").disabled = true;
+			get_by_id("http_ip1").disabled = true;
+			get_by_id("http_ip2").disabled = true;
+		}
+	}
+	
+	function send_request(){
+		var http_port = get_by_id("remote_http_management_port").value;
+		var http_ip1 = get_by_id("http_ip1").value;
+		var http_ip2 = get_by_id("http_ip2").value;
+		var temp_http_ip1 = new addr_obj(http_ip1.split("."), http_form_ip_addr_msg, true, false);
+		var temp_http_ip2 = new addr_obj(http_ip2.split("."), http_to_ip_addr_msg, true, false);
+		var vs_rule_max = 20;
+		if(get_by_name("remote_http_management_enable")[0].checked)
+		{
+		//check virtual server public port and remote management port conflict problem
+			for(var i = 0; i < vs_rule_max; i++){
+				if(get_by_id("vs_rule_" + i).value != ""){
+					var vs_rule = (get_by_id("vs_rule_" + i).value).split("/");
+					if(http_port == vs_rule[3]){
+						alert("Remote Management HTTP port conflict with Virtual Server Public port.");		
+						return false;
+					}
+				}
+			}
+		
+		
+		if (!check_port(http_port)){
+			alert(msg[MSG25]);	
+			return false;
+		}
+		var ipaddr_range_word = http_ip1;
+
+		if(http_ip1 == "" || http_ip1 == "0.0.0.0")
+        {
+            ipaddr_range_word = "*";
+			//get_by_id("remote_http_management_enable").value = 0;
+			alert(get_words('verify_remote_ip'));
+			return false;
+        }
+		else if (http_ip1 != "*")
+		{	
+			if (!check_address_allow_empty(temp_http_ip1))
+				return false;
+		}
+
+		
+		if (http_ip2 != "" && http_ip2 != "*")
+		{
+			if (!check_address(temp_http_ip2))
+			{
+				return false;
+			}
+			else
+			{
+				if(ipaddr_range_word != "*")
+					ipaddr_range_word = ipaddr_range_word +"-"+ http_ip2;
+			}
+		}
+	
+		if(http_ip1 != "" && http_ip1 != "0.0.0.0" && http_ip1 != "*" && http_ip2 != "" && http_ip2 != "0.0.0.0" && http_ip2 != "*")	
+		{
+			if (!check_ip_order(temp_http_ip1, temp_http_ip2))
+			{
+                        	alert(msg[MSG4]);
+                        	return false;
+			}
+                }		
+		
+		get_by_id("remote_http_management_ipaddr_range").value = ipaddr_range_word; 
+		}
+		copyDataToDataModelFormat();
+		send_submit("form2");
+	}
+
+	function copyDataToDataModelFormat()
+	{
+		get_by_id("adminCfg_RemoteManagementEnable_1.1.0.0.0").value = get_checked_value(get_by_name("remote_http_management_enable"));
+		get_by_id("adminCfg_RemoteAdminHttpPort_1.1.0.0.0").value = get_by_id("remote_http_management_port").value;
+		get_by_id("adminCfg_RemoteAdminIPStart_1.1.0.0.0").value = get_by_id("http_ip1").value;
+		get_by_id("adminCfg_RemoteAdminIPEnd_1.1.0.0.0").value = get_by_id("http_ip2").value;
+		get_by_id("advNetwork_WanPingEnable_1.1.0.0.0").value = get_checked_value(get_by_name("wan_port_ping_response_enable"));
+		get_by_id("advNetwork_UpnpEnable_1.1.0.0.0").value = get_checked_value(get_by_name("upnp_enable"));
+		get_by_id("advNetwork_ALGPPTPEnable_1.1.0.0.0").value = get_checked_value(get_by_name("pptp_pass_through"));
+		get_by_id("advNetwork_ALGIPSECEnable_1.1.0.0.0").value = get_checked_value(get_by_name("ipsec_pass_through"));
+		get_by_id("advNetwork_ALGL2TPEnable_1.1.0.0.0").value = get_checked_value(get_by_name("l2tp_pass_through"));
+		get_by_id("advNetwork_MulticastEnable_1.1.0.0.0").value = get_checked_value(get_by_name("multicast_stream_enable"));
+	}
+</SCRIPT>
+</head>
+
+<body onLoad="MM_preloadImages('but_wizard_1.gif','but_status_1.gif','but_tools_1.gif','but_main_1.gif','but_wireless_1.gif','but_routing_1.gif','but_access_1.gif','but_management_1.gif','but_help1_1.gif');loadSettings();">
+<table width="750" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="21"><img src="c1_tl.gif" width="21" height="21" /></td>
+    <td width="708" background="bg1_t.gif"><img src="top_1.gif" width="390" height="21" /></td>
+    <td width="21"><img src="c1_tr.gif" width="21" height="21" /></td>
+  </tr>
+  <tr>
+    <td valign="top" background="bg1_l.gif"><img src="top_2.gif" width="21" height="69" /></td>
+    <td background="bg.gif"><table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="13%"><img src="logo.gif" /></td>
+        <td width="87%" align="right"><img src="description.gif" /></td>
+      </tr>
+    </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="20%" height="429" valign="top"><table width="56%" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td onclick="location.href='lan.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG749');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>	
+				</a></td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='wireless_basic.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wireless');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+               <td onclick="location.href='status.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG748');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='static_routing.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG747');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+               <td onclick="location.href='filters.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Access');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='snmp.htm'">
+				<table class="menu_tb">
+				<tr>
+					<td class="menu_sel_nw"></td>
+					<td class="menu_sel_n"></td>
+					<td class="menu_sel_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_w"></td>
+					<td class="menu_sel_m"><b>&nbsp;&nbsp;<script>show_words('_MSG746');</script></td>
+					<td class="menu_sel_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_sw"></td>
+					<td class="menu_sel_s"></td>
+					<td class="menu_sel_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><table width="100%" border="0" cellpadding="2" class="submenubg">
+				    <tr>
+                      <td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td width="87%" nowrap><a href="snmp.htm" class="submenus"><b><script>show_words('_SNMP')</script></b></a></td>
+                    </tr>
+
+                    <tr>
+                      <td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td width="87%" nowrap><a href="remote_management.htm" class="submenus"><b><u><script>show_words('_RemoteManage')</script> </u></b></a></td>
+                    </tr>
+					<tr>
+						<td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+						<td width="87%" nowrap><a href="ptrace.htm" class="submenus"><b><script>show_words('_Ptrace')</script></b></a></td>
+					</tr>
+               </table></td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='restart.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Tools');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="show_wizard('wizard.htm',login_Info)">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wizard');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="15" height="15"></td>
+              </tr>
+            </table>
+            <p>&nbsp;</p>
+              <p>&nbsp;</p></td>
+            <td width="2%"><img src="spacer.gif" width="15" height="15" /></td>
+            <td width="78%" valign="top"><table width="98%" border="0" cellpadding="0" cellspacing="0" class="tabBigTitle">
+                <tr>
+                  <td class="headerbg2"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                      <tr>
+                        <td width="79%"><font color="#FFFFFF" class="textheader" style="margin-left:0; padding-left:0"><script>show_words('_RemoteManage')</script></font></td>
+                        <td width="21%"><input name="button" type="button" id="help_btn" class="ButtonHelp" onclick="MM_openBrWindow('help_manage.htm#Management_RemMan','','scrollbars=yes,resizable=yes,width=800,height=550')" value="" />
+								<script>$('#help_btn').val(get_words('_Help'));</script>
+                        </td>
+                      </tr>
+                  </table></td>
+                </tr>
+                <tr>
+                  <td valign="top">
+				  <form id="form2" name="form2" method="post" action="get_set.ccp">
+					<input type="hidden" name="ccp_act" value="set">
+					<input type="hidden" name="ccpSubEvent" value="CCP_SUB_REMOTEMNGR">
+					<input type="hidden" name="ccpSubEvent2" value="CCP_SUB_ADVNET">
+					<input type="hidden" name="nextPage" value="remote_management.htm">	
+					<input type="hidden" name="adminCfg_RemoteManagementEnable_1.1.0.0.0" id="adminCfg_RemoteManagementEnable_1.1.0.0.0" value="">
+					<input type="hidden" name="adminCfg_RemoteAdminHttpPort_1.1.0.0.0" id="adminCfg_RemoteAdminHttpPort_1.1.0.0.0" value="">
+					<input type="hidden" name="adminCfg_RemoteAdminIPStart_1.1.0.0.0" id="adminCfg_RemoteAdminIPStart_1.1.0.0.0" value="">
+					<input type="hidden" name="adminCfg_RemoteAdminIPEnd_1.1.0.0.0" id="adminCfg_RemoteAdminIPEnd_1.1.0.0.0" value="">
+					<input type="hidden" name="advNetwork_WanPingEnable_1.1.0.0.0" id="advNetwork_WanPingEnable_1.1.0.0.0" value="">
+					<input type="hidden" name="advNetwork_UpnpEnable_1.1.0.0.0" id="advNetwork_UpnpEnable_1.1.0.0.0" value="">
+					<input type="hidden" name="advNetwork_ALGPPTPEnable_1.1.0.0.0" id="advNetwork_ALGPPTPEnable_1.1.0.0.0" value="">
+					<input type="hidden" name="advNetwork_ALGIPSECEnable_1.1.0.0.0" id="advNetwork_ALGIPSECEnable_1.1.0.0.0" value="">
+					<input type="hidden" name="advNetwork_ALGL2TPEnable_1.1.0.0.0" id="advNetwork_ALGL2TPEnable_1.1.0.0.0" value="">
+					<input type="hidden" name="advNetwork_MulticastEnable_1.1.0.0.0" id="advNetwork_MulticastEnable_1.1.0.0.0" value="">
+				  </form>
+				  
+				  <form id="form1" name="form1" method="post" action="apply.cgi">
+                    <input type="hidden" id="html_response_page" name="html_response_page" value="back.htm">
+                    <input type="hidden" id="html_response_message" name="html_response_message" value="Settings Saved.">
+                    <input type="hidden" id="html_response_return_page" name="html_response_return_page" value="remote_management.htm">
+                    <input type="hidden" id="reboot_type" name="reboot_type" value="all">
+                    <input type="hidden" id="remote_http_management_ipaddr_range" name="remote_http_management_ipaddr_range" value='<% CmoGetCfg("remote_http_management_ipaddr_range","none"); %>'>
+                    <input type="hidden" id="vs_rule_0" name="vs_rule_0" value='<% CmoGetCfg("vs_rule_00","none"); %>'>
+                    <input type="hidden" id="vs_rule_1" name="vs_rule_1" value='<% CmoGetCfg("vs_rule_01","none"); %>'>
+                    <input type="hidden" id="vs_rule_2" name="vs_rule_2" value='<% CmoGetCfg("vs_rule_02","none"); %>'>
+                    <input type="hidden" id="vs_rule_3" name="vs_rule_3" value='<% CmoGetCfg("vs_rule_03","none"); %>'>
+                    <input type="hidden" id="vs_rule_4" name="vs_rule_4" value='<% CmoGetCfg("vs_rule_04","none"); %>'>
+                    <input type="hidden" id="vs_rule_5" name="vs_rule_5" value='<% CmoGetCfg("vs_rule_05","none"); %>'>
+                    <input type="hidden" id="vs_rule_6" name="vs_rule_6" value='<% CmoGetCfg("vs_rule_06","none"); %>'>
+                    <input type="hidden" id="vs_rule_7" name="vs_rule_7" value='<% CmoGetCfg("vs_rule_07","none"); %>'>
+                    <input type="hidden" id="vs_rule_8" name="vs_rule_8" value='<% CmoGetCfg("vs_rule_08","none"); %>'>
+                    <input type="hidden" id="vs_rule_9" name="vs_rule_9" value='<% CmoGetCfg("vs_rule_09","none"); %>'>
+                    <input type="hidden" id="vs_rule_10" name="vs_rule_10" value='<% CmoGetCfg("vs_rule_10","none"); %>'>
+                    <input type="hidden" id="vs_rule_11" name="vs_rule_11" value='<% CmoGetCfg("vs_rule_11","none"); %>'>
+                    <input type="hidden" id="vs_rule_12" name="vs_rule_12" value='<% CmoGetCfg("vs_rule_12","none"); %>'>
+                    <input type="hidden" id="vs_rule_13" name="vs_rule_13" value='<% CmoGetCfg("vs_rule_13","none"); %>'>
+                    <input type="hidden" id="vs_rule_14" name="vs_rule_14" value='<% CmoGetCfg("vs_rule_14","none"); %>'>
+                    <input type="hidden" id="vs_rule_15" name="vs_rule_15" value='<% CmoGetCfg("vs_rule_15","none"); %>'>
+                    <input type="hidden" id="vs_rule_16" name="vs_rule_16" value='<% CmoGetCfg("vs_rule_16","none"); %>'>
+                    <input type="hidden" id="vs_rule_17" name="vs_rule_17" value='<% CmoGetCfg("vs_rule_17","none"); %>'>
+                    <input type="hidden" id="vs_rule_18" name="vs_rule_18" value='<% CmoGetCfg("vs_rule_18","none"); %>'>
+                    <input type="hidden" id="vs_rule_19" name="vs_rule_19" value='<% CmoGetCfg("vs_rule_19","none"); %>'>
+                    <table width="98%" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#333333">
+                      <tr>
+                        <td width="150" align="right" valign="top" class="bgblue"><script>show_words('_HTTP')</script></td>
+                        <td class="bggrey"><font face="Arial" size="2">&nbsp;
+                          </font>
+                          <table width="100%" border="0" cellpadding="1" cellspacing="1">
+                            <tr>
+                              <td><font face="Arial" size="2">
+                                <input type="radio" value="1" id="remote_http_management_enable" name="remote_http_management_enable" onClick="check_http()">
+                              </font><script>show_words('_Enabled')</script>&nbsp;&nbsp;&nbsp;
+                              <input type="radio" value="0" id="remote_http_management_enable" name="remote_http_management_enable" onClick="check_http()">
+<script>show_words('_Disabled')</script></td>
+                            </tr>
+                            <tr>
+                              <td><font face="Arial"><script>show_words('_Port')</script>:</font><font face="Arial">
+                              <input type="text" id="remote_http_management_port" name="remote_http_management_port" size="6" maxlength="5" value="">
+                              </font></td>
+                            </tr>
+                            <tr>
+                              <td><font face="Arial"><script>show_words('_RemoteIPRange')</script>:<br>
+                              </font><script>show_words('_From')</script>&nbsp;
+                              <input type="text" id="http_ip1" name="http_ip1" size="16" maxlength="15">
+&nbsp;<script>show_words('_To')</script>&nbsp;
+<input type="text" id="http_ip2" name="http_ip2" size="16" maxlength="15"></td>
+                            </tr>
+                          </table>                        </td>
+                      </tr>
+                      
+                      <tr>
+                        <td align="right" valign="top" class="bgblue"><script>show_words('_AllowPingWAN')</script></td>
+                        <td class="bggrey"><font face="Arial" size="2">
+                          <input type="radio" value="1" name="wan_port_ping_response_enable">
+                          </font><script>show_words('_Enabled')</script>&nbsp;&nbsp;&nbsp;
+                          <input type="radio" value="0" name="wan_port_ping_response_enable">
+                            <script>show_words('_Disabled')</script></td>
+                      </tr>
+                      <tr>
+                        <td align="right" valign="top" class="bgblue"><script>show_words('_UPnP')</script></td>
+                        <td class="bggrey"><input type="radio" value="1" name="upnp_enable">
+                          <script>show_words('_Enabled')</script>&nbsp;&nbsp;&nbsp;
+                          <input type="radio" value="0" name="upnp_enable">
+                          <script>show_words('_Disabled')</script> </td>
+                      </tr>
+                      <tr>
+                        <td align="right" valign="top" class="bgblue"><script>show_words('_PPTP')</script>&nbsp;</td>
+                        <td class="bggrey"><input type="radio" value="1" name="pptp_pass_through">
+                          <script>show_words('_Enabled')</script>&nbsp;&nbsp;&nbsp;
+                          <input type="radio" value="0" name="pptp_pass_through">
+                          <script>show_words('_Disabled')</script> </td>
+                      </tr>
+                      <tr>
+                        <td align="right" valign="top" class="bgblue"><script>show_words('_L2TP')</script>&nbsp;</td>
+                        <td class="bggrey"><input type="radio" value="1" name="l2tp_pass_through">
+                          <script>show_words('_Enabled')</script>&nbsp;&nbsp;&nbsp;
+                          <input type="radio" value="0" name="l2tp_pass_through">
+                          <script>show_words('_Disabled')</script> </td>
+                      </tr>
+                      <tr>
+                        <td align="right" valign="top" class="bgblue"><script>show_words('_IPSec')</script> </td>
+                        <td height="23" class="bggrey"><input type="radio" value="1" name="ipsec_pass_through">
+                          <script>show_words('_Enabled')</script>&nbsp;&nbsp;&nbsp;
+                          <input type="radio" value="0" name="ipsec_pass_through">
+                          <script>show_words('_Disabled')</script></td>
+                      </tr>
+		      <tr>
+                        <td align="right" valign="top" class="bgblue"><script>show_words('_MuitlcastStr')</script></td>
+                        <td height="23" class="bggrey"><input type="radio" value="1" name="multicast_stream_enable">
+                          <script>show_words('_Enabled')</script>&nbsp;&nbsp;&nbsp;
+                          <input type="radio" value="0" name="multicast_stream_enable">
+                          <script>show_words('_Disabled')</script></td>
+                      </tr>	
+                      <tr>
+                        <td align="right" class="bgblue" >&nbsp;</td>
+                        <td class="bggrey2" ><input id="cancel" name="cancel" type="button" class="ButtonSmall" onClick="window.location.href='remote_management.htm'" value="">
+									<script>$('#cancel').val(get_words('_Cancel'));</script>
+                            <input id="apply" name="apply" type="button" class="ButtonSmall" onClick="send_request()" value="Apply"></td>
+									<script>$('#apply').val(get_words('_Apply'));</script>
+                      </tr>
+                    </table>
+                    </form>
+                    <br>
+                  </td>
+                </tr>
+            </table></td>
+          </tr>
+      </table></td>
+    <td background="bg1_r.gif">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><img src="c1_bl.gif" width="21" height="20" /></td>
+    <td align="right" background="bg1_b.gif"><img src="copyright.png" width="264" height="20" /></td>
+    <td><img src="c1_br.gif" width="21" height="20" /></td>
+  </tr>
+</table>
+<script>
+var login_who=login_Info;
+    if(login_who != "w")
+	{
+		get_by_id("apply").disabled  = "true";
+		get_by_id("cancel").disabled  = "true";
+	}
+</script>
+</body>
+</html>

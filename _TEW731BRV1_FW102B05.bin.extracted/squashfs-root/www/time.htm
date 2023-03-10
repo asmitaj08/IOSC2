@@ -1,0 +1,981 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;">
+<title>TRENDNET | modelName | Main | Time</title>
+<link rel="stylesheet" href="style.css" type="text/css">
+<script language="JavaScript" src="uk.js"></script>
+
+<script language="JavaScript" src="public_js/public.js"></script>
+<script language="Javascript" src="js/jquery-1.3.2.min.js"></script>
+<script language="Javascript" src="js/xml.js"></script>
+<script language="Javascript" src="js/object.js"></script>
+<SCRIPT LANGUAGE="JavaScript">
+	var dev_info = get_router_info();
+
+	var hw_version 	= dev_info.hw_ver;
+	var version 	= dev_info.fw_ver;
+	var model		= dev_info.model;
+	var login_Info 	= dev_info.login_info;
+	var cli_mac 	= dev_info.cli_mac;
+	
+	var param = {
+		url: "get_set.ccp",
+		arg: ""
+	};	
+	param.arg = "ccp_act=get&num_inst=1";
+	param.arg +="&oid_1=IGD_Time_&inst_1=11000";
+	get_config_obj(param);
+	
+	var curDutTime = config_val('sysTime_CurrentLocalTime_');
+	var curLocalTime="";
+	
+	var datetime= new Date();
+	curLocalTime = datetime.getFullYear() +"/"+ (datetime.getMonth()+1) + "/" + datetime.getDate() + "/" +
+					datetime.getHours() + "/" + datetime.getMinutes() + "/" + datetime.getSeconds();
+	
+	//alert(datetime);
+	//alert(curLocalTime);
+	
+	function loadSettings(is_true){	
+		//get_by_id("system_time").value = curLocalTime;
+		
+		var count_year = 0;
+		var count_day = 0;
+		var count_hour = 0;
+		var count_min = 0;
+		var count_sec = 0;
+		var year= get_by_id("year");
+		var day=get_by_id("day");
+		var hour=get_by_id("hour");
+		var min=get_by_id("min");
+		var sec=get_by_id("sec");
+	
+		//get_by_id("time_zone").selectedIndex = get_by_id("time_zone_area").value;
+		//set_selectIndex(get_by_id("ntp_client_enable").value, get_by_id("ntp_enable"));
+		//set_checked(get_by_id("time_daylight_saving_enable").value,get_by_name("daylight_enable"));
+		get_by_id("time_zone").selectedIndex = config_val("sysTime_LocalTimeZoneIndex_");
+		set_selectIndex(config_val("sysTime_Enable_"), get_by_id("ntp_enable"));
+		set_checked(config_val("sysTime_DaylightSavingsUsed_"),get_by_name("daylight_enable"));
+
+		//set_selectIndex(get_by_id("saving_start_month").value, get_by_id("time_daylight_saving_start_month"));
+		//set_selectIndex(get_by_id("saving_start_week").value, get_by_id("time_daylight_saving_start_week"));
+		//set_selectIndex(get_by_id("saving_start_day_of_week").value, get_by_id("time_daylight_saving_start_day_of_week"));
+		//set_selectIndex(get_by_id("saving_end_month").value, get_by_id("time_daylight_saving_end_month"));
+		//set_selectIndex(get_by_id("saving_end_week").value, get_by_id("time_daylight_saving_end_week"));
+		//set_selectIndex(get_by_id("saving_end_day_of_week").value, get_by_id("time_daylight_saving_end_day_of_week"));
+		set_selectIndex(config_val("sysTime_DaylightSavingMStart_"), get_by_id("time_daylight_saving_start_month"));
+		set_selectIndex(config_val("sysTime_DaylightSavingWStart_"), get_by_id("time_daylight_saving_start_week"));
+		set_selectIndex(config_val("sysTime_DaylightSavingDStart_"), get_by_id("time_daylight_saving_start_day_of_week"));
+		set_selectIndex(config_val("sysTime_DaylightSavingMEnd_"), get_by_id("time_daylight_saving_end_month"));
+		set_selectIndex(config_val("sysTime_DaylightSavingWEnd_"), get_by_id("time_daylight_saving_end_week"));
+		set_selectIndex(config_val("sysTime_DaylightSavingDEnd_"), get_by_id("time_daylight_saving_end_day_of_week"));
+
+		get_by_id("sysTime_CurrentLocalTimeStr_1.1.0.0.0").value = config_val("sysTime_CurrentLocalTimeStr_");
+		
+		get_by_id("ntp_server").value = config_val("sysTime_NTPServer1_");
+		disable_ntp_server();
+		if(is_true){
+			show_time();
+		}
+		var aDate = new Date();
+		var aYear = aDate.getFullYear();
+		for(var i=(aYear-5);i<=(aYear+10); i++)//year
+		{					
+			var year_option = document.createElement("option");	
+			year_option.text = i;
+			year_option.value = i;
+			year.options[count_year++] = year_option
+		}
+		
+		for(var i=1;i<=31; i++)//day
+		{					
+			var day_option = document.createElement("option");	
+								
+			if(i<10){
+				var temp_day=i;					
+				day_option.text ="0"+temp_day;
+			}else{
+				day_option.text = i;
+			}					
+			day_option.value = i;
+			day.options[count_day++] = day_option
+		}
+		for(var i=0;i<=23; i++)//hour
+		{					
+			var hour_option = document.createElement("option");		
+			if(i<10){
+				var temp_hour=i;
+				hour_option.text ="0"+temp_hour;
+			}else{
+				hour_option.text = i;
+			}					
+			hour_option.value = i;
+			hour.options[count_hour++] = hour_option
+		}
+		for(var i=0;i<=59; i++)//min
+		{					
+			var min_option = document.createElement("option");	
+			if(i<10){
+				var temp_min=i;
+				min_option.text ="0"+temp_min;
+			}else{
+				min_option.text = i;
+			}	
+			min_option.value = i;
+			min.options[count_min++] = min_option
+		}
+		for(var i=0;i<=59; i++)//sec
+		{					
+			var sec_option = document.createElement("option");						
+			if(i<10){
+				var temp_sec=i;
+				sec_option.text ="0"+temp_sec;
+			}else{
+				sec_option.text = i;
+			}	
+			sec_option.value = i;
+			sec.options[count_sec++] = sec_option
+		}
+		show_time();		
+	}
+		
+	function show_time(){
+		//var temp_time = get_by_id("system_time").value;
+		curLocalTime = datetime.getFullYear() +"/"+ (datetime.getMonth()+1) + "/" + datetime.getDate() + "/" +
+				datetime.getHours() + "/" + datetime.getMinutes() + "/" + datetime.getSeconds();
+
+		var temp_time = curLocalTime;
+		var Dtime = temp_time.split("/");
+		set_selectIndex(Dtime[0], get_by_id("year"));
+		set_selectIndex(Dtime[1], get_by_id("mon"));
+		set_selectIndex(Dtime[2], get_by_id("day"));
+		set_selectIndex(parseInt(Dtime[3],10), get_by_id("hour"));
+		set_selectIndex(parseInt(Dtime[4],10), get_by_id("min"));
+		set_selectIndex(parseInt(Dtime[5],10), get_by_id("sec"));
+	}
+	
+	function disable_ntp_server(){
+		var is_disable = false;
+		
+		if (get_by_id("ntp_enable").selectedIndex > 0){
+			is_disable = true;
+			get_by_name("daylight_enable")[1].checked = true;
+		}
+		get_by_id("ntp_server").disabled = is_disable;
+		get_by_id("year").disabled = !is_disable;
+		get_by_id("mon").disabled = !is_disable;
+		get_by_id("day").disabled = !is_disable;
+		get_by_id("hour").disabled = !is_disable;
+		get_by_id("min").disabled = !is_disable;
+		get_by_id("sec").disabled = !is_disable;
+		get_by_id("set").disabled = !is_disable;
+		get_by_name("daylight_enable")[0].disabled = is_disable;
+		get_by_name("daylight_enable")[1].disabled = is_disable;
+		show_daylight();
+		var login_who=login_Info;
+	    if(login_who != "w")
+    	{
+        	get_by_id("cancel").disabled = "true";
+        	get_by_id("apply").disabled = "true";
+        	get_by_id("set").disabled = "true";
+    	}
+	}
+	
+	function show_daylight(){
+		var daylight = get_by_name("daylight_enable")[0];
+		var time_type = get_by_id("ntp_enable");
+		var is_disable = true;
+		
+		if (daylight.checked && time_type.selectedIndex==0){
+			is_disable = false;
+		}
+		
+		get_by_id("time_daylight_saving_start_month").disabled = is_disable;
+		get_by_id("time_daylight_saving_start_week").disabled = is_disable;
+		get_by_id("time_daylight_saving_start_day_of_week").disabled = is_disable;
+		get_by_id("time_daylight_saving_start_time").disabled = is_disable;
+		get_by_id("time_daylight_saving_end_month").disabled = is_disable;
+		get_by_id("time_daylight_saving_end_week").disabled = is_disable;		
+		get_by_id("time_daylight_saving_end_day_of_week").disabled = is_disable;
+		get_by_id("time_daylight_saving_end_time").disabled = is_disable;
+	}
+	
+	function send_request(is_true){
+		get_by_id("ntp_client_enable").value = get_select_value(get_by_id("ntp_enable"));
+		get_by_id("time_zone_area").value = get_by_id("time_zone").selectedIndex;
+		var time_type = get_by_id("ntp_enable");
+		if (time_type.selectedIndex== 1){
+			var year = get_by_id("year").value;
+			var mon = get_by_id("mon").value;
+			var day = get_by_id("day").value;
+
+			var hour = get_by_id("hour").value;
+			var minu = get_by_id("min").value;
+			var sec = get_by_id("sec").value;
+
+			var dat =year +"/"+ mon +"/"+ day +"/"+ hour +"/"+ minu +"/"+ sec;
+			get_by_id("system_time").value = dat;		
+			
+			get_by_id("apply_2nd_cgi_parameter").value = dat;
+			get_by_id("apply_2nd_cgi").value = "system_time.cgi";	
+		}else{
+			if(get_by_id("ntp_server").value == ""){
+				alert(get_words('_MSG302'));
+				return false;
+			}
+		}
+		if(is_true){
+			loadSettings(!is_true)
+		}
+		get_by_id("time_daylight_saving_enable").value = get_checked_value(get_by_name("daylight_enable"));
+		copyDataToDataModelFormat();
+		//send_submit("form2");
+		//setTimeout("submitForm()",1000);
+	}
+	
+	function submitForm()
+	{
+		send_submit("form2");
+	}
+	
+	function ajax_submit(p)
+	{
+		var ajax_param = {
+			type: 	"POST",
+			async:	true,
+			url: 	p.url,
+			data: 	p.arg
+		};
+
+		$.ajax(ajax_param);
+	}
+	
+	function set_time() 
+	{
+		/*var datetime= new Date();
+		var curLocalTime = datetime.getFullYear() +","+ (datetime.getMonth()+1) + "," + datetime.getDate() + "," +
+					datetime.getHours() + "," + datetime.getMinutes() + "," + datetime.getSeconds();
+					*/
+
+		var curLocalTime = get_by_id("year").value+","+get_by_id("mon").value+","+get_by_id("day").value+","+
+							get_by_id("hour").value+","+get_by_id("min").value+","+get_by_id("sec").value;
+		
+		var vmon = "Jan";
+		switch(get_by_id("mon").value)
+		{
+			case "1":	vmon = get_words('_Jan');	break;
+			case "2":	vmon = get_words('_Feb');	break;
+			case "3":	vmon = get_words('_Mar');	break;
+			case "4":	vmon = get_words('_Apr');	break;
+			case "5":	vmon = get_words('_May');	break;
+			case "6":	vmon = get_words('_Jun');	break;
+			case "7":	vmon = get_words('_Jul');	break;
+			case "8":	vmon = get_words('_Aug');	break;
+			case "9":	vmon = get_words('_Sep');	break;
+			case "10":	vmon = get_words('_Oct');	break;
+			case "11":	vmon = get_words('_Nov');	break;
+			case "12":	vmon = get_words('_Dec');	break;
+		}
+		
+		get_by_id("currTimeStr").innerHTML = vmon + "/" + get_by_id("day").value + "/" + get_by_id("year").value + " " + get_by_id("hour").value + ":" + get_by_id("min").value + ":" + get_by_id("sec").value;
+		
+		var param = {
+			url: "get_set.ccp",
+			arg: 'ccp_act=set&ccpSubEvent=CCP_SUB_TIME&nextPage=time.htm'+
+				'&sysTime_CurrentLocalTimeStr_1.1.0.0.0='+curLocalTime+
+				'&sysTime_Enable_1.1.0.0.0='+get_by_id("ntp_enable").value+
+				'&sysTime_NTPServer1_1.1.0.0.0='+get_by_id("ntp_server").value+
+				'&sysTime_LocalTimeZone_1.1.0.0.0='+get_by_id("time_zone").value+
+				'&sysTime_LocalTimeZoneIndex_1.1.0.0.0='+get_by_id("time_zone").selectedIndex+
+				'&sysTime_LocalTimeZoneName_1.1.0.0.0='+get_by_id("time_zone").options[get_by_id("time_zone").selectedIndex].text+
+				'&sysTime_DaylightSavingsUsed_1.1.0.0.0='+get_checked_value(get_by_name("daylight_enable"))
+		};
+		//get_config_obj(param);
+		ajax_submit(param);
+	}
+
+function change_day(){
+	var count_year = 0;
+	var count_day = 0;
+	var count_hour = 0;
+	var count_min = 0;
+	var count_sec = 0;
+	var year= get_by_id("year");
+	var day=get_by_id("day");
+	var hour=get_by_id("hour");
+	var min=get_by_id("min");
+	var sec=get_by_id("sec");
+	day.options.length = 0;
+	var tmp_year = get_by_id("year").value;
+
+	for(var i=1;i<=31; i++)//day
+	{					
+		var mon = get_by_id("mon").value;
+		var day_option = document.createElement("option");	
+								
+		if(i<10){
+			var temp_day=i;					
+			day_option.text ="0"+temp_day;
+		}else{
+			day_option.text = i;
+		}
+		if((mon=="1")||(mon=="3")||(mon=="5")||(mon=="7")||(mon=="8")||(mon=="10")||(mon=="12")){					
+			day_option.value = i;
+			day.options[count_day++] = day_option;
+		}else if(mon=="2"){
+			if (tmp_year%4==0){
+				if(i<30){
+					day_option.value = i;
+					day.options[count_day++] = day_option;
+				}
+			}else{
+				if(i<29){
+					day_option.value = i;
+					day.options[count_day++] = day_option;
+				}
+			}
+		}else{
+			if(i<31){
+				day_option.value = i;
+				day.options[count_day++] = day_option;
+			}else{
+				break;
+			}
+		}
+	}
+}
+
+	function copyDataToDataModelFormat()
+	{
+		var param = {
+				url: "get_set.ccp",
+				arg: 'ccp_act=set&ccpSubEvent=CCP_SUB_TIME&nextPage=time.htm'+
+					'&sysTime_Enable_1.1.0.0.0='+get_by_id("ntp_enable").value+
+					'&sysTime_NTPServer1_1.1.0.0.0='+get_by_id("ntp_server").value+
+					'&sysTime_LocalTimeZone_1.1.0.0.0='+get_by_id("time_zone").value+
+					'&sysTime_LocalTimeZoneIndex_1.1.0.0.0='+get_by_id("time_zone").selectedIndex+
+					'&sysTime_LocalTimeZoneName_1.1.0.0.0='+get_by_id("time_zone").options[get_by_id("time_zone").selectedIndex].text+
+					'&sysTime_DaylightSavingsUsed_1.1.0.0.0='+get_checked_value(get_by_name("daylight_enable"))+
+					'&sysTime_DaylightSavingMStart_1.1.0.0.0='+get_by_id("time_daylight_saving_start_month").value+
+					'&sysTime_DaylightSavingMEnd_1.1.0.0.0='+get_by_id("time_daylight_saving_end_month").value+
+					'&sysTime_DaylightSavingWStart_1.1.0.0.0='+get_by_id("time_daylight_saving_start_week").value+
+					'&sysTime_DaylightSavingWEnd_1.1.0.0.0='+get_by_id("time_daylight_saving_end_week").value+
+					'&sysTime_DaylightSavingDStart_1.1.0.0.0='+get_by_id("time_daylight_saving_start_day_of_week").value+
+					'&sysTime_DaylightSavingDEnd_1.1.0.0.0='+get_by_id("time_daylight_saving_end_day_of_week").value
+		};
+		
+		var time_type = get_by_id("ntp_enable");
+		if (time_type.selectedIndex== 1){
+			var curLocalTime = get_by_id("year").value+","+get_by_id("mon").value+","+get_by_id("day").value+","+
+				get_by_id("hour").value+","+get_by_id("min").value+","+get_by_id("sec").value;
+				
+			get_by_id("sysTime_CurrentLocalTimeStr_1.1.0.0.0").value = curLocalTime;
+			var vmon = "Jan";
+			switch(get_by_id("mon").value)
+			{
+				case "1":	vmon = get_words('_Jan');	break;
+				case "2":	vmon = get_words('_Feb');	break;
+				case "3":	vmon = get_words('_Mar');	break;
+				case "4":	vmon = get_words('_Apr');	break;
+				case "5":	vmon = get_words('_May');	break;
+				case "6":	vmon = get_words('_Jun');	break;
+				case "7":	vmon = get_words('_Jul');	break;
+				case "8":	vmon = get_words('_Aug');	break;
+				case "9":	vmon = get_words('_Sep');	break;
+				case "10":	vmon = get_words('_Oct');	break;
+				case "11":	vmon = get_words('_Nov');	break;
+				case "12":	vmon = get_words('_Dec');	break;
+			}
+
+			get_by_id("currTimeStr").innerHTML = vmon + "/" + get_by_id("day").value + "/" + get_by_id("year").value + " " + get_by_id("hour").value + ":" + get_by_id("min").value + ":" + get_by_id("sec").value;
+			
+			param.arg += '&sysTime_CurrentLocalTimeStr_1.1.0.0.0='+curLocalTime;
+			//get_config_obj(param);
+				
+		}
+		get_config_obj(param);
+		//ajax_submit(param);	
+		//get_by_id("sysTime_DaylightSavingTStart_1.1.0.0.0").value = get_by_id("").value;
+		//get_by_id("sysTime_DaylightSavingTEnd_1.1.0.0.0").value = get_by_id("").value;
+	}
+</SCRIPT>
+</head>
+
+<body onLoad="MM_preloadImages('but_wizard_1.gif','but_status_1.gif','but_tools_1.gif','but_main_1.gif','but_wireless_1.gif','but_routing_1.gif','but_access_1.gif','but_management_1.gif');loadSettings(true)">
+<table width="750" border="0" cellpadding="0" cellspacing="0">
+<input type="hidden" id="saving_start_month" name="saving_start_month" value="">
+<input type="hidden" id="saving_start_week" name="saving_start_week" value="">
+<input type="hidden" id="saving_start_day_of_week" name="saving_start_day_of_week" value="">
+<input type="hidden" id="saving_end_month" name="saving_end_month" value="">
+<input type="hidden" id="saving_end_week" name="saving_end_week" value="">
+<input type="hidden" id="saving_end_day_of_week" name="saving_end_day_of_week" value="">
+
+  <tr>
+    <td width="21"><img src="c1_tl.gif" width="21" height="21" /></td>
+    <td width="708" background="bg1_t.gif"><img src="top_1.gif" width="390" height="21" /></td>
+    <td width="21"><img src="c1_tr.gif" width="21" height="21" /></td>
+  </tr>
+  <tr>
+    <td valign="top" background="bg1_l.gif"><img src="top_2.gif" width="21" height="69" /></td>
+    <td background="bg.gif"><table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="13%"><img src="logo.gif" /></td>
+        <td width="87%" align="right"><img src="description.gif" /></td>
+      </tr>
+    </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="20%" height="429" valign="top"><table width="56%" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td onclick="location.href='lan.htm'">
+				<table class="menu_tb">
+				<tr>
+					<td class="menu_sel_nw"></td>
+					<td class="menu_sel_n"></td>
+					<td class="menu_sel_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_w"></td>
+					<td class="menu_sel_m"><b>&nbsp;&nbsp;<script>show_words('_MSG749');</script></td>
+					<td class="menu_sel_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_sw"></td>
+					<td class="menu_sel_s"></td>
+					<td class="menu_sel_se"></td>
+				</tr>
+				</table>	
+				</a></td>
+              </tr>
+              <tr>
+                <td><table width="100%" border="0" cellpadding="2" class="submenubg">
+                    <tr>
+                      <td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td width="87%"><a href="lan.htm" class="submenus"><b><script>show_words('_LAN_DHCPSer')</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="wan.htm" class="submenus"><b><script>show_words('_WAN')</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="password.htm" class="submenus"><b><script>show_words('_Pwd')</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="time.htm" class="submenus"><b><u><script>show_words('_Time')</script></u></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="ddns.htm" class="submenus"><b><script>show_words('_dyndns')</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="ipv6.htm" class="submenus"><b><script>show_words('_IPv6')</script></b></a></td>
+                    </tr>
+                </table></td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='wireless_basic.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wireless')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='status.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG748')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='static_routing.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG747')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='filters.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Access')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='snmp.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG746')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='restart.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Tools')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="show_wizard('wizard.htm',login_Info)">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wizard')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="15" height="15"></td>
+              </tr>
+            </table>
+            <p>&nbsp;</p>
+              <p>&nbsp;</p></td>
+            <td width="2%"><img src="spacer.gif" width="15" height="15" /></td>
+            <td width="78%" valign="top"><table width="98%" border="0" cellpadding="0" cellspacing="0" class="tabBigTitle">
+                <tr>
+                  <td class="headerbg2"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                      <tr>
+                        <td width="79%"><font color="#FFFFFF" class="textheader" style="margin-left:0; padding-left:0"><script>show_words('_Time')</script></font></td>
+                        <td width="21%"><input name="button" type="button" id="help_btn" class="ButtonHelp" onclick="MM_openBrWindow('help_main.htm#main_time','','scrollbars=yes,resizable=yes,width=800,height=550')" value="  " />
+								<script>$('#help_btn').val(get_words('_Help'));</script>
+                        </td>
+                      </tr>
+                  </table></td>
+                </tr>
+                <tr>
+                  <td valign="top">
+				  <form id="form2" name="form2" method="post" action="get_set.ccp">
+				    <input type="hidden" name="ccp_act" value="set">
+					<input type="hidden" name="ccpSubEvent" value="CCP_SUB_TIME">
+					<input type="hidden" name="nextPage" value="time.htm">	
+					<input type="hidden" name="sysTime_Enable_1.1.0.0.0" id="sysTime_Enable_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_NTPServer1_1.1.0.0.0" id="sysTime_NTPServer1_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_CurrentLocalTime_1.1.0.0.0" id="sysTime_CurrentLocalTime_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_CurrentLocalTimeStr_1.1.0.0.0" id="sysTime_CurrentLocalTimeStr_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_LocalTimeZone_1.1.0.0.0" id="sysTime_LocalTimeZone_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_LocalTimeZoneName_1.1.0.0.0" id="sysTime_LocalTimeZoneName_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_DaylightSavingsUsed_1.1.0.0.0" id="sysTime_DaylightSavingsUsed_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_LocalTimeZoneIndex_1.1.0.0.0" id="sysTime_LocalTimeZoneIndex_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_DaylightSavingMStart_1.1.0.0.0" id="sysTime_DaylightSavingMStart_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_DaylightSavingMEnd_1.1.0.0.0" id="sysTime_DaylightSavingMEnd_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_DaylightSavingWStart_1.1.0.0.0" id="sysTime_DaylightSavingWStart_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_DaylightSavingWEnd_1.1.0.0.0" id="sysTime_DaylightSavingWEnd_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_DaylightSavingDStart_1.1.0.0.0" id="sysTime_DaylightSavingDStart_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_DaylightSavingDEnd_1.1.0.0.0" id="sysTime_DaylightSavingDEnd_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_DaylightSavingTStart_1.1.0.0.0" id="sysTime_DaylightSavingTStart_1.1.0.0.0" value="">
+					<input type="hidden" name="sysTime_DaylightSavingTEnd_1.1.0.0.0" id="sysTime_DaylightSavingTEnd_1.1.0.0.0" value="">
+				  </form>
+				  <form id="form1" name="form1" method="post" action="apply.cgi">
+                    <input type="hidden" id="html_response_page" name="html_response_page" value="back.htm">
+                    <input type="hidden" id="html_response_message" name="html_response_message" value="The setting is saved.">
+                    <input type="hidden" id="html_response_return_page" name="html_response_return_page" value="time.htm">
+                    <input type="hidden" id="reboot_type" name="reboot_type" value="application">
+                    <input type="hidden" id="apply_2nd_cgi" name="apply_2nd_cgi" value="">
+                    <input type="hidden" id="apply_2nd_cgi_parameter" name="apply_2nd_cgi_parameter" value="">
+                    <input type="hidden" id="system_time" name="system_time" value="">
+                    <input type="hidden" id="ntp_client_enable" name="ntp_client_enable" value="">
+                    <input type="hidden" id="time_daylight_saving_enable" name="time_daylight_saving_enable" value="">
+                    <input type="hidden" id="time_zone_area" name="time_zone_area" value="">
+                    <input type="hidden" id="time_daylight_saving_start_time" name="time_daylight_saving_start_time" value="0">
+                    <input type="hidden" id="time_daylight_saving_end_time" name="time_daylight_saving_end_time" value="23">
+                    <table width="98%" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#333333">
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_LocalTime')</script></td>
+                        <td class="bggrey"><span id="currTimeStr"></span><script>
+													
+														var temp_entry =curDutTime;
+														var entry = temp_entry.split(",");
+														var v_mon="";
+														if(entry[1]=="1"){
+															v_mon = get_words('_Jan');
+														}else if(entry[1]=="2"){
+															v_mon = get_words('_Feb');
+														}else if(entry[1]=="3"){
+															v_mon = get_words('_Mar');
+														}else if(entry[1]=="4"){
+															v_mon = get_words('_Apr');
+														}else if(entry[1]=="5"){
+															v_mon = get_words('_May');
+														}else if(entry[1]=="6"){
+															v_mon = get_words('_Jun');
+														}else if(entry[1]=="7"){
+															v_mon = get_words('_Jul');
+														}else if(entry[1]=="8"){
+															v_mon = get_words('_Aug');
+														}else if(entry[1]=="9"){
+															v_mon = get_words('_Sep');
+														}else if(entry[1]=="10"){
+															v_mon = get_words('_Oct');
+														}else if(entry[1]=="11"){
+															v_mon = get_words('_Nov');
+														}else if(entry[1]=="12"){
+															v_mon = get_words('_Dec');
+														}else{
+															v_mon = "";
+														}
+													
+														get_by_id("currTimeStr").innerHTML = v_mon + "/" + entry[2] + "/" + entry[0] + " " + entry[3] + ":" + entry[4] + ":" + entry[5];
+														//document.write(v_mon + "/" + entry[2] + "/" + entry[0] + " " + entry[3] + ":" + entry[4] + ":" + entry[5]);
+													
+													//document.write(curLocalTime);
+													</script>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_TimeZone')</script></td>
+                        <td class="bggrey"><select size="1" id="time_zone" name="time_zone">
+                            <option value="-192"><script>show_words('_GMT_01')</script></option>
+                            <option value="-176"><script>show_words('_GMT_02')</script></option>
+                            <option value="-160"><script>show_words('_GMT_03')</script></option>
+                            <option value="-144"><script>show_words('_GMT_04')</script></option>
+                            <option value="-128"><script>show_words('_GMT_05')</script></option>
+                            <option value="-112"><script>show_words('_GMT_06')</script></option>
+                            <option value="-112"><script>show_words('_GMT_07')</script></option>
+                            <option value="-96"><script>show_words('_GMT_08')</script></option>
+                            <option value="-96"><script>show_words('_GMT_09')</script></option>
+                            <option value="-96"><script>show_words('_GMT_10')</script></option>
+                            <option value="-96"><script>show_words('_GMT_11')</script></option>
+                            <option value="-80"><script>show_words('_GMT_12')</script></option>
+                            <option value="-80"><script>show_words('_GMT_13')</script></option>
+                            <option value="-80"><script>show_words('_GMT_14')</script></option>
+                            <option value="-64"><script>show_words('_GMT_15')</script></option>
+                            <option value="-64"><script>show_words('_GMT_16')</script></option>
+                            <option value="-64"><script>show_words('_GMT_17')</script></option>
+                            <option value="-48"><script>show_words('_GMT_18')</script></option>
+                            <option value="-48"><script>show_words('_GMT_19')</script></option>
+                            <option value="-48"><script>show_words('_GMT_20')</script></option>
+                            <option value="-48"><script>show_words('_GMT_21')</script></option>
+                            <option value="-32"><script>show_words('_GMT_22')</script></option>
+                            <option value="-16"><script>show_words('_GMT_23')</script></option>
+                            <option value="-16"><script>show_words('_GMT_24')</script></option>
+                            <option value="0"><script>show_words('_GMT_25')</script></option>
+                            <option value="0"><script>show_words('_GMT_26')</script></option>
+                            <option value="16"><script>show_words('_GMT_27')</script></option>
+                            <option value="16"><script>show_words('_GMT_28')</script></option>
+                            <option value="16"><script>show_words('_GMT_29')</script></option>
+                            <option value="16"><script>show_words('_GMT_30')</script></option>
+                            <option value="16"><script>show_words('_GMT_31')</script></option>
+                            <option value="16"><script>show_words('_GMT_32')</script></option>
+                            <option value="32"><script>show_words('_GMT_33')</script></option>
+                            <option value="32"><script>show_words('_GMT_34')</script></option>
+                            <option value="32"><script>show_words('_GMT_35')</script></option>
+                            <option value="32"><script>show_words('_GMT_36')</script></option>
+                            <option value="32"><script>show_words('_GMT_37')</script></option>
+                            <option value="32"><script>show_words('_GMT_38')</script></option>
+                            <option value="48"><script>show_words('_GMT_39')</script></option>
+                            <option value="48"><script>show_words('_GMT_40')</script></option>
+                            <option value="48"><script>show_words('_GMT_41')</script></option>
+                            <option value="48"><script>show_words('_GMT_42')</script></option>
+                            <option value="48"><script>show_words('_GMT_43')</script></option>
+                            <option value="64"><script>show_words('_GMT_44')</script></option>
+                            <option value="64"><script>show_words('_GMT_45')</script></option>
+                            <option value="72"><script>show_words('_GMT_46')</script></option>
+                            <option value="80"><script>show_words('_GMT_47')</script></option>
+                            <option value="80"><script>show_words('_GMT_48')</script></option>
+                            <option value="88"><script>show_words('_GMT_49')</script></option>
+                            <option value="92"><script>show_words('_GMT_50')</script></option>
+                            <option value="96"><script>show_words('_GMT_51')</script></option>
+                            <option value="96"><script>show_words('_GMT_52')</script></option>
+                            <option value="96"><script>show_words('_GMT_53')</script></option>
+                            <option value="104"><script>show_words('_GMT_54')</script></option>
+                            <option value="112"><script>show_words('_GMT_55')</script></option>
+                            <option value="112"><script>show_words('_GMT_56')</script></option>
+                            <option value="128"><script>show_words('_GMT_57')</script></option>
+                            <option value="128"><script>show_words('_GMT_58')</script></option>
+                            <option value="128"><script>show_words('_GMT_59')</script></option>
+                            <option value="128"><script>show_words('_GMT_60')</script></option>
+                            <option value="128"><script>show_words('_GMT_61')</script></option>
+                            <option value="144"><script>show_words('_GMT_62')</script></option>
+                            <option value="144"><script>show_words('_GMT_63')</script></option>
+                            <option value="144"><script>show_words('_GMT_64')</script></option>
+                            <option value="152"><script>show_words('_GMT_65')</script></option>
+                            <option value="152"><script>show_words('_GMT_66')</script></option>
+                            <option value="160"><script>show_words('_GMT_67')</script></option>
+                            <option value="160"><script>show_words('_GMT_68')</script></option>
+                            <option value="160"><script>show_words('_GMT_69')</script></option>
+                            <option value="160"><script>show_words('_GMT_70')</script></option>
+                            <option value="160"><script>show_words('_GMT_71')</script></option>
+                            <option value="176"><script>show_words('_GMT_72')</script></option>
+                            <option value="192"><script>show_words('_GMT_73')</script></option>
+                            <option value="192"><script>show_words('_GMT_74')</script></option>
+                            <option value="208"><script>show_words('_GMT_75')</script></option>
+                          </select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td height="24" align="right" class="bgblue"><script>show_words('_SyncClock')</script><br></td>
+                        <td class="bggrey"><select id="ntp_enable" name="ntp_enable" size="1" onChange="disable_ntp_server();">
+                            <option value="1"><script>show_words('_Automatic')</script></option>
+                            <option value="0"><script>show_words('_Manual')</script></option>
+                          </select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td height="24" align="right" class="bgblue"><script>show_words('_NTPser')</script></td>
+                        <td class="bggrey"><input type="text" id="ntp_server" name="ntp_server" size="70" maxlength="60" value=""></td>
+                      </tr>
+                      <tr>
+                        <td height=17 rowspan=2 align="right" valign=center class="bgblue"><script>show_words('_SetTime')</script></td>
+                        <td class="bggrey"><script>show_words('_Year')</script>
+                          <select id="year" name="year" size=1>
+                          </select>
+                          <script>show_words('_Month')</script>
+                          <select id="mon" name="mon" size=1 onclick="change_day()">
+                            <option value=1><script>show_words('_Jan')</script></option>
+                            <option value=2><script>show_words('_Feb')</script></option>
+                            <option value=3><script>show_words('_Mar')</script></option>
+                            <option value=4><script>show_words('_Apr')</script></option>
+                            <option value=5><script>show_words('_May')</script></option>
+                            <option value=6><script>show_words('_Jun')</script></option>
+                            <option value=7><script>show_words('_Jul')</script></option>
+                            <option value=8><script>show_words('_Aug')</script></option>
+                            <option value=9><script>show_words('_Sep')</script></option>
+                            <option value=10><script>show_words('_Oct')</script></option>
+                            <option value=11><script>show_words('_Nov')</script></option>
+                            <option value=12><script>show_words('_Dec')</script></option>
+                          </select>
+                          <script>show_words('_Day')</script>
+                          <select id="day" name="day" size=1>
+                          </select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="bggrey"><script>show_words('_Hour')</script>
+                          <select id="hour" name="hour" size=1>
+                            </select>
+                          <script>show_words('_Minute')</script>
+                          <select id="min" name="min" size=1>
+                          </select>
+                          <script>show_words('_Second')</script>
+                          <select id="sec" name="sec" size=1>
+                          </select>
+                          <!--<input type="button" id="set" name="set" value="Set Time" onClick="send_request(true)">
+						  -->
+						  <input type="button" id="set" name="set" value="Set Time" onClick="set_time()">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td height=26 align="right" class="bgblue"><script>show_words('_DaylightSaving')</script></td>
+                        <td class="bggrey"><input type="radio" name="daylight_enable" value="1" onClick="show_daylight();">
+                          <script>show_words('_Enabled')</script>&nbsp;&nbsp;&nbsp;
+                          <input type="radio" name="daylight_enable" value="0" onClick="show_daylight();">
+                          <script>show_words('_Disabled')</script><br>
+                          <script>show_words('_Start')</script>
+                          <select id="time_daylight_saving_start_month" name="time_daylight_saving_start_month" size=1>
+                            <option value=1><script>show_words('_Jan')</script></option>
+                            <option value=2><script>show_words('_Feb')</script></option>
+                            <option value=3><script>show_words('_Mar')</script></option>
+                            <option value=4><script>show_words('_Apr')</script></option>
+                            <option value=5><script>show_words('_May')</script></option>
+                            <option value=6><script>show_words('_Jun')</script></option>
+                            <option value=7><script>show_words('_Jul')</script></option>
+                            <option value=8><script>show_words('_Aug')</script></option>
+                            <option value=9><script>show_words('_Sep')</script></option>
+                            <option value=10><script>show_words('_Oct')</script></option>
+                            <option value=11><script>show_words('_Nov')</script></option>
+                            <option value=12><script>show_words('_Dec')</script></option>
+                          </select>
+                          <select id="time_daylight_saving_start_week" name="time_daylight_saving_start_week" size=1>
+                            <option value="1"><script>show_words('_1st')</script></option>
+                            <option value="2"><script>show_words('_2nd')</script></option>
+                            <option value="3"><script>show_words('_3rd')</script></option>
+                            <option value="4"><script>show_words('_4th')</script></option>
+                            <option value="5"><script>show_words('_5th')</script></option>
+                          </select>
+                          <select name="time_daylight_saving_start_day_of_week" id="time_daylight_saving_start_day_of_week" size=1>
+                            <option value="1"><script>show_words('_Sun')</script></option>
+                            <option value="2"><script>show_words('_Mon')</script></option>
+                            <option value="3"><script>show_words('_Tue')</script></option>
+                            <option value="4"><script>show_words('_Wed')</script></option>
+                            <option value="5"><script>show_words('_Thu')</script></option>
+                            <option value="6"><script>show_words('_Fri')</script></option>
+                            <option value="7"><script>show_words('_Sat')</script></option>
+                          </select>
+                          <script>show_words('_End')</script>
+                          <select id="time_daylight_saving_end_month" name="time_daylight_saving_end_month" size=1>
+                            <option value=1><script>show_words('_Jan')</script></option>
+                            <option value=2><script>show_words('_Feb')</script></option>
+                            <option value=3><script>show_words('_Mar')</script></option>
+                            <option value=4><script>show_words('_Apr')</script></option>
+                            <option value=5><script>show_words('_May')</script></option>
+                            <option value=6><script>show_words('_Jun')</script></option>
+                            <option value=7><script>show_words('_Jul')</script></option>
+                            <option value=8><script>show_words('_Aug')</script></option>
+                            <option value=9><script>show_words('_Sep')</script></option>
+                            <option value=10><script>show_words('_Oct')</script></option>
+                            <option value=11><script>show_words('_Nov')</script></option>
+                            <option value=12><script>show_words('_Dec')</script></option>
+                          </select>
+                          <select id="time_daylight_saving_end_week" name="time_daylight_saving_end_week" style="WIDTH: 50px">
+                            <option value="1"><script>show_words('_1st')</script></option>
+                            <option value="2"><script>show_words('_2nd')</script></option>
+                            <option value="3"><script>show_words('_3rd')</script></option>
+                            <option value="4"><script>show_words('_4th')</script></option>
+                            <option value="5"><script>show_words('_5th')</script></option>
+                          </select>
+                          <select name="time_daylight_saving_end_day_of_week" id="time_daylight_saving_end_day_of_week" style="WIDTH: 50px">
+                            <option value="1"><script>show_words('_Sun')</script></option>
+                            <option value="2"><script>show_words('_Mon')</script></option>
+                            <option value="3"><script>show_words('_Tue')</script></option>
+                            <option value="4"><script>show_words('_Wed')</script></option>
+                            <option value="5"><script>show_words('_Thu')</script></option>
+                            <option value="6"><script>show_words('_Fri')</script></option>
+                            <option value="7"><script>show_words('_Sat')</script></option>
+                          </select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue">&nbsp;</td>
+                        <td class="bggrey2"><input name="cancel" type="button" class="ButtonSmall" id="cancel" onClick="window.location='time.htm'" value="">
+									<script>$('#cancel').val(get_words('_Cancel'));</script>
+                            <input name="apply" type="button" class="ButtonSmall" id="apply" onClick="send_request(false)" value="">
+									<script>$('#apply').val(get_words('_Apply'));</script>
+                        </td>
+                      </tr>
+                    </table>
+                    <br>
+                  </form>
+                    </td>
+                </tr>
+            </table></td>
+          </tr>
+      </table></td>
+    <td background="bg1_r.gif">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><img src="c1_bl.gif" width="21" height="20" /></td>
+    <td align="right" background="bg1_b.gif"><img src="copyright.png" width="264" height="20" /></td>
+    <td><img src="c1_br.gif" width="21" height="20" /></td>
+  </tr>
+</table>
+<script>
+var login_who=login_Info;
+    if(login_who != "w")
+    {
+        get_by_id("cancel").disabled = "true";
+        get_by_id("apply").disabled = "true";
+    	get_by_id("set").disabled = "true";
+	}
+
+</script>
+</body>
+</html>

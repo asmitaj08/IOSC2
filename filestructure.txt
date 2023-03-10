@@ -1,0 +1,399 @@
+_TEW731BRV1_FW102B05.bin.extracted
+├── 2C18
+├── 2C18.7z
+├── E7422.squashfs
+├── squashfs-root
+│   ├── bin
+│   │   ├── acltd
+│   │   ├── adduser -> busybox
+│   │   ├── ash -> busybox
+│   │   ├── auth
+│   │   ├── auth-fail
+│   │   ├── awk -> busybox
+│   │   ├── brctl
+│   │   ├── bunzip2 -> busybox
+│   │   ├── busybox
+│   │   ├── bzcat -> busybox
+│   │   ├── cat -> busybox
+│   │   ├── chmod -> busybox
+│   │   ├── cp -> busybox
+│   │   ├── crond -> busybox
+│   │   ├── cut -> busybox
+│   │   ├── date -> busybox
+│   │   ├── dmesg -> busybox
+│   │   ├── dos2unix -> busybox
+│   │   ├── echo -> busybox
+│   │   ├── expr -> busybox
+│   │   ├── false -> busybox
+│   │   ├── flash
+│   │   ├── free -> busybox
+│   │   ├── fwUpgrade
+│   │   ├── getmib
+│   │   ├── getty -> busybox
+│   │   ├── get-user-passwd
+│   │   ├── grep -> busybox
+│   │   ├── halt -> busybox
+│   │   ├── head -> busybox
+│   │   ├── hostname -> busybox
+│   │   ├── iapp
+│   │   ├── ib
+│   │   ├── idd
+│   │   ├── ifconfig -> busybox
+│   │   ├── igmpproxy
+│   │   ├── init -> busybox
+│   │   ├── ip -> busybox
+│   │   ├── ip-down
+│   │   ├── iptables
+│   │   ├── ip-up
+│   │   ├── irf
+│   │   ├── iw
+│   │   ├── iwcontrol
+│   │   ├── iwpriv
+│   │   ├── kill -> busybox
+│   │   ├── killall -> busybox
+│   │   ├── klogd -> busybox
+│   │   ├── l2tpd
+│   │   ├── l2tp_demand.sh
+│   │   ├── l2tp_tunnel_connect.sh
+│   │   ├── l2tp_tunnel_disconnect.sh
+│   │   ├── lld2d
+│   │   ├── ln -> busybox
+│   │   ├── login -> busybox
+│   │   ├── ls -> busybox
+│   │   ├── miniigd
+│   │   ├── mkdir -> busybox
+│   │   ├── mount -> busybox
+│   │   ├── net-snmp-config
+│   │   ├── netstat -> busybox
+│   │   ├── ntp-action
+│   │   ├── ob
+│   │   ├── od
+│   │   ├── orf
+│   │   ├── ow
+│   │   ├── passwd -> busybox
+│   │   ├── ping -> busybox
+│   │   ├── ping6 -> busybox
+│   │   ├── poll_wps_daemon
+│   │   ├── poweroff -> busybox
+│   │   ├── pppd
+│   │   ├── pppoe-discovery
+│   │   ├── pppoe-probe
+│   │   ├── pptp
+│   │   ├── ps -> busybox
+│   │   ├── reboot -> busybox
+│   │   ├── renice -> busybox
+│   │   ├── rm -> busybox
+│   │   ├── route -> busybox
+│   │   ├── routed
+│   │   ├── rssi
+│   │   ├── setmib
+│   │   ├── sh -> busybox
+│   │   ├── sleep -> busybox
+│   │   ├── syslogd -> busybox
+│   │   ├── tail -> busybox
+│   │   ├── top -> busybox
+│   │   ├── true -> busybox
+│   │   ├── UDPserver
+│   │   ├── umount -> busybox
+│   │   ├── unix2dos -> busybox
+│   │   ├── uptime -> busybox
+│   │   ├── wc -> busybox
+│   │   └── wscd
+│   ├── dev
+│   │   ├── log -> /dev/null
+│   │   ├── misc
+│   │   └── pts
+│   ├── etc
+│   │   ├── dhcp6cctlkey -> /dev/null
+│   │   ├── dhcp6c-script
+│   │   ├── dhcp6sctlkey -> /dev/null
+│   │   ├── ftpConfig -> /dev/null
+│   │   ├── group
+│   │   ├── host.conf
+│   │   ├── hosts -> /dev/null
+│   │   ├── icon.ico
+│   │   ├── init.d
+│   │   │   ├── rcS -> rcS_32M
+│   │   │   └── rcS_32M
+│   │   ├── inittab
+│   │   ├── linuxigd -> /dev/null
+│   │   ├── lld2d.conf
+│   │   ├── mime.types
+│   │   ├── passwd
+│   │   ├── ppp -> /dev/null
+│   │   ├── realsil_gw.ico
+│   │   ├── resolv.conf -> /dev/null
+│   │   ├── services
+│   │   ├── simplecfg -> /dev/null
+│   │   ├── simplecfgservice.xml
+│   │   ├── smb.conf -> /dev/null
+│   │   ├── smbConfig -> /dev/null
+│   │   ├── tmp
+│   │   │   ├── picsdesc.skl
+│   │   │   └── picsdesc.xml
+│   │   ├── TZ -> /dev/null
+│   │   ├── version
+│   │   └── wscd.conf
+│   ├── flash
+│   ├── home
+│   ├── init -> bin/init
+│   ├── lib
+│   │   ├── ld-uClibc-0.9.30.so
+│   │   ├── ld-uClibc.so -> ld-uClibc.so.0
+│   │   ├── ld-uClibc.so.0 -> ld-uClibc-0.9.30.so
+│   │   ├── libcrypt-0.9.30.so
+│   │   ├── libcrypt.so -> libcrypt.so.0
+│   │   ├── libcrypt.so.0 -> libcrypt-0.9.30.so
+│   │   ├── libc.so
+│   │   ├── libc.so.0 -> libuClibc-0.9.30.so
+│   │   ├── libdl-0.9.30.so
+│   │   ├── libdl.so -> libdl.so.0
+│   │   ├── libdl.so.0 -> libdl-0.9.30.so
+│   │   ├── libgcc_s_4181.so.1
+│   │   ├── libgcc.so -> libgcc_s.so.1
+│   │   ├── libgcc_s.so -> libgcc_s.so.1
+│   │   ├── libgcc_s.so.1 -> libgcc_s_4181.so.1
+│   │   ├── libleopard.so
+│   │   ├── libm-0.9.30.so
+│   │   ├── libm.so -> libm.so.0
+│   │   ├── libm.so.0 -> libm-0.9.30.so
+│   │   ├── libncc_comm.so
+│   │   ├── libpcap.so.1
+│   │   ├── libpthread-0.9.30.so
+│   │   ├── libpthread.so -> libpthread.so.0
+│   │   ├── libpthread.so.0 -> libpthread-0.9.30.so
+│   │   ├── libresolv-0.9.30.so
+│   │   ├── libresolv.so -> libresolv.so.0
+│   │   ├── libresolv.so.0 -> libresolv-0.9.30.so
+│   │   ├── librt-0.9.30.so
+│   │   ├── librt.so -> librt.so.0
+│   │   ├── librt.so.0 -> librt-0.9.30.so
+│   │   └── libuClibc-0.9.30.so
+│   ├── mnt
+│   ├── proc
+│   ├── sbin
+│   │   ├── app_sync
+│   │   ├── ddns-notify
+│   │   ├── defaultCfg.txt
+│   │   ├── dhcp6c
+│   │   ├── dhcp6s
+│   │   ├── dnsmasq
+│   │   ├── dnsTest
+│   │   ├── ds
+│   │   ├── dumpleases
+│   │   ├── lang_merge
+│   │   ├── lanmapd
+│   │   ├── llmnr
+│   │   ├── mailsend
+│   │   ├── mini_httpd
+│   │   ├── mldc
+│   │   ├── ncc
+│   │   ├── noip2
+│   │   ├── ntpclient
+│   │   ├── proxy
+│   │   ├── radvd
+│   │   ├── rdnssd
+│   │   ├── snmpd
+│   │   ├── udhcpc
+│   │   ├── udhcpd
+│   │   ├── wanCap
+│   │   └── wan_led_blink
+│   ├── sys
+│   ├── tmp -> /dev/null
+│   ├── usr
+│   │   └── share
+│   │       └── udhcpc
+│   │           └── ncc_sync.script
+│   ├── var
+│   ├── web -> /dev/null
+│   └── www
+│       ├── back.htm
+│       ├── back.jpg
+│       ├── back_wizard_reboot.htm
+│       ├── bg1_b.gif
+│       ├── bg1_l.gif
+│       ├── bg1_r.gif
+│       ├── bg1_t.gif
+│       ├── bg_button2.gif
+│       ├── bg_button3.gif
+│       ├── bg_button.gif
+│       ├── bg_button_help.gif
+│       ├── bg.gif
+│       ├── btn_menu_01.png
+│       ├── btn_menu_02.png
+│       ├── btn_menu_03.png
+│       ├── btn_menu_04.png
+│       ├── btn_menu_05.png
+│       ├── btn_menu_06.png
+│       ├── btn_menu_07.png
+│       ├── btn_menu_08.png
+│       ├── btn_menu_09.png
+│       ├── btn_menu_sel_01.png
+│       ├── btn_menu_sel_02.png
+│       ├── btn_menu_sel_03.png
+│       ├── btn_menu_sel_04.png
+│       ├── btn_menu_sel_05.png
+│       ├── btn_menu_sel_06.png
+│       ├── btn_menu_sel_07.png
+│       ├── btn_menu_sel_08.png
+│       ├── btn_menu_sel_09.png
+│       ├── but_access_0.gif
+│       ├── but_access_1.gif
+│       ├── but_advanced_0.gif
+│       ├── but_advanced_1.gif
+│       ├── but_advancedsetting_0.gif
+│       ├── but_advancedsetting_1.gif
+│       ├── but_basicsetting_0.gif
+│       ├── but_basicsetting_1.gif
+│       ├── but_bg.gif
+│       ├── but_bottom.gif
+│       ├── but_help_access_0.gif
+│       ├── but_help_access_1.gif
+│       ├── but_help_main_0.gif
+│       ├── but_help_main_1.gif
+│       ├── but_help_management_0.gif
+│       ├── but_help_management_1.gif
+│       ├── but_help_routing_0.gif
+│       ├── but_help_routing_1.gif
+│       ├── but_help_status_0.gif
+│       ├── but_help_status_1.gif
+│       ├── but_help_tools_0.gif
+│       ├── but_help_tools_1.gif
+│       ├── but_help_wireless_0.gif
+│       ├── but_help_wireless_1.gif
+│       ├── but_ipsetting_0.gif
+│       ├── but_ipsetting_1.gif
+│       ├── but_main_0.gif
+│       ├── but_main_1.gif
+│       ├── but_management_0.gif
+│       ├── but_management_1.gif
+│       ├── but_routing_0.gif
+│       ├── but_routing_1.gif
+│       ├── but_security_0.gif
+│       ├── but_security_1.gif
+│       ├── but_status_0.gif
+│       ├── but_status_1.gif
+│       ├── but_tools_0.gif
+│       ├── but_tools_1.gif
+│       ├── but_top.gif
+│       ├── but_wireless_0.gif
+│       ├── but_wireless_1.gif
+│       ├── but_wizard_0.gif
+│       ├── but_wizard_1.gif
+│       ├── c1_bl.gif
+│       ├── c1_br.gif
+│       ├── c1_tl.gif
+│       ├── c1_tr.gif
+│       ├── captureLan.pcap -> /dev/null
+│       ├── captureWan.pcap -> /dev/null
+│       ├── close.htm
+│       ├── continue.htm
+│       ├── copyright.png
+│       ├── count_down.htm
+│       ├── ddns.htm
+│       ├── def_lang.js
+│       ├── def-style.css
+│       ├── delete.jpg
+│       ├── description.gif
+│       ├── dmz.htm
+│       ├── domain_filter.htm
+│       ├── downg.gif
+│       ├── do_wps_save.htm
+│       ├── dynamic_routing.htm
+│       ├── edit.jpg
+│       ├── email_log.htm
+│       ├── filters.htm
+│       ├── firewall_setting.htm
+│       ├── firmware.htm
+│       ├── global.gif
+│       ├── glossary_content.htm
+│       ├── glossary.htm
+│       ├── help_access.htm
+│       ├── help_main.htm
+│       ├── help_manage.htm
+│       ├── help_routing.htm
+│       ├── help_status.htm
+│       ├── help_tools.htm
+│       ├── help_wizard.htm
+│       ├── help_wlan.htm
+│       ├── inbound_filter.htm
+│       ├── ipv6.htm
+│       ├── js
+│       │   ├── jMenu.js
+│       │   ├── jquery-1.3.2.min.js
+│       │   ├── jquery.color.js
+│       │   ├── jquery.tablesorter.min.js
+│       │   ├── object.js
+│       │   ├── public.js
+│       │   └── xml.js
+│       ├── lan1_m.htm
+│       ├── lang_ge.js
+│       ├── lang_ru.js
+│       ├── lang_sp.js
+│       ├── lan.htm
+│       ├── log.htm
+│       ├── login_fail.htm
+│       ├── login.htm
+│       ├── logo.gif
+│       ├── log_setting.htm
+│       ├── password.htm
+│       ├── ping_back.htm
+│       ├── ping_test.htm
+│       ├── protocol_filter.htm
+│       ├── ptrace.htm
+│       ├── public_js
+│       │   ├── md5.js
+│       │   ├── public_ipv6.js
+│       │   ├── public.js
+│       │   └── public_msg.js
+│       ├── remote_management.htm
+│       ├── restart.htm
+│       ├── routing_table.htm
+│       ├── rus-style.css
+│       ├── settings.htm
+│       ├── snmp.htm
+│       ├── sorter_bg.gif
+│       ├── spacer.gif
+│       ├── special_ap.htm
+│       ├── static_routing.htm
+│       ├── statistic.htm
+│       ├── status.htm
+│       ├── style.css -> /dev/null
+│       ├── SystemTime.htm
+│       ├── time.htm
+│       ├── top_1.gif
+│       ├── top_2.gif
+│       ├── transpar.gif
+│       ├── uk.js -> /dev/null
+│       ├── user_page.htm
+│       ├── vct_closed.jpg
+│       ├── vct_connected.jpg
+│       ├── virtual_server.htm
+│       ├── wan_bigpond.htm
+│       ├── wan_dhcp.htm
+│       ├── wan.htm
+│       ├── wan_l2tp.htm
+│       ├── wan_poe.htm
+│       ├── wan_pptp.htm
+│       ├── wan_russia_l2tp.htm
+│       ├── wan_russia_poe.htm
+│       ├── wan_russia_pptp.htm
+│       ├── wireless_advanced.htm
+│       ├── wireless_auth.htm
+│       ├── wireless_basic.htm
+│       ├── wizard.htm
+│       ├── wla_conn.htm
+│       ├── wlan_wps.htm
+│       ├── wps_apply_ok.htm
+│       ├── wps_back_fail.htm
+│       ├── wps_back.htm
+│       ├── wps_back_ok.htm
+│       ├── wps_back_result.htm
+│       └── xml
+│           ├── lang_Eng.xml
+│           ├── lang_IT.xml
+│           ├── lang_PR.xml
+│           └── multi_lang.xml
+└── squashfs-root-0
+
+24 directories, 372 files

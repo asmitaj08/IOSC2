@@ -1,0 +1,190 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;">
+<title>TRENDNET | modelName | Login</title>
+<link rel="stylesheet" href="style.css" type="text/css">
+<script language="JavaScript" src="uk.js"></script>
+
+<script language="JavaScript" src="public_js/public.js"></script>
+<script language="Javascript" src="js/jquery-1.3.2.min.js"></script>
+<script language="Javascript" src="js/xml.js"></script>
+<script language="Javascript" src="js/object.js"></script>
+<script language="JavaScript">
+
+	var dev_info = get_router_info();
+
+	var hw_version 	= dev_info.hw_ver;
+	var version 	= dev_info.fw_ver;
+	var model		= dev_info.model;
+	var login_Info 	= dev_info.login_info;
+	var cli_mac 	= dev_info.cli_mac;
+	
+var param = {
+		url: "curr_lang.ccp",
+		arg: 'ccp_act=get&num_inst=1'+
+			'&oid_1=IGD_&inst_1=10000'
+	};
+	get_config_obj(param);	
+
+function encode_base64(psstr) 
+{
+	return encode(psstr,psstr.length); 
+}
+
+function encode (psstrs, iLen) 
+{
+	var map1="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	var oDataLen = (iLen*4+2)/3;
+	var oLen = ((iLen+2)/3)*4;
+	var out='';
+	var ip = 0;
+	var op = 0;
+	while (ip < iLen) 
+	{
+		var xx = psstrs.charCodeAt(ip++);
+		var yy = ip < iLen ? psstrs.charCodeAt(ip++) : 0;
+		var zz = ip < iLen ? psstrs.charCodeAt(ip++) : 0;
+		var aa = xx >>> 2;
+		var bb = ((xx &   3) << 4) | (yy >>> 4);
+		var cc = ((yy & 0xf) << 2) | (zz >>> 6);
+		var dd = zz & 0x3F;
+		out += map1.charAt(aa);
+		op++;
+		out += map1.charAt(bb);
+		op++;
+		out += op < oDataLen ? map1.charAt(cc) : '='; 
+		op++;
+		out += op < oDataLen ? map1.charAt(dd) : '='; 
+		op++; 
+   }
+   return out; 
+}
+
+function check()
+{
+	//var pwd=get_by_id("login_pass").value;
+	if(get_by_id("login_n").value=="")
+	{
+		alert(get_words('_MSG36'));
+		return false;
+	}
+	//get_by_id("login_name").value=encode_base64(get_by_id("login_n").value);
+	//get_by_id("login_pass").value=encode_base64(pwd);
+	
+	get_by_id("username").value=get_by_id("login_n").value;
+    get_by_id("password").value=get_by_id("login_pass").value;
+	get_by_id("curr_language").value = get_by_id("lang_select").value;
+	return true;
+}
+
+function switch_lang()
+{
+	//get_by_id("lang_select").value = config_val("CurrentLanguage_");
+	var curr_lang = config_val("igd_CurrentLanguage_");
+	set_selectIndex(curr_lang,get_by_id("lang_select"));
+}
+
+function lang_change()
+{
+	get_by_id("curr_language").value = get_by_id("lang_select").value;
+	var ajax_param = {
+			type: 	"POST",
+			async:	false,
+			url: 	'curr_lang.ccp',
+			data: 	'ccp_act=set&ccpSubEvent=CCP_SUB_WIZARDPOPCTRL&curr_language='+get_by_id("curr_language").value,
+			success: function(data) {
+				window.location.reload(true);
+			}
+		};
+		
+		$.ajax(ajax_param);
+}
+
+</script>
+<style type="text/css">
+<!--
+.style1 {color: #006699}
+-->
+</style>
+</head>
+
+<body onLoad="MM_preloadImages('but_help1_1.gif');switch_lang();">
+<table width="750" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="21"><img src="c1_tl.gif" width="21" height="21" /></td>
+    <td width="708" background="bg1_t.gif"><img src="top_1.gif" width="390" height="21" /></td>
+    <td width="21"><img src="c1_tr.gif" width="21" height="21" /></td>
+  </tr>
+  <tr>
+    <td valign="top" background="bg1_l.gif"><img src="top_2.gif" width="21" height="69" /></td>
+    <td background="bg.gif"><table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="13%"><img src="logo.gif" /></td>
+        <td width="87%" align="right"><img src="description.gif" /></td>
+      </tr>
+    </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="78%" valign="top"><table width="98%" border="0" cellpadding="0" cellspacing="0" class="tabBigTitle">
+                <tr>
+                  <td class="headerbg2"><script>show_words(_Login)</script></td>
+              </tr>
+                <tr>
+                  <td valign="top"><form name="form1" id="form1" action="login.ccp" method="post">
+                    <input type="hidden" name="html_response_page" value="login_fail.htm">
+                    <input type="hidden" name="login_name" id="login_name">
+					<input type="hidden" id="username" name="username">
+					<input type="hidden" id="password" name="password">
+					<input type="hidden" id="curr_language" name="curr_language">
+                    <TABLE width="98%" border="0" align="center" cellpadding="3" cellspacing="1">
+                      <tr>
+                        <td bgcolor="#DDDDDD"><p>&nbsp;</p>
+                            <table width="350" border="0" align="center">
+                              <tr>
+                                <td colspan="2"><b><script>show_words(_MSG757)</script></b></td>
+                              </tr>
+                              <tr>
+                                <td><strong><script>show_words(_username)</script>&nbsp;:</strong></td>
+                                <td><input style="width:220" name="login_n" type="text" id="login_n" size="32" maxlength="32"></td>
+                              </tr>
+                              <tr>
+                                <td><strong><script>show_words(_Pwd)</script>&nbsp;:</strong></td>
+                                <td><input style="width:220" type="password" name="login_pass" id="login_pass" size="32" maxlength="32"></td>
+                              </tr>
+                              <tr>
+                              	<td><strong><script>show_words(_Language)</script>&nbsp;:</strong></td>
+                              	<td><select id="lang_select" name="lang_select" size=1 onchange="lang_change();"> 
+                              		<option value="0">English</option>
+                              		<option value="1">Spanish</option>
+                              		<option value="2">German</option>
+					<option value="3">Русский</option>
+                              		</select>
+                              	</td>
+                              </tr>
+                              <tr>
+                                <td>&nbsp;</td>
+                                <td><input id="btnLogin" name="login" type="submit" class="ButtonSmall" onclick="return check();" value=""></td>
+								<script>$('#btnLogin').val(get_words('_Login'));</script>
+                              </tr>
+                            </table>                          
+                          <p>&nbsp;</p></td>
+                      </tr>
+                    </table>
+                    <br>
+                  </form>
+                  </td>
+                </tr>
+              </table>
+                <br></td>
+          </tr>
+      </table></td>
+    <td background="bg1_r.gif">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><img src="c1_bl.gif" width="21" height="20" /></td>
+    <td align="right" background="bg1_b.gif"><img src="copyright.png" width="264" height="20" /></td>
+    <td><img src="c1_br.gif" width="21" height="20" /></td>
+  </tr>
+</table>
+</body>
+</html>

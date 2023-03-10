@@ -1,0 +1,120 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>TRENDNET | modelName Utility </title>
+<link rel="stylesheet" href="style.css" type="text/css">
+<script language="JavaScript" src="public.js"></script>
+<script language="JavaScript">
+	var dev_info = get_router_info();
+
+	var hw_version 	= dev_info.hw_ver;
+	var version 	= dev_info.fw_ver;
+	var model		= dev_info.model;
+	var login_Info 	= dev_info.login_info;
+	var cli_mac 	= dev_info.cli_mac;
+	
+	function onPageLoad(){
+		get_by_id("html_response_page").value = get_by_id("html_response_return_page").value;	
+	}
+	function back(){
+		//get_by_id("show_back").style.display = "";
+		if(login_who== "user"){
+			window.location.href ="lan.htm";
+		}else{
+			window.location.href = "http://"+"<% CmoGetCfg("lan_ipaddr","none"); %>"+"/"+get_by_id("html_response_page").value;
+		}
+		
+	}
+	function do_count_down(){
+		get_by_id("timeleft").innerHTML = count;
+		
+		if (count == 0) {	       
+	        back();
+	        return false;
+	    }
+
+		if (count > 0) {
+	        count--;
+	        setTimeout('do_count_down()',1000);
+	    }
+	
+	}
+		
+</script>
+</head>
+<body>
+<table width="750" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="21"><img src="c1_tl.gif" width="21" height="21" /></td>
+    <td width="708" background="bg1_t.gif"><img src="top_1.gif" width="390" height="21" /></td>
+    <td width="21"><img src="c1_tr.gif" width="21" height="21" /></td>
+  </tr>
+  <tr>
+    <td valign="top" background="bg1_l.gif"><img src="top_2.gif" width="21" height="69" /></td>
+    <td background="bg.gif"><table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="13%"><img src="logo.gif" /></td>
+        <td width="87%" align="right"><img src="description.gif" /></td>
+      </tr>
+    </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="78%" valign="top"><table width="98%" border="0" cellpadding="0" cellspacing="0" class="tabBigTitle">
+                <tr>
+                  <td class="headerbg2">&nbsp;</td>
+                </tr>
+                <tr>
+                  <td valign="top"><input type="hidden" id="html_response_page" name="html_response_page" value="lan.htm">
+                    <input type="hidden" id="html_response_message" name="html_response_message" value="<% CmoGetCfg("html_response_message","none"); %>">
+                    <input type="hidden" id="html_response_return_page" name="html_response_return_page" value="<% CmoGetCfg("html_response_return_page","none"); %>">
+                    <input type="hidden" id="ping_result" name="ping_result" value="<% CmoGetStatus("ping_result"); %>">
+<TABLE width="98%" border="0" align="center" cellpadding="3" cellspacing="1">
+                        <tr>
+                          <td bgcolor="#DDDDDD"><p>&nbsp;</p>
+                              <table width="70%" border="0" align="center">
+                                <tr>
+                                  <td height="100"><div id=box_header2>
+                                      <div align="center">
+                                        <script>
+												var login_who="<% CmoGetStatus("get_current_user"); %>";
+												if(login_who== "user"){
+													document.write("Only admin account can change the settings.");
+												}else{
+													if(get_by_id("html_response_return_page").value != "ping_test.htm"){
+														document.write(get_by_id("html_response_message").value);
+													}else{
+														document.write(get_by_id("ping_result").value);
+													}
+												}
+											</script>
+                                        <br>
+                                        <br>
+                                        <p align="center" class="box_msg">Please wait <font color="#0000CC"><b><span id="timeleft"></span></b></font>&nbsp;seconds ...</p>
+                                        <div id="show_back2" style="display:none"><a href="<% CmoGetCfg("html_response_return_page","none"); %>" onClick="javascript:back();"><b>Back</b></a></div>
+                                      </div>
+                                  </div></td>
+                                </tr>
+                              </table>
+                            <p>&nbsp;</p></td>
+                        </tr>
+                                            </table>
+<br></td></tr>
+              </table>
+                <br></td>
+          </tr>
+      </table></td>
+    <td background="bg1_r.gif">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><img src="c1_bl.gif" width="21" height="20" /></td>
+    <td align="right" background="bg1_b.gif"><img src="copyright.png" width="264" height="20" /></td>
+    <td><img src="c1_br.gif" width="21" height="20" /></td>
+  </tr>
+</table>
+</body>
+<script>
+	var count = 30;
+	do_count_down();
+	onPageLoad();
+</script>
+</html>

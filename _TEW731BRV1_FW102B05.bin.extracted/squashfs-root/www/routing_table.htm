@@ -1,0 +1,432 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;">
+<title>TRENDNET | modelName | Routing | Routing Table</title>
+<link rel="stylesheet" href="style.css" type="text/css">
+<script language="JavaScript" src="uk.js"></script>
+
+<script language="JavaScript" src="public_js/public.js"></script>
+<script language="Javascript" src="js/jquery-1.3.2.min.js"></script>
+<script language="Javascript" src="js/xml.js"></script>
+<script language="Javascript" src="js/object.js"></script>
+<SCRIPT LANGUAGE="JavaScript">
+	var dev_info = get_router_info();
+	var rtList = null;
+	
+	var param = {
+		url: "get_set.ccp",
+		arg: 'ccp_act=get&num_inst=1'+
+			'&oid_1=IGD_Status_RoutingTable_i_&inst_1=11000'
+	};
+	get_config_obj(param);
+	
+	rtList = {
+		'addr':			new String(config_val('igdRtList_Destination_')).split(','),
+		'mask':			new String(config_val('igdRtList_Netmask_')).split(','),
+		'gw':			new String(config_val('igdRtList_Gateway_')).split(','),
+		'iface':		new String(config_val('igdRtList_Interface_')).split(','),
+		'metric':		new String(config_val('igdRtList_Metric_')).split(','),
+		'type':			new String(config_val('igdRtList_Type_')).split(',')
+	}
+	
+	function mapIface(idx)
+	{
+		switch (idx) {
+		case '0':
+			return 'Internet';
+		case '1':
+			return 'LAN';
+		case '2':
+			return 'Loopback';
+		}
+	}
+	
+	function routingTable_list()
+	{
+		if (rtList.addr == null)
+			return;
+		
+		var str = 	'<tr>'+
+						'<td align="center" bgcolor="#DDDDDD"><b>' + get_words('_NetworkAddr') + '</b></td>'+
+						'<td align="center" bgcolor="#DDDDDD"><b>' + get_words('_NetworkMask') + '</b></td>'+
+						'<td align="center" bgcolor="#DDDDDD"><b>' + get_words('_GWAddr') + '</b></td>'+
+						'<td align="center" bgcolor="#DDDDDD"><b>' + get_words('_Interface') + '</b></td>'+
+						'<td align="center" bgcolor="#DDDDDD"><b>' + get_words('_Metric') + '</b></td>'+
+						'<td align="center" bgcolor="#DDDDDD"><b>' + get_words('_Type') + '</b></td>'+
+					'</tr>';
+		for (var i = 0; i < rtList.addr.length ; i++){
+			str += ("<tr bgcolor=\"#FFFFFF\">");
+			str += ("<td><font face=\"Arial\" size=\"2\">"+ ((rtList.addr[i] == "0.0.0.0") ? "default":rtList.addr[i] )+"</font></td>");
+			str += ("<td><font face=\"Arial\" size=\"2\">"+ rtList.mask[i] +"</font></td>");
+			str += ("<td><font face=\"Arial\" size=\"2\">"+ rtList.gw[i] +"</font></td>");
+			str += ("<td><font face=\"Arial\" size=\"2\">"+ mapIface(rtList.iface[i]) +"</font></td>");
+			str += ("<td><font face=\"Arial\" size=\"2\">"+ rtList.metric[i] +"</font></td>");
+			str += ("<td><font face=\"Arial\" size=\"2\">"+ (rtList.type[i]==0? 'Dynamic':'Static') +"</font></td>");
+			str += ("</tr>");		
+		}
+		$('#list_container').html(str);
+	}
+/*
+	function fill_rtList() 
+	{
+		var len = config_val('igdWlanStatus_WLANHostNumberOfEntries_');
+		
+		rtList = null;
+		rtList = {
+			'addr':			config_str_multi('igdRtList_Destination_'),
+			'mask':			config_str_multi('igdRtList_Netmask_'),
+			'gw':			config_str_multi('igdRtList_Gateway_'),
+			'iface':		config_str_multi('igdRtList_Interface_'),
+			'metric':		config_str_multi('igdRtList_Metric_'),
+			'type':			config_str_multi('igdRtList_Type_')
+		}
+		routingTable_list();
+	}
+	
+	function query_routingTable() 
+	{
+		var arg = 'ccp_act=get&num_inst=1'+
+				'&oid_1=IGD_Status_RoutingTable_i_&inst_1=11000';
+		$.ajax ({
+			type: 	"POST",
+			async:	false,
+			url: 	'get_set.ccp',
+			data: 	arg,
+			dataType: "xml",
+			success: function(data) {
+				gConfig = data;	// copy the recevied data to global variable
+				fill_rtList();
+			},
+			error: function(xhr, ajaxOptions, thrownError){
+				
+			}
+		});
+	}
+*/
+/*	
+	function change_inter(obj_value){
+		var return_word = obj_value;
+		if(obj_value == "br0"){
+			return_word = "LAN";
+		}else if(obj_value == "eth1"){
+			return_word = "WAN";
+		}else if(obj_value == "lo"){
+			return_word = "Local Loopback";
+		}
+		return return_word;
+	}
+	function set_routes(){
+		var index = 1;
+		for (var i=0;i<rule_max_num;i++){
+			var temp_st;
+			var k=i;
+			if(parseInt(i,10)<10){
+				k="0"+i;
+			}
+			temp_st = (get_by_id("static_routing_" + k).value).split("/");
+			if (temp_st.length > 1){
+				if(temp_st[1] != "name"){
+					DataArray[DataArray.length++] = new Data(temp_st[0],temp_st[1], temp_st[2], temp_st[3], temp_st[4], temp_st[5], temp_st[5], temp_st[6], "Static", index);
+					index++;
+				}
+			}
+		}
+		
+		var myData = get_by_id("routing_table").value.split(",");
+		var temp_data;
+		for (var i=0 ; i<myData.length;i++){
+			temp_data = myData[i].split("/");
+			if(temp_data.length > 1){				
+				var is_not_check= true;
+				for(var j=0;j<DataArray.length;j++){
+					if(temp_data[0] == DataArray[j].Ip_addr && temp_data[1] == DataArray[j].Net_mask && temp_data[2] == DataArray[j].Gateway){
+						is_not_check = false;
+						break;
+					}
+				}
+				
+				if(is_not_check){
+					DataArray[DataArray.length++] = new Data(0, i , temp_data[0], temp_data[1], temp_data[2], temp_data[3], temp_data[3], temp_data[4], "Dynamic", index);
+					index++;
+				}
+			}	
+				
+		}
+	}
+*/	
+	$(document).ready( function () {
+		routingTable_list();
+	});
+	
+</SCRIPT>
+</head>
+
+<body onLoad="MM_preloadImages('but_wizard_1.gif','but_status_1.gif','but_tools_1.gif','but_main_1.gif','but_wireless_1.gif','but_routing_1.gif','but_access_1.gif','but_management_1.gif')">
+<table width="750" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="21"><img src="c1_tl.gif" width="21" height="21" /></td>
+    <td width="708" background="bg1_t.gif"><img src="top_1.gif" width="390" height="21" /></td>
+    <td width="21"><img src="c1_tr.gif" width="21" height="21" /></td>
+  </tr>
+  <tr>
+    <td valign="top" background="bg1_l.gif"><img src="top_2.gif" width="21" height="69" /></td>
+    <td background="bg.gif"><table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="13%"><img src="logo.gif" /></td>
+        <td width="87%" align="right"><img src="description.gif" /></td>
+      </tr>
+    </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="20%" height="429" valign="top"><table width="56%" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+				<td onclick="location.href='lan.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG749');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>	
+				</a></td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+				<td onclick="location.href='wireless_basic.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wireless')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+			  <tr>
+				<td onclick="location.href='status.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG748')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+				<td onclick="location.href='static_routing.htm'">
+				<table class="menu_tb">
+				<tr>
+					<td class="menu_sel_nw"></td>
+					<td class="menu_sel_n"></td>
+					<td class="menu_sel_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_w"></td>
+					<td class="menu_sel_m"><b>&nbsp;&nbsp;<script>show_words('_MSG747')</script></td>
+					<td class="menu_sel_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_sw"></td>
+					<td class="menu_sel_s"></td>
+					<td class="menu_sel_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><table width="100%" border="0" cellpadding="2" class="submenubg">
+                    <tr>
+                      <td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td width="87%"><a href="static_routing.htm" class="submenus"><b><script>show_words('_MSG745')</script></b></a></td>
+                    </tr>
+					<tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="dynamic_routing.htm" class="submenus"><b><script>show_words('_MSG744')</script> </b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="routing_table.htm" class="submenus"><b><u><script>show_words('_RoutingTb')</script></u></b></a></td>
+                    </tr>
+                </table></td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='filters.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Access')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='snmp.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG746')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='restart.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Tools')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="show_wizard('wizard.htm',login_Info)">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wizard')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="15" height="15"></td>
+              </tr>
+            </table>
+            <p>&nbsp;</p>
+              <p>&nbsp;</p></td>
+            <td width="2%"><img src="spacer.gif" width="15" height="15" /></td>
+            <td width="78%" valign="top"><table width="98%" border="0" cellpadding="0" cellspacing="0" class="tabBigTitle">
+                <tr>
+                  <td class="headerbg2"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                      <tr>
+                        <td width="79%"><font color="#FFFFFF" class="textheader" style="margin-left:0; padding-left:0"><script>show_words('_RoutingTb')</script></font></td>
+                        <td width="21%"><input name="button" type="button" id="help_btn" class="ButtonHelp" onclick="MM_openBrWindow('help_routing.htm#routing_routing_table','','scrollbars=yes,resizable=yes,width=800,height=550')" value="  " />
+								<script>$('#help_btn').val(get_words('_Help'));</script>
+                        </td>
+                      </tr>
+                  </table></td>
+                </tr>
+                <tr>
+                  <td valign="top"><br>
+                    <table width="98%" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#333333" id="list_container">
+                    <tr>
+                      <td align="center" bgcolor="#DDDDDD"><b><script>show_words('_NetworkAddr')</script></b></td>
+                      <td align="center" bgcolor="#DDDDDD"><b><script>show_words('_NetworkMask')</script></b></td>
+                      <td align="center" bgcolor="#DDDDDD"><b><script>show_words('_GWAddr')</script></b></td>
+                      <td align="center" bgcolor="#DDDDDD"><b><script>show_words('_Interface')</script></b></td>
+                      <td align="center" bgcolor="#DDDDDD"><b><script>show_words('_Metric')</script></b></td>
+                      <td align="center" bgcolor="#DDDDDD"><b><script>show_words('_Type')</script></b></td>
+                    </tr>
+                  </table>
+                    <br>
+                  </td>
+                </tr>
+            </table></td>
+          </tr>
+      </table></td>
+    <td background="bg1_r.gif">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><img src="c1_bl.gif" width="21" height="20" /></td>
+    <td align="right" background="bg1_b.gif"><img src="copyright.png" width="264" height="20" /></td>
+    <td><img src="c1_br.gif" width="21" height="20" /></td>
+  </tr>
+</table>
+</body>
+</html>

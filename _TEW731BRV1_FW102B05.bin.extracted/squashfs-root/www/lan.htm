@@ -1,0 +1,1196 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;">
+<title>TRENDNET | modelName | Main | LAN &amp; DHCP Server</title>
+<link rel="stylesheet" href="style.css" type="text/css">
+<script language="JavaScript" src="uk.js"></script>
+
+<script language="JavaScript" src="public_js/public.js"></script>
+<script language="Javascript" src="js/jquery-1.3.2.min.js"></script>
+<script language="Javascript" src="js/xml.js"></script>
+<script language="Javascript" src="js/object.js"></script>
+<script language="JavaScript">
+	var dev_info = get_router_info();
+
+	var hw_version 	= dev_info.hw_ver;
+	var version 	= dev_info.fw_ver;
+	var model		= dev_info.model;
+	var login_Info 	= dev_info.login_info;
+	var cli_mac 	= dev_info.cli_mac;
+
+	var param = {
+		url: "get_set.ccp",
+		arg: ""
+	};
+
+	param.arg = "ccp_act=get&num_inst=5";
+	param.arg +="&oid_1=IGD_&inst_1=10000";
+	param.arg +="&oid_2=IGD_LANDevice_i_LANHostConfigManagement_&inst_2=11100";
+	param.arg +="&oid_3=IGD_LANDevice_i_LANHostConfigManagement_DHCPStaticAddress_i_&inst_3=11100";
+	param.arg +="&oid_4=IGD_LANDevice_i_LANHostConfigManagement_DHCPDynamicAddress_i_&inst_4=11100";
+	param.arg +="&oid_5=IGD_Status_LANStatus_Host_i_&inst_5=11100";
+
+	get_config_obj(param);
+	
+	var lanCfg = {
+		'lanDhcpRangeStart': 	config_val('lanHostCfg_MinAddress_'),
+		'lanDhcpRangeEnd':		config_val('lanHostCfg_MaxAddress_')
+	};
+	
+	var reserve_ip_cnt 	= 0;
+	var reserve_ip_name	= config_str_multi("reserveDHCP_HostName_");
+	var reserve_ip 		= config_str_multi("reserveDHCP_Yiaddr_");
+	var reserve_ip_mac	= config_str_multi("reserveDHCP_Chaddr_");
+
+	if(reserve_ip_name != null)
+		reserve_ip_cnt = reserve_ip_name.length;
+		
+	var array_rules_inst 		= config_inst_multi("IGD_LANDevice_i_LANHostConfigManagement_DHCPStaticAddress_i_");
+	
+	var allHostName = config_val("igdLanHostStatus_HostName_").split("/");
+	var allHostIp = config_val("igdLanHostStatus_HostIPv4Address_").split("/");
+	var allHostMac = config_val("igdLanHostStatus_HostMACAddress_").split("/");
+	var allHostType = config_val("igdLanHostStatus_HostAddressType_").split("/");
+	var allHostExpire = config_val("igdLanHostStatus_HostExpireTime_").split("/");
+	
+	var DataArray = new Array();
+	var rule_max_num = 25;              
+	var resert_rule = rule_max_num;     
+	var DHCPL_DataArray = new Array();  
+
+	function disable_static_dhcp()
+	{
+		var dhcp = get_by_name("dhcp");
+		var reserved_enable = get_by_name("reserved_enable");
+		var revdhcp = get_by_name("reserved_enable");
+		var disable = 0;
+		if (dhcp[1].checked || revdhcp[1].checked)
+			disable = 1;
+		
+		get_by_id("reserved_name").disabled = disable;
+		get_by_id("reserved_ip").disabled = disable;
+		get_by_id("reserved_mac").disabled = disable;
+		get_by_id("add").disabled = disable;
+		get_by_id("cancel2").disabled = disable;
+	
+		if (disable || get_by_id("edit").value == "-1") {
+			get_by_id("update").disabled = true;
+			get_by_id("delete").disabled = true;
+			if (disable || get_by_id("reserved_name").value!=""){
+				get_by_id("add").disabled = true;
+			}else{
+				get_by_id("add").disabled = false;
+			}
+		}
+		else {	
+			if (get_by_id("reserved_name").value==""){	
+				get_by_id("update").disabled = true;
+				get_by_id("delete").disabled = true;
+				get_by_id("add").disabled=false;
+			}else{		
+				get_by_id("update").disabled = false;
+				get_by_id("delete").disabled = false;		
+				get_by_id("add").disabled=true;
+			}
+		}	
+	}
+	
+	function Data(enable, name, ip, mac, onList) 
+	{
+		this.Enable = enable;
+		this.Name = name;
+		this.IP = ip;
+		this.MAC = mac;
+		this.OnList = onList;
+	}
+	
+	function DHCP_Data(name, ip, mac, Exp_time, onList) 
+	{
+		this.Name = name;
+		this.IP = ip;
+		this.MAC = mac;
+		this.EXP_T = Exp_time;
+		this.OnList = onList;
+	}	
+	
+	function set_reservation(){
+		var index = 1;
+		
+		/*for (var i = 0; i < rule_max_num; i++){
+			var temp_dhcp;
+			var k = i;
+			if(parseInt(i) < 10){
+				k = "0" + i;
+			}
+			temp_dhcp = (get_by_id("dhcpd_reserve_" + k).value).split("/");
+			if (temp_dhcp.length > 1){
+				if(temp_dhcp[1].length > 0){
+					DataArray[index] = new Data(temp_dhcp[0],temp_dhcp[1], temp_dhcp[2], temp_dhcp[3], index);
+					index++;
+				}
+			}
+		}
+		*/
+		//alert(reserve_ip_cnt);
+		for (var i = 0; i < reserve_ip_cnt; i++)
+		{
+			if(reserve_ip[i].length > 0){
+				DataArray[DataArray.length++] = new Data("1",reserve_ip_name[i],reserve_ip[i], reserve_ip_mac[i], i);
+			}
+		}
+
+		get_by_id("max_row").value = index - 1;
+	}	
+    
+	function clear_reserved(){		
+		get_by_id("reserved_name").value = "";
+		get_by_id("reserved_ip").value = "";
+		get_by_id("reserved_mac").value = "";
+		get_by_id("edit").value = -1;
+	}
+	
+	function edit_row(idx){
+	    var row_obj = get_by_id("table1").rows[idx+1];        
+	    get_by_id("reserved_name").value = get_row_data(row_obj, 0);    	
+	    get_by_id("reserved_ip").value = get_row_data(row_obj, 1);
+	    get_by_id("reserved_mac").value = get_row_data(row_obj, 2);
+		get_by_id("edit").value = idx;
+	    get_by_id("add").disabled = true;
+	    get_by_id("update").disabled = false;
+	    get_by_id("delete").disabled = false;
+	    change_color("table1", idx+1);
+	}    
+
+	function delete_data(){
+		var num = parseInt(get_by_id("del").value);
+		var DataArray_length = parseInt(DataArray.length) - 1;
+    	
+		for(var i = num ; i < DataArray_length; i++){
+			DataArray[i].Enable = DataArray[i+1].Enable;
+			DataArray[i].Name = DataArray[i+1].Name;
+			DataArray[i].IP = DataArray[i+1].IP;
+			DataArray[i].MAC = DataArray[i+1].MAC;
+			DataArray[i].OnList = DataArray[i+1].OnList;
+		}
+		
+		DataArray[DataArray_length].Name = "";
+		--DataArray_length;
+		get_by_id("max_row").value = parseInt(DataArray_length);
+		clear_reserved();
+	}	
+	
+	function delete_row(){
+		var del_index = parseInt(get_by_id("del").value);
+		var tb1 = get_by_id("table1");
+		var DataArray_length = parseInt(DataArray.length) - 1;
+		if (del_index >= DataArray_length){
+			var oTr = tb1.deleteRow(del_index);
+		}else{
+			for(var i = del_index; i < DataArray_length; i++){
+				var is_checked = "";
+				if(parseInt(DataArray[i+1].Enable)){
+					is_checked = " checked";
+				}
+				var edit = i + 1;	
+				get_by_id("table1").rows[i].cells[0].innerHTML = "<center>" + DataArray[edit].Name +"</center>"
+				get_by_id("table1").rows[i].cells[1].innerHTML = "<center>" + DataArray[edit].IP +"</center>"
+				get_by_id("table1").rows[i].cells[2].innerHTML = "<center>" + DataArray[edit].MAC +"</center>"	
+			}
+			var oTr = tb1.deleteRow(DataArray_length);
+		}
+		delete_data();
+	}	
+	
+	function del_row(idx){
+		var index = get_by_id("edit").value;
+		if(confirm(msg[MSG48] + DataArray[index].IP)){
+			get_by_id("del").value = index;
+			delete_row();
+			get_by_id("inst_1").value = "1.1.1."+ array_rules_inst[index][3] +".0";
+			send_submit("form4");
+			//send_request();
+		}
+	}			
+	
+	function update_DataArray(){
+		var index = parseInt(get_by_id("edit").value);
+		var insert = false;
+		var is_enable = "0";
+	
+		if(index == "-1"){      //save
+			if(get_by_id("max_row").value == rule_max_num){
+				alert(get_words('_MSG773'));
+			}else{
+				index = parseInt(get_by_id("max_row").value) + 1;
+				get_by_id("max_row").value = index;
+				insert = true;
+			}
+		}		
+		
+		if(insert){
+			DataArray[index] = new Data(is_enable, get_by_id("reserved_name").value, get_by_id("reserved_ip").value, get_by_id("reserved_mac").value, index, index+1);			
+		}else if (index != -1){			
+			DataArray[index].Enable = is_enable;
+			DataArray[index].Name = get_by_id("reserved_name").value;
+			DataArray[index].IP = get_by_id("reserved_ip").value;
+			DataArray[index].MAC = get_by_id("reserved_mac").value;
+			DataArray[index].OnList = index;
+		}
+	}	
+	
+	    
+
+
+	function save_reserved(){
+		var index = 0;
+		var ip = get_by_id("lan_ipaddr").value;
+		var mask = get_by_id("lan_netmask").value;
+		var reserved_name = get_by_id("reserved_name").value;
+		var reserved_ip = get_by_id("reserved_ip").value;
+		var reserved_mac = get_by_id("reserved_mac").value;
+		var start_ip = get_by_id("dhcpd_start").value;
+		var start_ip_org = config_val("lanHostCfg_MinAddress_");
+		var end_ip = get_by_id("dhcpd_end").value;
+		var end_ip_org = config_val("lanHostCfg_MaxAddress_");
+	
+		var ip_addr_msg = replace_msg(all_ip_addr_msg,get_words('_IP_Addr'));
+		var Res_ip_addr_msg = replace_msg(all_ip_addr_msg,get_words('_ReservationIP'));
+		var start_ip_addr_msg = replace_msg(all_ip_addr_msg,get_words('_StartIPaddr'));
+		var end_ip_addr_msg = replace_msg(all_ip_addr_msg,get_words('_EndIPaddr'));
+	
+		var temp_ip_obj = new addr_obj(ip.split("."), ip_addr_msg, false, false);
+		var temp_mask_obj = new addr_obj(mask.split("."), subnet_mask_msg, false, false);
+		var temp_res_ip_obj = new addr_obj(reserved_ip.split("."), Res_ip_addr_msg, false, false);
+		var start_obj = new addr_obj(start_ip.split("."), start_ip_addr_msg, false, false);
+		var start_org_obj = new addr_obj(start_ip_org.split("."), start_ip_addr_msg, false, false);
+		var end_obj = new addr_obj(end_ip.split("."), end_ip_addr_msg, false, false);
+		var end_org_obj = new addr_obj(end_ip_org.split("."),end_ip_addr_msg, false, false);
+	
+		if(reserved_name == ""){
+			alert(msg[MSG50]);
+			return false;
+		}
+		if(!check_LAN_ip(temp_ip_obj.addr, temp_res_ip_obj.addr, get_words('_ReservationIPAddr'))){
+			return false;
+		}
+		if(!check_address(temp_res_ip_obj, temp_mask_obj, temp_ip_obj)){
+			return false;
+		}
+		if (!check_domain(temp_res_ip_obj, temp_mask_obj, temp_ip_obj)){
+			alert(msg[MSG46]);
+			return false;
+		}
+		if(check_mac_00(reserved_mac) == -59)
+		{
+			alert(msg[MSG59]);
+            return false;
+		}
+		if (!check_mac_00(reserved_mac)){
+			alert(msg[MSG47]);
+			return false;
+		}
+	
+		if (check_resip_order(temp_res_ip_obj,start_org_obj, end_org_obj)){			
+			alert(get_words('_ReservationIPAddr')+" " + reserved_ip + " "+get_words('li_msg150'));	//GW_DHCP_SERVER_RESERVED_IP_IN_POOL_INVALID
+			return false;
+		}
+		//check same ip/mac start	
+		for(m = 0; m < DataArray.length; m++){
+			//alert(DataArray[m].Name + ", "+ DataArray[m].IP +", "+DataArray[m].MAC);
+			if(get_by_id("edit").value == "-1"){     //add
+				if(reserved_name.length > 0){
+					if((reserved_name == DataArray[m].Name)){
+						alert(get_words('_Reservedname')+" '"+ reserved_name +"' "+get_words('li_msg151'));
+						return false;
+					}
+				}
+			}
+			//alert("m="+m+", edit="+get_by_id("edit").value);
+			if(reserved_name.length > 0 && m != parseInt(get_by_id("edit").value)){
+				if((reserved_name == DataArray[m].Name)){
+					alert(get_words('_Reservedname')+" '"+ reserved_name +"' "+get_words('li_msg151'));
+					return false;
+				}
+			}
+			if(reserved_ip.length > 0 && m != parseInt(get_by_id("edit").value)){
+				if((reserved_ip == DataArray[m].IP)){
+					alert(get_words('_ReservedIPAddr')+" '"+ reserved_ip +"' "+get_words('li_msg151'));
+					return false;
+				}
+			}
+			if(reserved_mac.length > 0 && m != parseInt(get_by_id("edit").value)){
+				if((reserved_mac.toUpperCase() == DataArray[m].MAC.toUpperCase())){
+					alert(get_words('li_msg152')+" '"+ reserved_mac +"' "+get_words('li_msg153'));
+					return false;
+				}
+			}
+		}
+	
+		//check same ip/mac end	
+		update_DataArray();
+	
+		var is_enable = "";
+		//add
+		if(get_by_id("edit").value == "-1"){
+			var i = get_by_id("max_row").value;
+			var tb1 = get_by_id("table1"); 
+			var oTr = tb1.insertRow(-1);
+			var oTd1 = oTr.insertCell(-1);
+			var oTd2 = oTr.insertCell(-1);
+			var oTd3 = oTr.insertCell(-1);
+			
+			if(parseInt(DataArray[i].Enable)){
+				is_enable = "checked";
+			}else{
+				is_enable = "";
+			}
+			
+			oTd1.innerHTML = "<center>" + DataArray[i].Name +"</center>";
+			oTd2.innerHTML = "<center>" + DataArray[i].IP +"</center>";
+			oTd3.innerHTML = "<center>" + DataArray[i].MAC +"</center>";
+			tb1.rows[i].style.backgroundColor = "#FFFF00";
+			
+			add_filter();
+		//update		
+		}else{                                      		
+			var i = parseInt(get_by_id("edit").value);
+			if(parseInt(DataArray[i].Enable)){
+				is_enable = "checked";
+			}else{
+				is_enable = "";
+			}			
+			get_by_id("table1").rows[i].cells[0].innerHTML = "<center>" + DataArray[i].Name +"</center>";
+			get_by_id("table1").rows[i].cells[1].innerHTML = "<center>" + DataArray[i].IP +"</center>";
+			get_by_id("table1").rows[i].cells[2].innerHTML = "<center>" + DataArray[i].MAC +"</center>";	
+			
+			update_filter(i);
+		}
+		clear_reserved();		
+		//send_request();			
+	}
+	
+	function update_data(){
+		var max_row = parseInt(get_by_id("max_row").value) + 1;
+		for(var ii = 0; ii < rule_max_num; ii++){
+			if (ii < 10){
+				get_by_id("dhcpd_reserve_0" + ii).value = "";
+			}else{
+				get_by_id("dhcpd_reserve_" + ii).value = "";
+			}
+		}
+		
+		for(var ii = 1; ii < max_row; ii++){
+			if(DataArray[ii].Name != ""){
+				var dat = "1" +"/"+ DataArray[ii].Name +"/"+ DataArray[ii].IP +"/"+ DataArray[ii].MAC;
+				if ((ii-1) < 10){
+					get_by_id("dhcpd_reserve_0" + (ii-1)).value = dat;
+				}else{
+					get_by_id("dhcpd_reserve_" + (ii-1)).value = dat;
+				}
+			}
+		}
+	}	
+
+	function disable_dhcp_server(){
+		var dhcp = get_by_name("dhcp");
+		
+		disable_dhcp(dhcp[1].checked, get_by_id("dhcpd_start"), get_by_id("dhcpd_end"));
+		get_by_id("dhcpd_domain_name").disabled = dhcp[1].checked;
+		get_by_id("lease_time").disabled = dhcp[1].checked;
+	}
+
+    function send_request(){    	
+		var ip = get_by_id("lan_ipaddr").value;
+		var mask = get_by_id("lan_netmask").value;
+		var dhcp = get_by_name("dhcp");		
+		var start_ip = get_by_id("dhcpd_start").value;
+		var end_ip = get_by_id("dhcpd_end").value;
+		var reserved_enable = get_by_name("reserved_enable");
+		
+		var ip_addr_msg = replace_msg(all_ip_addr_msg,get_words('_IP_Addr'));
+		var start_ip_addr_msg = replace_msg(all_ip_addr_msg,get_words('_StartIPaddr'));
+		var end_ip_addr_msg = replace_msg(all_ip_addr_msg,get_words('_EndIPaddr'));
+		
+		var temp_ip_obj = new addr_obj(ip.split("."), ip_addr_msg, false, false);
+		var temp_mask_obj = new addr_obj(mask.split("."), subnet_mask_msg, false, false);
+		var temp_start_ip_obj = new addr_obj(start_ip.split("."), start_ip_addr_msg, false, false);
+		var temp_end_ip_obj = new addr_obj(end_ip.split("."), end_ip_addr_msg, false, false);
+		
+		var temp_hname = get_by_id("hostname").value;
+		
+		if(temp_hname == "")
+		{
+			alert(get_words('li_msg154'));
+			return;
+		}
+		else
+		{
+			if(_isNumeric(temp_hname) == true)
+			{
+				alert(get_words('_InvalidHostName'));
+				return false;
+			}
+		
+			for(var i=0; i < temp_hname.length; i++)
+			{
+				if( (temp_hname.charAt(i)>='0' && temp_hname.charAt(i)<='9') || 
+					(temp_hname.charAt(i)>='a' && temp_hname.charAt(i)<='z') || 
+					(temp_hname.charAt(i)>='A' && temp_hname.charAt(i)<='Z') ||
+					(temp_hname.charAt(i) == '-') )
+				{
+					continue;
+				}
+				else
+				{
+					alert(get_words('li_msg155'));
+					return;
+				}
+			}
+		}
+				
+		if (!check_address(temp_ip_obj, temp_mask_obj) || !check_mask(temp_mask_obj)){		
+			return false;
+		}		
+			
+		if (dhcp[0].checked){
+			if (!check_address(temp_start_ip_obj, temp_mask_obj) || !check_address(temp_end_ip_obj, temp_mask_obj)){
+				return false;
+			}
+				
+			if (!check_domain(temp_ip_obj, temp_mask_obj, temp_start_ip_obj)){
+				alert(addstr(msg[MSG2],get_words('_StartIPaddr')));
+				return false;
+			}
+				
+			if (!check_domain(temp_ip_obj, temp_mask_obj, temp_end_ip_obj)){
+				alert(addstr(msg[MSG2],get_words('_EndIPaddr')));
+				return false;
+			}
+				
+			if (!check_ip_order(temp_start_ip_obj, temp_end_ip_obj)){
+				alert(msg[MSG4]);
+				return false;
+			}
+		get_by_id("dhcpd_enable").value = 1;
+		}
+		else if(dhcp[1].checked)
+			get_by_id("dhcpd_enable").value = 0;
+
+		get_by_id("dhcpd_lease_time").value = get_by_id("lease_time").value;
+		if ((ip_num(temp_ip_obj.addr) >= ip_num(temp_start_ip_obj.addr)) && (ip_num(temp_ip_obj.addr) <= ip_num(temp_end_ip_obj.addr)))
+		{
+			alert(get_words('_MSG780'));
+			return false;
+		}
+		if (reserved_enable[0].checked)
+		{
+			get_by_id("dhcpd_reservation").value = 1;			
+		}
+		else if (reserved_enable[1].checked)
+		{
+			get_by_id("dhcpd_reservation").value = 0;			
+		}		
+			
+		update_data();
+		get_by_id("dhcpd_last_assign_ip").value = start_ip;
+		//send_submit("form1");
+		copyDataToDataModelFormat();
+		send_submit("form2");
+	}
+	
+	function loadSettings(){
+		//set_checked(get_by_id("dhcpd_enable").value,get_by_name("dhcp"));
+		//set_checked(get_by_id("dhcpd_reservation").value,get_by_name("reserved_enable"));
+		//set_selectIndex(get_by_id("dhcpd_lease_time").value, get_by_id("lease_time"));
+		set_checked(config_val("lanHostCfg_DHCPServerEnable_"),get_by_name("dhcp"));
+		set_checked(config_val("lanHostCfg_StaticDHCPEnable_"),get_by_name("reserved_enable"));
+		set_selectIndex(config_val("lanHostCfg_DHCPLeaseTime_"), get_by_id("lease_time"));
+		set_checked(0,get_by_name("d_mode"));
+
+		get_by_id("device_mode").value = config_val("igd_DeviceMode_");
+		get_by_id("hostname").value = config_val("lanHostCfg_HostName_");
+		get_by_id("lan_ipaddr").value = config_val("lanHostCfg_IPAddress_");
+		get_by_id("lan_netmask").value = config_val("lanHostCfg_SubnetMask_");
+		get_by_id("dhcpd_start").value = config_val("lanHostCfg_MinAddress_");
+		get_by_id("dhcpd_end").value = config_val("lanHostCfg_MaxAddress_");
+		get_by_id("dhcpd_domain_name").value = config_val("lanHostCfg_DomainName_");
+		get_by_id("lease_time").value = config_val("lanHostCfg_DHCPLeaseTime_");
+		get_by_id("old_ip").value	= config_val("lanHostCfg_IPAddress_");
+		get_by_id("old_mask").value = config_val("lanHostCfg_SubnetMask_");
+	}
+	
+	function set_dhcplist(){	
+		var index = 0;
+		//var temp_dhcp_list = get_by_id("dhcp_list").value.split(",");
+		for (var i = 0; i < allHostName.length; i++){	
+			//var temp_data = temp_dhcp_list[i].split("/");
+			//if(temp_data.length > 1){
+			if((allHostType[i] == "0" || allHostType[i] == "1") && (parseInt(allHostExpire[i])> 0)){
+				DHCPL_DataArray[DHCPL_DataArray.length++] = new DHCP_Data(allHostName[i], allHostIp[i], allHostMac[i], 0, index);
+				index++;
+			}
+		}
+	}
+			
+	function DataShow(){
+		set_reservation();
+		var is_enable = "";
+		for(i = 0; i < DataArray.length; i++){			
+			if(parseInt(DataArray[i].Enable)){
+				is_enable = "checked";
+			}else{
+				is_enable = "";
+			}
+			document.write("<tr align=\"center\" bgcolor=\"#F0F0F0\" onClick=\"edit_row("+ i +")\">");
+			document.write("<td>"+ DataArray[i].Name +"</td>");
+			document.write("<td>"+ DataArray[i].IP +"</td>");
+			document.write("<td>"+ DataArray[i].MAC.toUpperCase() +"</td>");
+			document.write("</tr>\n");
+		}	
+	}	
+	
+	function set_device_mode()
+	{
+		var mode = get_checked_value(get_by_name("d_mode"));
+		get_by_id("device_mode").value = mode;
+		if(mode == "0")			//router mode
+		{
+			get_by_name("dhcp")[0].disabled = false;			
+			get_by_name("dhcp")[1].disabled = false;
+			get_by_id("dhcpd_start").disabled = false;
+			get_by_id("dhcpd_end").disabled = false;
+			get_by_id("dhcpd_domain_name").disabled = false;
+			get_by_id("lease_time").disabled = false;
+			get_by_name("reserved_enable")[0].disabled = false;
+			get_by_name("reserved_enable")[1].disabled = false;
+			//get_by_id("apply").disabled = false;
+			get_by_id("reserved_name").disabled = false;
+			get_by_id("reserved_ip").disabled = false;
+			get_by_id("reserved_mac").disabled = false;
+			get_by_id("add").disabled = false;
+			get_by_id("cancel2").disabled = false;
+			get_by_id("staticDHCPList").style.display = "";
+			get_by_id("dynamicDHCPList").style.display = "";
+		}
+		else					//ap	 mode
+		{
+			//get_by_id("lan_ipaddr").value = "192.168.0.50";
+			get_by_name("dhcp")[0].disabled = true;
+			get_by_name("dhcp")[1].disabled = true;
+			get_by_id("dhcpd_start").disabled = true;
+			get_by_id("dhcpd_end").disabled = true;
+			get_by_id("dhcpd_domain_name").disabled = true;
+			get_by_id("lease_time").disabled = true;
+			get_by_name("reserved_enable")[0].disabled = true;
+			get_by_name("reserved_enable")[1].disabled = true;
+			//get_by_id("apply").disabled = true;
+			get_by_id("reserved_name").disabled = true;
+			get_by_id("reserved_ip").disabled = true;
+			get_by_id("reserved_mac").disabled = true;
+			get_by_id("add").disabled = true;
+			get_by_id("cancel2").disabled = true;
+			get_by_id("staticDHCPList").style.display = "none";
+			get_by_id("dynamicDHCPList").style.display = "none";
+		}
+	}
+	
+	function copyDataToDataModelFormat()
+	{
+		get_by_id("igd_DeviceMode_1.0.0.0.0").value	= get_by_id("device_mode").value;
+		get_by_id("lanHostCfg_HostName_1.1.1.0.0").value = get_by_id("hostname").value;
+		get_by_id("lanHostCfg_IPAddress_1.1.1.0.0").value = get_by_id("lan_ipaddr").value;
+		get_by_id("lanHostCfg_SubnetMask_1.1.1.0.0").value = get_by_id("lan_netmask").value;
+		get_by_id("lanHostCfg_DHCPServerEnable_1.1.1.0.0").value = get_by_id("dhcpd_enable").value;
+		get_by_id("lanHostCfg_MinAddress_1.1.1.0.0").value = get_by_id("dhcpd_start").value;
+		get_by_id("lanHostCfg_MaxAddress_1.1.1.0.0").value = get_by_id("dhcpd_end").value;
+		get_by_id("lanHostCfg_DomainName_1.1.1.0.0").value = get_by_id("dhcpd_domain_name").value;
+		get_by_id("lanHostCfg_DHCPLeaseTime_1.1.1.0.0").value = get_by_id("lease_time").value;
+		get_by_id("lanHostCfg_StaticDHCPEnable_1.1.1.0.0").value = get_by_id("dhcpd_reservation").value;
+		
+		//get_by_id("old_ip").value	= config_val("lanHostCfg_IPAddress_");
+		//get_by_id("old_mask").value = config_val("lanHostCfg_SubnetMask_");
+		get_by_id("new_ip").value	= get_by_id("lan_ipaddr").value;
+		get_by_id("new_mask").value = get_by_id("lan_netmask").value;
+		
+		if((get_by_id("lan_ipaddr").value != get_by_id("old_ip").value) ||
+			(get_by_id("lan_netmask").value != get_by_id("old_mask").value))
+		{
+			get_by_name("nextPage")[2].value = "back.htm";
+			//alert("here");
+		}
+		else if((lanCfg.lanDhcpRangeStart != get_by_id("dhcpd_start").value) ||
+			(lanCfg.lanDhcpRangeEnd != get_by_id("dhcpd_end").value))
+		{
+			get_by_name("nextPage")[2].value = "back.htm";
+		}
+	}
+	
+	function config_submit_items(instStr)
+	{
+		get_by_id("submit_items").innerHTML = '<input type="hidden" name="reserveDHCP_Enable_'+instStr+'" id="reserveDHCP_Enable_'+instStr+'" value="">';
+		get_by_id("submit_items").innerHTML += '<input type="hidden" name="reserveDHCP_HostName_'+instStr+'" id="reserveDHCP_HostName_'+instStr+'" value="">';
+		get_by_id("submit_items").innerHTML += '<input type="hidden" name="reserveDHCP_Chaddr_'+instStr+'" id="reserveDHCP_Chaddr_'+instStr+'" value="">';
+		get_by_id("submit_items").innerHTML += '<input type="hidden" name="reserveDHCP_Yiaddr_'+instStr+'" id="reserveDHCP_Yiaddr_'+instStr+'" value="">';
+		get_by_id("submit_items").innerHTML += '<input type="hidden" name="old_ip" id="old_ip_inForm3" value="'+ get_by_id("old_ip").value +'">';
+		get_by_id("submit_items").innerHTML += '<input type="hidden" name="old_mask" id="old_mask_inForm3" value="'+ get_by_id("old_mask").value +'">';
+		get_by_id("submit_items").innerHTML += '<input type="hidden" name="new_ip" id="new_ip_inForm3" value="'+ get_by_id("old_ip").value +'">';
+		get_by_id("submit_items").innerHTML += '<input type="hidden" name="new_mask" id="new_mask_inForm3" value="'+ get_by_id("old_mask").value +'">';
+		
+		get_by_id("reserveDHCP_Enable_"+instStr).value = "1";
+		get_by_id("reserveDHCP_HostName_"+instStr).value = get_by_id("reserved_name").value;
+		get_by_id("reserveDHCP_Chaddr_"+instStr).value = get_by_id("reserved_mac").value;
+		get_by_id("reserveDHCP_Yiaddr_"+instStr).value = get_by_id("reserved_ip").value;
+	}
+	
+	function check_ip_mac_conflict(ip, mac)
+	{
+		for(var i= 0; i < DHCPL_DataArray.length; i++)
+		{
+			if((ip == DHCPL_DataArray[i].IP) || (mac == DHCPL_DataArray[i].MAC))
+			{
+				get_by_name("nextPage")[1].value = "back.htm";
+				get_by_name("ccpSubEvent")[1].value = "CCP_SUB_LAN&statip=1";
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	function add_filter()
+	{
+		check_ip_mac_conflict(get_by_id("reserved_ip").value, get_by_id("reserved_mac").value);
+		param.arg = "ccp_act=queryInst&num_inst=1";
+		param.arg +="&oid_1=IGD_LANDevice_i_LANHostConfigManagement_DHCPStaticAddress_i_&inst_1=11100";
+		get_config_obj(param);
+		var instStr = config_val("newInst");
+		config_submit_items(instStr);
+		send_submit("form3");
+	}
+	
+	function update_filter(index)
+	{
+		check_ip_mac_conflict(get_by_id("reserved_ip").value, get_by_id("reserved_mac").value);
+		var instStr = "1.1.1."+ array_rules_inst[index][3] +".0";
+		config_submit_items(instStr);
+		send_submit("form3");
+	}
+
+	function onChangeIPRange()
+	{
+		var lan_ip = get_by_id("lan_ipaddr").value.split(".");
+		var start_ip = get_by_id("dhcpd_start").value.split(".");
+		var end_ip = get_by_id("dhcpd_end").value.split(".");
+		
+		if(start_ip)
+			get_by_id("dhcpd_start").value = lan_ip[0]+"."+lan_ip[1]+"."+lan_ip[2]+"."+start_ip[3];
+		else
+			get_by_id("dhcpd_start").value = lan_ip[0]+"."+lan_ip[1]+"."+lan_ip[2]+".100";
+			
+		if(end_ip)
+			get_by_id("dhcpd_end").value = lan_ip[0]+"."+lan_ip[1]+"."+lan_ip[2]+"."+end_ip[3];
+		else
+			get_by_id("dhcpd_end").value = lan_ip[0]+"."+lan_ip[1]+"."+lan_ip[2]+".200";
+	}
+	
+</script>
+</head>
+
+<body onLoad="MM_preloadImages('but_wizard_1.gif','but_status_1.gif','but_tools_1.gif','but_main_1.gif','but_wireless_1.gif','but_routing_1.gif','but_access_1.gif','but_management_1.gif')">
+<table width="750" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="21"><img src="c1_tl.gif" width="21" height="21" /></td>
+    <td width="708" background="bg1_t.gif"><img src="top_1.gif" width="390" height="21" /></td>
+    <td width="21"><img src="c1_tr.gif" width="21" height="21" /></td>
+  </tr>
+  <tr>
+    <td valign="top" background="bg1_l.gif"><img src="top_2.gif" width="21" height="69" /></td>
+    <td background="bg.gif"><table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="13%"><img src="logo.gif" /></td>
+        <td width="87%" align="right"><img src="description.gif" /></td>
+      </tr>
+    </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="20%" height="429" valign="top"><table width="56%" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td onclick="location.href='lan.htm'">
+				<table class="menu_tb">
+				<tr>
+					<td class="menu_sel_nw"></td>
+					<td class="menu_sel_n"></td>
+					<td class="menu_sel_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_w"></td>
+					<td class="menu_sel_m"><b>&nbsp;&nbsp;<script>show_words('_MSG749');</script></td>
+					<td class="menu_sel_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_sw"></td>
+					<td class="menu_sel_s"></td>
+					<td class="menu_sel_se"></td>
+				</tr>
+				</table>	
+				</a></td>
+              </tr>
+              <tr>
+                <td><table width="100%" border="0" cellpadding="2" class="submenubg">
+                    <tr>
+                      <td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td width="87%"><a href="lan.htm" class="submenus"><b><u><script>show_words('_LAN_DHCPSer')</script></u></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="wan.htm" class="submenus"><b><script>show_words('_WAN')</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="password.htm" class="submenus"><b><script>show_words('_Pwd')</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="time.htm" class="submenus"><b><script>show_words('_Time')</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="ddns.htm" class="submenus"><b><script>show_words('_dyndns')</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="ipv6.htm" class="submenus"><b><script>show_words('_IPv6')</script></b></a></td>
+                    </tr>
+                </table></td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='wireless_basic.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wireless')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='status.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG748')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='static_routing.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG747')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='filters.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Access')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='snmp.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG746')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='restart.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Tools')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="show_wizard('wizard.htm',login_Info)">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wizard')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="15" height="15"></td>
+              </tr>
+            </table>
+            <p>&nbsp;</p>
+              <p>&nbsp;</p></td>
+            <td width="2%"><img src="spacer.gif" width="15" height="15" /></td>
+            <td width="78%" valign="top"><table width="98%" border="0" cellpadding="0" cellspacing="0" class="tabBigTitle">
+                <tr>
+                  <td class="headerbg2"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                    <tr>
+                      <td width="79%"><font color="#FFFFFF" class="textheader" style="margin-left:0; padding-left:0"><script>show_words('_LAN_DHCPSer')</script></font></td>
+                      <td width="21%"><input name="button" type="button" id="help_btn" class="ButtonHelp" onclick="MM_openBrWindow('help_main.htm#lanski_dhcp_server','','scrollbars=yes,resizable=yes,width=800,height=550')" value="  " />
+							<script>$('#help_btn').val(get_words('_Help'));</script>
+                      </td>
+                    </tr>
+                  </table>                  </td>
+                </tr>
+                <tr>
+                  <td valign="top">
+				  <form id="form4" name="form4" method="post" action="get_set.ccp">
+					<input type="hidden" name="ccp_act" value="del">
+					<input type="hidden" name="ccpSubEvent" value="CCP_SUB_LAN_SC">
+					<input type="hidden" name="nextPage" value="lan.htm">	
+					<input type="hidden" name="num_inst" id="num_inst" value="1">
+					<input type="hidden" name="oid_1" id="oid_1" value="IGD_LANDevice_i_LANHostConfigManagement_DHCPStaticAddress_i_">
+					<input type="hidden" name="inst_1" id="inst_1" value="">
+				  </form>
+				  
+				  <form id="form3" name="form3" method="post" action="get_set.ccp">
+					<input type="hidden" name="ccp_act" value="set">
+					<input type="hidden" name="ccpSubEvent" value="CCP_SUB_LAN_SC">
+					<input type="hidden" name="nextPage" value="lan.htm">
+					<span id="submit_items">
+					</span>
+				  </form>				  
+				  
+					<form id="form2" name="form2" method="post" action="get_set.ccp">
+					<input type="hidden" name="ccp_act" value="set">
+					<input type="hidden" name="ccpSubEvent" value="CCP_SUB_LAN">
+					<input type="hidden" name="nextPage" id="nextPage" value="lan.htm">
+					<input type="hidden" name="old_ip" id="old_ip" value="">
+					<input type="hidden" name="old_mask" id="old_mask" value="">
+					<input type="hidden" name="new_ip" id="new_ip" value="">
+					<input type="hidden" name="new_mask" id="new_mask" value="">
+					<input type="hidden" name="igd_DeviceMode_1.0.0.0.0" id="igd_DeviceMode_1.0.0.0.0" value="lan.htm">
+					<input type="hidden" name="lanHostCfg_HostName_1.1.1.0.0" id="lanHostCfg_HostName_1.1.1.0.0" value="">
+					<input type="hidden" name="lanHostCfg_IPAddress_1.1.1.0.0" id="lanHostCfg_IPAddress_1.1.1.0.0" value="">
+					<input type="hidden" name="lanHostCfg_SubnetMask_1.1.1.0.0" id="lanHostCfg_SubnetMask_1.1.1.0.0" value="">
+					<input type="hidden" name="lanHostCfg_DHCPServerEnable_1.1.1.0.0" id="lanHostCfg_DHCPServerEnable_1.1.1.0.0" value="">
+					<input type="hidden" name="lanHostCfg_MinAddress_1.1.1.0.0" id="lanHostCfg_MinAddress_1.1.1.0.0" value="">
+					<input type="hidden" name="lanHostCfg_MaxAddress_1.1.1.0.0" id="lanHostCfg_MaxAddress_1.1.1.0.0" value="">
+					<input type="hidden" name="lanHostCfg_DomainName_1.1.1.0.0" id="lanHostCfg_DomainName_1.1.1.0.0" value="">
+					<input type="hidden" name="lanHostCfg_DHCPLeaseTime_1.1.1.0.0" id="lanHostCfg_DHCPLeaseTime_1.1.1.0.0" value="">
+					<input type="hidden" name="lanHostCfg_StaticDHCPEnable_1.1.1.0.0" id="lanHostCfg_StaticDHCPEnable_1.1.1.0.0" value="">										
+					</form>
+					
+					<form id="form1" name="form1" method="post" action="apply.cgi">
+                    <input type="hidden" name="html_response_page" value="back.htm">
+                    <input type="hidden" name="html_response_message" value="The setting is saved.">
+                    <input type="hidden" name="html_response_return_page" value="lan.htm">
+		    <input type="hidden" id="dhcpd_last_assign_ip" name="dhcpd_last_assign_ip">
+                    <input type="hidden" id="dhcpd_lease_time" name="dhcpd_lease_time" value='<% CmoGetCfg("dhcpd_lease_time","none"); %>'>
+                    <input type="hidden" id="dhcp_list" name="dhcp_list" value='<% CmoGetList("dhcpd_leased_table"); %>'>
+                    <input type="hidden" id="reboot_type" name="reboot_type" value="lan">
+      				<input type="hidden" id="del" name="del" value="-1">
+	   				<input type="hidden" id="edit" name="edit" value="-1">
+	   				<input type="hidden" id="max_row" name="max_row" value="-1">	   			
+					<input type="hidden" id="dhcpd_reserve_00" name="dhcpd_reserve_00" value='<% CmoGetCfg("dhcpd_reserve_00","none"); %>'>				
+					<input type="hidden" id="dhcpd_reserve_01" name="dhcpd_reserve_01" value='<% CmoGetCfg("dhcpd_reserve_01","none"); %>'>
+					<input type="hidden" id="dhcpd_reserve_02" name="dhcpd_reserve_02" value='<% CmoGetCfg("dhcpd_reserve_02","none"); %>'>		
+					<input type="hidden" id="dhcpd_reserve_03" name="dhcpd_reserve_03" value='<% CmoGetCfg("dhcpd_reserve_03","none"); %>'>				
+					<input type="hidden" id="dhcpd_reserve_04" name="dhcpd_reserve_04" value='<% CmoGetCfg("dhcpd_reserve_04","none"); %>'>
+					<input type="hidden" id="dhcpd_reserve_05" name="dhcpd_reserve_05" value='<% CmoGetCfg("dhcpd_reserve_05","none"); %>'>
+					<input type="hidden" id="dhcpd_reserve_06" name="dhcpd_reserve_06" value='<% CmoGetCfg("dhcpd_reserve_06","none"); %>'>				
+					<input type="hidden" id="dhcpd_reserve_07" name="dhcpd_reserve_07" value='<% CmoGetCfg("dhcpd_reserve_07","none"); %>'>
+					<input type="hidden" id="dhcpd_reserve_08" name="dhcpd_reserve_08" value='<% CmoGetCfg("dhcpd_reserve_08","none"); %>'>	
+					<input type="hidden" id="dhcpd_reserve_09" name="dhcpd_reserve_09" value='<% CmoGetCfg("dhcpd_reserve_09","none"); %>'>
+					<input type="hidden" id="dhcpd_reserve_10" name="dhcpd_reserve_10" value='<% CmoGetCfg("dhcpd_reserve_10","none"); %>'>				
+					<input type="hidden" id="dhcpd_reserve_11" name="dhcpd_reserve_11" value='<% CmoGetCfg("dhcpd_reserve_11","none"); %>'>
+					<input type="hidden" id="dhcpd_reserve_12" name="dhcpd_reserve_12" value='<% CmoGetCfg("dhcpd_reserve_12","none"); %>'>		
+					<input type="hidden" id="dhcpd_reserve_13" name="dhcpd_reserve_13" value='<% CmoGetCfg("dhcpd_reserve_13","none"); %>'>				
+					<input type="hidden" id="dhcpd_reserve_14" name="dhcpd_reserve_14" value='<% CmoGetCfg("dhcpd_reserve_14","none"); %>'>
+					<input type="hidden" id="dhcpd_reserve_15" name="dhcpd_reserve_15" value='<% CmoGetCfg("dhcpd_reserve_15","none"); %>'>
+					<input type="hidden" id="dhcpd_reserve_16" name="dhcpd_reserve_16" value='<% CmoGetCfg("dhcpd_reserve_16","none"); %>'>				
+					<input type="hidden" id="dhcpd_reserve_17" name="dhcpd_reserve_17" value='<% CmoGetCfg("dhcpd_reserve_17","none"); %>'>
+					<input type="hidden" id="dhcpd_reserve_18" name="dhcpd_reserve_18" value='<% CmoGetCfg("dhcpd_reserve_18","none"); %>'>	
+					<input type="hidden" id="dhcpd_reserve_19" name="dhcpd_reserve_19" value='<% CmoGetCfg("dhcpd_reserve_19","none"); %>'>
+					<input type="hidden" id="dhcpd_reserve_20" name="dhcpd_reserve_20" value='<% CmoGetCfg("dhcpd_reserve_20","none"); %>'>
+					<input type="hidden" id="dhcpd_reserve_21" name="dhcpd_reserve_21" value='<% CmoGetCfg("dhcpd_reserve_21","none"); %>'>				
+					<input type="hidden" id="dhcpd_reserve_22" name="dhcpd_reserve_22" value='<% CmoGetCfg("dhcpd_reserve_22","none"); %>'>
+					<input type="hidden" id="dhcpd_reserve_23" name="dhcpd_reserve_23" value='<% CmoGetCfg("dhcpd_reserve_23","none"); %>'>	
+					<input type="hidden" id="dhcpd_reserve_24" name="dhcpd_reserve_24" value='<% CmoGetCfg("dhcpd_reserve_24","none"); %>'>	                    
+                    <table width="98%" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#333333">
+					  <tr style="display:none">
+                        <td align="right" class="bgblue">Device Mode </td>
+                        <td width="404"  class="bggrey">
+						<input type="hidden" id="device_mode" name="device_mode" value="">
+						<input type="radio" name="d_mode" value="0" onClick="set_device_mode()" checked>Router Mode&nbsp;&nbsp;
+						<input type="radio" name="d_mode" value="1" onClick="set_device_mode()">AP Mode&nbsp;&nbsp;
+                        </td>
+                      </tr>
+					  <tr>
+                        <td align="right" class="bgblue"><script>show_words('_HostName')</script></td>
+                        <td width="404"  class="bggrey"><input type="text" id="hostname" name="hostname" size="20" maxlength="19" value="">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_IP_Addr')</script></td>
+                        <td width="404"  class="bggrey"><input name="lan_ipaddr" type="text" id="lan_ipaddr" size="16" maxlength="15" value="" onChange="onChangeIPRange();">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_Subnet')</script></td>
+                        <td width="404"  class="bggrey"><input name="lan_netmask" type="text" id="lan_netmask" size="16" maxlength="15" value="">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_DHCPSer')</script></td>
+                        <td width="404"  class="bggrey"><input type="hidden" id="dhcpd_enable" name="dhcpd_enable" value="">
+                            <input type="radio" name="dhcp" value="1" onClick="disable_dhcp_server()">
+                          <script>show_words('_Enabled')</script>&nbsp;&nbsp;&nbsp;
+                          <input type="radio" name="dhcp" value="0" onClick="disable_dhcp_server()">
+                          <script>show_words('_Disabled')</script></td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_StartIP')</script></td>
+                        <td width="404"  class="bggrey"><input type="text" id="dhcpd_start" name="dhcpd_start" size="16" maxlength="15" value="">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_EndIP')</script></td>
+                        <td width="404"  class="bggrey"><input type="text" id="dhcpd_end" name="dhcpd_end" size="16" maxlength="15" value="">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_DomainName')</script></td>
+                        <td width="404"  class="bggrey"><input name="dhcpd_domain_name" type="text" id="dhcpd_domain_name" size="40" maxlength="31" value="">
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_LeaseTime')</script></td>
+                        <td width="404"  class="bggrey"><font color="#FFFFFF"  face=Arial size=2>
+                          <select id="lease_time" name="lease_time" size=1>
+                            <option value="60">1 <script>show_words('_Hour')</script></option>
+                            <option value="120">2 <script>show_words('_Hours')</script></option>
+                            <option value="180">3 <script>show_words('_Hours')</script></option>
+                            <option value="1440">1 <script>show_words('_Day')</script></option>
+                            <option value="2880">2 <script>show_words('_Days')</script></option>
+                            <option value="4320">3 <script>show_words('_Days')</script></option>
+                            <option value="10080">1 <script>show_words('_Week')</script></option>
+                          </select>
+                        </font> </td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_StaticDHCP')</script></td>
+                        <td width="404"  class="bggrey">
+						<input type="hidden" id="dhcpd_reservation" name="dhcpd_reservation" value="">
+                        	<input type="radio" name="reserved_enable" value="1" onClick="disable_static_dhcp()" checked><script>show_words('_Enabled')</script>
+                        	<input type="radio" name="reserved_enable" value="0" onClick="disable_static_dhcp()"><script>show_words('_Disabled')</script>
+                      </tr>
+                      <tr>
+                        <td class="bgblue">&nbsp;</td>
+                        <td class="bggrey2"><input name="cancel" type="button" class="ButtonSmall" id="cancel" onClick="window.location='lan.htm'" value="">
+								<script>$('#cancel').val(get_words('_Cancel'));</script>
+                        <input name="apply" type="button" class="ButtonSmall" id="apply" onClick="send_request()" value="">                        
+							<script>$('#apply').val(get_words('_Apply'));</script>
+							</td>
+                      </tr>
+                      <tr>
+                      <td align="right" class="bgblue"><script>show_words('_Name')</script></td>
+					  <td width="404" bgcolor="#FFFFFF" class="bggrey">
+                      	<input type=text id="reserved_name" name="reserved_name" size="20" maxlength="32"></td>					  
+                      </tr>
+                      <tr>
+                      <td align="right" class="bgblue"><script>show_words('_IP_Addr')</script></td>
+					  <td width="404" bgcolor="#FFFFFF" class="bggrey"><input type=text id="reserved_ip" name="reserved_ip" size="20" maxlength="15"></td>
+                    </tr>
+                    <tr>
+                      <td align="right" class="bgblue"><script>show_words('_MACAddr')</script></td>
+					  <td width="404" bgcolor="#FFFFFF" class="bggrey"><input type="text" id="reserved_mac" name="reserved_mac" size="20" maxlength="19"></td>
+                    </tr>
+                    <tr>
+                      <td class="bgblue">&nbsp;</td>
+                      <td bgcolor="#FFFFFF" class="bggrey2">
+						<input type="button" id="add" name="add" value="" onClick="save_reserved();">&nbsp;&nbsp;
+						<script>$('#add').val(get_words('_Add'));</script>
+						<input type="button" id="update" name="update" value="" onClick="save_reserved();" disabled>&nbsp;&nbsp;
+						<script>$('#update').val(get_words('_update'));</script>
+						<input type="button" id="delete" name="delete" value="" onClick="del_row();" disabled>&nbsp;&nbsp;
+						<script>$('#delete').val(get_words('_Delete'));</script>
+						<input type="button" id="cancel2" name="cancel2" value="" onClick="window.location='lan.htm'">
+						<script>$('#cancel2').val(get_words('_Cancel'));</script>
+					  </td>
+					</tr>	
+                    </table>
+					<div style="display:" id="staticDHCPList">
+                    <table width="98%" border="0" cellpadding="5" cellspacing="1">
+                  		<tr>
+                      		<td align="left"><b><font color="#FFFFFF"><script>show_words('_StaticDHCPlist')</script></font></b></td>
+				  		</tr>
+				  	</table>
+                	<table id="table1" width="98%" align="center" cellpadding="3" cellspacing="1" bgcolor="#333333">
+                  		<tr>
+                    		<td align="center" bgcolor="#DDDDDD"><b><script>show_words('_HostName')</script></b></td>
+                    		<td align="center" bgcolor="#DDDDDD"><b><script>show_words('_IP_Addr')</script></b></td>
+                    		<td align="center" bgcolor="#DDDDDD"><b><script>show_words('_MACAddr')</script></b></td>
+                  		</tr>
+	                	<script>DataShow();	</script>				  
+                    </table>
+					</div>
+                    </form>
+					<div style="display:" id="dynamicDHCPList">
+					<table width="98%" align="center" border="0" cellpadding="3" cellspacing="1">
+                  		<tr>
+                      		<td align="left"><b><font color="#FFFFFF"><script>show_words('_DynDHCPlist')</script></font></b></td>
+				  		</tr>
+				  	</table>
+                    <table width="98%" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#333333">
+                      <tr>
+                        <td align="center" bgcolor="#DDDDDD"><b><script>show_words('_HostName')</script></b></td>
+                        <td align="center" bgcolor="#DDDDDD"><b><script>show_words('_IP_Addr')</script></b></td>
+                        <td align="center" bgcolor="#DDDDDD"><b><script>show_words('_MACAddr')</script></b></td>
+                      </tr>
+                      	<script>
+	                		set_dhcplist();
+							for(i=0;i<DHCPL_DataArray.length;i++){
+								document.write("<tr bgcolor=\"#F0F0F0\" align=\"center\">"+
+								  "<td bgcolor=#F0F0F0 >"+ DHCPL_DataArray[i].Name +"</td>"+
+								  "<td bgcolor=#F0F0F0>"+ DHCPL_DataArray[i].IP +"</td>"+
+								  "<td bgcolor=#F0F0F0>"+ DHCPL_DataArray[i].MAC.toUpperCase() +"</td>"+
+								  "</tr>");
+							}
+                    	</script>
+                    </table>
+					</div>
+                    <br></td>
+                </tr>
+            </table></td>
+          </tr>
+      </table></td>
+    <td background="bg1_r.gif">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><img src="c1_bl.gif" width="21" height="20" /></td>
+    <td align="right" background="bg1_b.gif"><img src="copyright.png" width="264" height="20" /></td>
+    <td><img src="c1_br.gif" width="21" height="20" /></td>
+  </tr>
+</table>
+<script>
+    loadSettings();
+	disable_dhcp_server();
+	disable_static_dhcp();
+	//set_device_mode();
+	var login_who=login_Info;
+    if(login_who != "w")
+    {
+        get_by_id("cancel").disabled = "true";
+        get_by_id("apply").disabled = "true";
+        get_by_id("add").disabled = "true";
+        get_by_id("cancel2").disabled = "true";
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,533 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;">
+<title>TRENDNET | modelName | Management | Capture Packet</title>
+<link rel="stylesheet" href="style.css" type="text/css">
+<script language="JavaScript" src="uk.js"></script>
+
+<script language="JavaScript" src="public_js/public.js"></script>
+<script language="Javascript" src="js/jquery-1.3.2.min.js"></script>
+<script language="Javascript" src="js/xml.js"></script>
+<script language="Javascript" src="js/object.js"></script>
+<SCRIPT LANGUAGE="JavaScript">
+	var dev_info = get_router_info();
+
+	var hw_version 	= dev_info.hw_ver;
+	var version 	= dev_info.fw_ver;
+	var model		= dev_info.model;
+	var login_Info 	= dev_info.login_info;
+	var cli_mac 	= dev_info.cli_mac;
+	
+	var param = {
+		url: "get_set.ccp",
+		arg: ""
+	};
+	
+	/*
+	param.arg = "ccp_act=get&num_inst=1";
+	param.arg +="&oid_1=IGD_AdministratorSettings_SNMP_&inst_1=11100";
+	
+	get_config_obj(param);	
+	*/
+
+	function do_start()
+	{
+		if($('#size_value').val() > 2)
+		{
+			alert(get_words(_MSG803));
+			return;
+		}
+		param.url = 'ptrace.ccp';
+		param.arg = 'ccp_act=doStart&iface='+$('#capture_iface').val()+'&get_by_pkt='+$('#quantity_value').val()+'&get_by_size='+$('#size_value').val();
+
+		get_config_obj(param);
+		toggle_button(config_val('iface'),config_val('iface_st'), config_val('pkt_qt'), config_val('pkt_sz'), config_val('ret'));
+	}
+
+	function do_stop()
+	{
+//		$('#form_iface').val($('#capture_iface').val());
+//		$('#form1').submit();
+
+		param.url = 'ptrace.ccp';
+		param.arg = 'ccp_act=doStop&iface='+$('#capture_iface').val()+'&get_by_pkt='+$('#quantity_value').val()+'&get_by_size='+$('#size_value').val();
+		get_config_obj(param);
+		toggle_button(config_val('iface'),config_val('iface_st'), config_val('pkt_qt'), config_val('pkt_sz'), config_val('ret'));
+		
+	}
+
+	function do_download()
+	{
+		$('#form_iface').val($('#capture_iface').val());
+		//$('#form1').submit();
+		//param.url = 'ptrace.ccp';
+		//param.arg = 'ccp_act=doDownload';
+		
+		document.getElementById('form1').target = 'upload_target'; //'upload_target' is the name of the iframe
+		$('#form1').submit();
+		//get_config_obj(param);
+		//toggle_button(config_val('ret'));
+		setTimeout(do_query, 2000);
+	}
+
+	function adv_option(ifaceName, iface_st, act)
+	{
+		if(ifaceName == "cap_iface_wan" && iface_st == 1 && act == 2)
+		{
+			$('#quantity_value').attr('disabled', true);
+			$('#size_value').attr('disabled', true);
+		}
+		else if(ifaceName == "cap_iface_lan" && iface_st == 1 && act == 2)
+		{
+			$('#quantity_value').attr('disabled', true);
+			$('#size_value').attr('disabled', true);
+		}
+		else
+		{
+			$('#quantity_value').attr('disabled', false);
+			$('#size_value').attr('disabled', false);
+		}
+	}
+
+	function reload()
+	{		
+		param.url = 'ptrace.ccp';
+		param.arg = 'ccp_act=query&iface='+$('#capture_iface').val();
+		get_config_obj(param);
+		adv_option($('#capture_iface').val(),config_val('iface_st'),config_val('ret'));
+		toggle_button(config_val('iface'),config_val('iface_st'), config_val('pkt_qt'), config_val('pkt_sz'), config_val('ret'));
+	}
+
+	function do_query()
+	{
+		param.url = 'ptrace.ccp';
+		param.arg = 'ccp_act=query&iface='+$('#capture_iface').val()+'&get_by_pkt='+$('#quantity_value').val()+'&get_by_size='+$('#size_value').val();
+		get_config_obj(param);
+
+		toggle_button(config_val('iface'),config_val('iface_st'), config_val('pkt_qt'), config_val('pkt_sz'), config_val('ret'));
+	}
+	
+	function toggle_button(iface, iface_st, pkt_qt, pkt_sz, ret)
+	{
+		var my_iface = parseInt(iface);
+		var my_iface_st = parseInt(iface_st);
+		var my_pkt_qt = parseInt(pkt_qt);
+		var my_pkt_sz = parseInt(pkt_sz);
+		var act = parseInt(ret);
+		
+		if(my_iface == 0)
+		{
+			if(act == 1)//initial status
+			{
+				$('#capture_iface').attr('disabled', false);
+				$('#btn_start').attr('disabled', false);
+				$('#btn_stop').attr('disabled', true);
+				$('#btn_download').attr('disabled', true);
+				$('#quantity_value').val(my_pkt_qt);
+				$('#size_value').val(my_pkt_sz);
+			}
+			else if(act == 2)//start
+			{
+				$('#capture_iface').attr('disabled', false);
+				$('#btn_start').attr('disabled', true);
+				$('#btn_stop').attr('disabled', false);
+				$('#btn_download').attr('disabled', true);
+				adv_option($('#capture_iface').val(),config_val('iface_st'),config_val('ret'));
+				$('#quantity_value').val(my_pkt_qt);
+				$('#size_value').val(my_pkt_sz);
+			}
+			else if(act == 3)//stop
+			{
+				$('#capture_iface').attr('disabled', false);
+				$('#btn_start').attr('disabled', false);
+				$('#btn_stop').attr('disabled', true);
+				$('#btn_download').attr('disabled', false);
+				adv_option($('#capture_iface').val(),config_val('iface_st'),config_val('ret'));
+				$('#quantity_value').val(my_pkt_qt);
+				$('#size_value').val(my_pkt_sz);
+			}
+			else if(act == 4)//download
+			{
+				$('#capture_iface').attr('disabled', false);
+				$('#btn_start').attr('disabled', false);
+				$('#btn_stop').attr('disabled', true);
+				$('#btn_download').attr('disabled', true);
+				$('#quantity_value').val(my_pkt_qt);
+				$('#size_value').val(my_pkt_sz);
+			}
+		}
+		else
+		{
+			if(act == 1)//initial status
+			{
+				$('#capture_iface').attr('disabled', false);
+				$('#btn_start').attr('disabled', false);
+				$('#btn_stop').attr('disabled', true);
+				$('#btn_download').attr('disabled', true);
+				$('#quantity_value').val(my_pkt_qt);
+				$('#size_value').val(my_pkt_sz);
+			}
+			else if(act == 2)//start
+			{
+				$('#capture_iface').attr('disabled', false);
+				$('#btn_start').attr('disabled', true);
+				$('#btn_stop').attr('disabled', false);
+				$('#btn_download').attr('disabled', true);
+				adv_option($('#capture_iface').val(),config_val('iface_st'),config_val('ret'));
+				$('#quantity_value').val(my_pkt_qt);
+				$('#size_value').val(my_pkt_sz);
+			}
+			else if(act == 3)//stop
+			{
+				$('#capture_iface').attr('disabled', false);
+				$('#btn_start').attr('disabled', false);
+				$('#btn_stop').attr('disabled', true);
+				$('#btn_download').attr('disabled', false);
+				adv_option($('#capture_iface').val(),config_val('iface_st'),config_val('ret'));
+				$('#quantity_value').val(my_pkt_qt);
+				$('#size_value').val(my_pkt_sz);
+			}
+			else if(act == 4)//download
+			{
+				$('#capture_iface').attr('disabled', false);
+				$('#btn_start').attr('disabled', false);
+				$('#btn_stop').attr('disabled', true);
+				$('#btn_download').attr('disabled', true);
+				$('#quantity_value').val(my_pkt_qt);
+				$('#size_value').val(my_pkt_sz);
+			}
+		}
+//		$('#btn_download').attr('disabled', false);
+/*		
+		if (act&0x01) {					//ready state, act's first bit is 1
+			$('#capture_iface').attr('disabled', false);
+			$('#btn_start').attr('disabled', false);
+		}
+		
+		if (act&0x02) {					//capturing state, act = 2
+			$('#btn_stop').attr('disabled', false);
+		}
+*/		
+	}
+
+	$(document).ready( function () {
+		do_query();
+	});
+</SCRIPT>
+</head>
+
+<body onLoad="MM_preloadImages('but_wizard_1.gif','but_status_1.gif','but_tools_1.gif','but_main_1.gif','but_wireless_1.gif','but_routing_1.gif','but_access_1.gif','but_management_1.gif','but_help1_1.gif');">
+<table width="750" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td width="21"><img src="c1_tl.gif" width="21" height="21" /></td>
+		<td width="708" background="bg1_t.gif"><img src="top_1.gif" width="390" height="21" /></td>
+		<td width="21"><img src="c1_tr.gif" width="21" height="21" /></td>
+	</tr>
+	<tr>
+		<td valign="top" background="bg1_l.gif"><img src="top_2.gif" width="21" height="69" /></td>
+		<td background="bg.gif">
+		<table width="100%" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+			<td width="13%"><img src="logo.gif" /></td>
+			<td width="87%" align="right"><img src="description.gif" /></td>
+		</tr>
+		</table>
+		<table width="100%" border="0" cellpadding="0" cellspacing="0">
+		<tr>
+			<td width="20%" height="429" valign="top">
+			<table width="56%" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td onclick="location.href='lan.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG749');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>	
+				</td>
+			</tr>
+			<tr>
+				<td><img src="spacer.gif" width="8" height="8"></td>
+			</tr>
+			<tr>
+				<td onclick="location.href='wireless_basic.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wireless');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+			</tr>
+			<tr>
+				<td><img src="spacer.gif" width="8" height="8"></td>
+			</tr>
+			<tr>
+				<td onclick="location.href='status.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG748');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+			</tr>
+			<tr>
+				<td><img src="spacer.gif" width="8" height="8"></td>
+			</tr>
+			<tr>
+				<td onclick="location.href='static_routing.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG747');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+			</tr>
+			<tr>
+				<td><img src="spacer.gif" width="8" height="8"></td>
+			</tr>
+			<tr>
+				<td onclick="location.href='filters.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Access');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+			</tr>
+			<tr>
+				<td><img src="spacer.gif" width="8" height="8"></td>
+			</tr>
+			<tr>
+				<td onclick="location.href='snmp.htm'">
+				<table class="menu_tb">
+				<tr>
+					<td class="menu_sel_nw"></td>
+					<td class="menu_sel_n"></td>
+					<td class="menu_sel_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_w"></td>
+					<td class="menu_sel_m"><b>&nbsp;&nbsp;<script>show_words('_MSG746');</script></td>
+					<td class="menu_sel_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_sw"></td>
+					<td class="menu_sel_s"></td>
+					<td class="menu_sel_se"></td>
+				</tr>
+				</table>
+				</td>
+			</tr>
+			<tr>
+				<td>
+				<table width="100%" border="0" cellpadding="2" class="submenubg">
+				<tr>
+					<td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+					<td width="87%" nowrap><a href="snmp.htm" class="submenus"><b><script>show_words('_SNMP')</script></b></a></td>
+				</tr>
+				<tr>
+					<td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+					<td width="87%" nowrap><a href="remote_management.htm" class="submenus"><b><script>show_words('_RemoteManage')</script></b></a></td>
+				</tr>
+				<tr>
+					<td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+					<td width="87%" nowrap><a href="ptrace.htm" class="submenus"><b><u><script>show_words('_Ptrace')</script></u></b></a></td>
+				</tr>
+				</table>
+				</td>
+			</tr>
+			<tr>
+				<td><img src="spacer.gif" width="8" height="8"></td>
+			</tr>
+			<tr>
+				<td onclick="location.href='restart.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Tools');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+			</tr>
+			<tr>
+				<td><img src="spacer.gif" width="8" height="8"></td>
+				</tr>
+				<tr>
+				<td onclick="show_wizard('wizard.htm',login_Info)">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wizard');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+			</tr>
+			<tr>
+				<td><img src="spacer.gif" width="15" height="15"></td>
+			</tr>
+			</table>
+			
+            <p>&nbsp;</p>
+			<p>&nbsp;</p></td>
+			<td width="2%"><img src="spacer.gif" width="15" height="15" /></td>
+			<td width="78%" valign="top">
+			<table width="98%" border="0" cellpadding="0" cellspacing="0" class="tabBigTitle">
+			<tr>
+				<td class="headerbg2">
+				<table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+				<tr>
+					<td width="79%">
+						<font color="#FFFFFF" class="textheader" style="margin-left:0; padding-left:0"><script>show_words('_Ptrace')</script></font>
+					</td>
+                <td width="21%"><input name="button" type="button" id="help_btn" class="ButtonHelp" onclick="MM_openBrWindow('help_manage.htm#Management_CapPkt','','scrollbars=yes,resizable=yes,width=800,height=550')" value="" />
+								<script>$('#help_btn').val(get_words('_Help'));</script>
+                </td>
+				</tr>
+				</table>
+				</td>
+			</tr>
+			<tr>
+				<td valign="top">
+				<table width="98%" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#333333">
+				<tr>
+					<td align="right" valign="top" class="bgblue"><script>show_words('_ptrace_sel_network')</script></td>
+					<td class="bggrey">
+						<select id="capture_iface" onChange="reload()" disabled>
+							<option value="cap_iface_wan">WAN</option>
+							<option value="cap_iface_lan">LAN</option>
+						</select>
+					</td>
+				</tr>
+				<input id="size_value" type="hidden" name="size_value" size="2" value="0">
+				<input id="quantity_value" type="hidden" name="quantity_value" size="6" value="0">
+				<!--<tr>
+				<td align="right" valign="top" class="bgblue"><script>show_words('_auto_stop')</script></td>
+				<td class="bggrey">
+				<script>show_words('_Get_first')</script>
+				<input id="quantity_value" type="text" name="quantity_value" size="6" value="0"> <script>show_words('_Packets')</script>
+				<br>
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <script>show_words('_Get')</script> 
+				<input id="size_value" type="text" name="size_value" size="2" value="0"> <script>show_words('_MSG802')</script>			
+				</td>
+				</tr> -->
+				<tr>
+					<td align="right" valign="top" class="bgblue"></td>
+					<td class="bggrey">
+						<input id="btn_start" type="button" onClick="do_start()" value="" disabled><script>$('#btn_start').val(get_words('_Start'));</script>
+						<input id="btn_stop" type="button" onClick="do_stop()" value="" disabled><script>$('#btn_stop').val(get_words('_Stop'));</script>
+						<input id="btn_download" type="button" onClick="do_download()" value="" disabled><script>$('#btn_download').val(get_words('_Download'));</script>
+					</td>
+				</tr>
+                </table>
+				<br>
+				</td>
+			</tr>
+			</table>
+			</td>
+		</tr>
+	</table>
+	</td>
+	<td background="bg1_r.gif">&nbsp;</td>
+</tr>
+<tr>
+	<td><img src="c1_bl.gif" width="21" height="20" /></td>
+	<td align="right" background="bg1_b.gif"><img src="copyright.png" width="264" height="20" /></td>
+	<td><img src="c1_br.gif" width="21" height="20" /></td>
+</tr>
+</table>
+<iframe id="upload_target" name="upload_target" src="" style="width:0;height:0;border:0px solid #fff;"></iframe>
+<form name="form1" id="form1" action="ptrace.ccp" method="post">
+<input type="hidden" name="ccp_act" value="doDownload">
+<input type="hidden" name="iface" id="form_iface">
+</form>
+
+<script>
+	var login_who=login_Info;
+    if(login_who != "w")
+	{
+		
+	}
+</script>
+</body>
+</html>

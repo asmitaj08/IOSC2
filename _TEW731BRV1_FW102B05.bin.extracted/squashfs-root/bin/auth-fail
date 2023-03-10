@@ -1,0 +1,2 @@
+#!/bin/sh
+app_sync 1028 0 "act=authfail" "INTERFACE=$1" "DEV=$2" "PID=$3" "REASON=$4" 

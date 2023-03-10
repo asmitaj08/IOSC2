@@ -1,0 +1,226 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>TRENDNET | modelName Utility </title>
+<link rel="stylesheet" href="style.css" type="text/css">
+<script language="JavaScript" src="uk.js"></script>
+
+<script language="JavaScript" src="public_js/public.js"></script>
+<script language="Javascript" src="js/jquery-1.3.2.min.js"></script>
+<script language="Javascript" src="js/xml.js"></script>
+<script language="Javascript" src="js/object.js"></script>
+<script language="JavaScript">
+	var dev_info = get_router_info();
+
+	var hw_version 	= dev_info.hw_ver;
+	var version 	= dev_info.fw_ver;
+	var model		= dev_info.model;
+	var login_Info 	= dev_info.login_info;
+	var cli_mac 	= dev_info.cli_mac;
+	
+	var param = {
+		url: "get_set.ccp",
+		arg: ""
+	};
+	//get_config_obj(param);
+	//var login_Info = config_val("login_Info");
+	
+	var redirectpage = "";
+	var count = 0;
+	var evt = getUrlEntry("event");
+	var redirect_target = "";
+	
+	function gup( name ){  
+		name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");  
+		var regexS = "[\\?&]"+name+"=([^&#]*)";  
+		var regex = new RegExp( regexS );  
+		var results = regex.exec( window.location.href );  
+		if( results == null )    
+			return "";  
+		else    
+			return results[1];
+	}
+	
+	function lan_action()
+	{
+		var old_ip = getUrlEntry("old_ip");
+		var old_mask = getUrlEntry("old_mask");
+		var new_ip = getUrlEntry("new_ip");
+		var new_mask = getUrlEntry("new_mask");
+		var pc_ip = getUrlEntry("pc_ip");
+		var statip = getUrlEntry("statip");
+		
+		if(old_ip == "(nill)")
+			old_ip = "0.0.0.0";
+		if(old_mask == "(nill)")
+			old_mask = "0.0.0.0";
+		if(new_ip == "(nill)")
+			new_ip = "0.0.0.0";
+		if(new_mask == "(nill)")
+			new_mask = "0.0.0.0";
+		
+		// check ip/mac conflict of lan.htm
+		if(statip == "1")
+		{
+			get_by_id("backmsg").innerHTML = get_words('li_msg166');
+		}
+		else
+		{
+			get_by_id("backmsg").innerHTML = get_words('li_msg2');
+		}
+			
+			
+		var temp_old_ip_obj = new addr_obj(old_ip.split("."), "", true, false);
+		var temp_old_mask_obj = new addr_obj(old_mask.split("."), "", true, false);
+		var temp_new_ip_obj = new addr_obj(new_ip.split("."), "", true, false);
+		var temp_new_mask_obj = new addr_obj(new_mask.split("."), "", true, false);
+		var temp_pc_ip_obj = new addr_obj(pc_ip.split("."), "", true, false);
+
+		//alert(temp_old_ip_obj.addr);
+		param.arg = "ccp_act=doEvent&ccpSubEvent="+evt;
+		get_config_obj(param);
+		if(check_domain(temp_old_ip_obj, temp_old_mask_obj, temp_pc_ip_obj) == false) // from wan
+		{
+			//get_by_id("newlink").innerHTML = '<a href="lan.htm" onclick="return jump_if();"><u>' + get_words('li_msg6') + '</u></a>';
+			//window.location.href = "lan.htm";
+			redirect_target = "lan.htm";
+		}
+		else	//from lan
+		{
+			/*
+			if(new_ip == old_ip)
+			{
+				//alert("same domain and use old lan ip");
+			}
+			else
+			{
+				//alert("same domain and but lan ip changed");
+				//get_by_id("newlink").innerHTML = '<a href="http://'+new_ip+'"><u>' + get_words('li_msg6') + '</u></a>';
+				redirect_target = "http://" + new_ip;
+			}
+			*/
+			redirect_target = "http://" + new_ip;
+		}
+
+		count = parseInt(config_val("count_down"));
+		//alert("Lan IP has been changed, please wait for "+ count +" seconds.");
+		//redirectpage = "lan.htm";
+	}
+	
+	function onPageLoad(){
+		//get_by_id("html_response_page").value = get_by_id("html_response_return_page").value;	
+		
+		if( evt == "CCP_SUB_LAN" )
+		{
+			lan_action();
+		}
+		//alert(evt);
+	}
+	function back(){
+		//if(login_Info!= "w")
+			//window.location.href ="lan.htm";
+		//else
+			//window.location.href = redirectpage;
+			//window.location.href = get_by_id("html_response_return_page").value;
+		//get_by_id("newlink").style.display = "";
+		window.location.href = redirect_target;
+	}
+	function do_count_down(){
+		get_by_id("timeleft").innerHTML = count;
+		
+		if (count == 0) {	  
+			//alert("count=0");
+	        back();
+	        return false;
+	    }
+
+		if (count > 0) {
+	        count--;
+	        setTimeout('do_count_down()',1000);
+	    }
+	
+	}
+		
+</script>
+</head>
+<body>
+<table width="750" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="21"><img src="c1_tl.gif" width="21" height="21" /></td>
+    <td width="708" background="bg1_t.gif"><img src="top_1.gif" width="390" height="21" /></td>
+    <td width="21"><img src="c1_tr.gif" width="21" height="21" /></td>
+  </tr>
+  <tr>
+    <td valign="top" background="bg1_l.gif"><img src="top_2.gif" width="21" height="69" /></td>
+    <td background="bg.gif"><table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="13%"><img src="logo.gif" /></td>
+        <td width="87%" align="right"><img src="description.gif" /></td>
+      </tr>
+    </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="78%" valign="top"><table width="98%" border="0" cellpadding="0" cellspacing="0" class="tabBigTitle">
+                <tr>
+                  <td class="headerbg2">&nbsp;</td>
+                </tr>
+                <tr>
+                  <td valign="top"><input type="hidden" id="html_response_page" name="html_response_page" value="lan.htm">
+                    <input type="hidden" id="html_response_message" name="html_response_message" value="<% CmoGetCfg("html_response_message","none"); %>">
+                    <input type="hidden" id="html_response_return_page" name="html_response_return_page" value="<% CmoGetCfg("html_response_return_page","none"); %>">
+                    <input type="hidden" id="ping_result" name="ping_result" value="<% CmoGetStatus("ping_result"); %>">
+<TABLE width="98%" border="0" align="center" cellpadding="3" cellspacing="1">
+                        <tr>
+                          <td bgcolor="#DDDDDD"><p>&nbsp;</p>
+                              <table width="70%" border="0" align="center">
+                                <tr>
+                                  <td height="100"><div id=box_header2>
+                                      <div align="center">
+									  <span id="msg"></span>
+									  <!--
+                                        <script>
+												var login_who="<% CmoGetStatus("get_current_user"); %>";
+												if(login_who== "user"){
+													document.write("Only admin account can change the settings.");
+												}else{
+													if(get_by_id("html_response_return_page").value != "ping_test.htm"){
+														document.write(get_by_id("html_response_message").value);
+													}else{
+														document.write(get_by_id("ping_result").value);
+													}
+												}
+											</script>
+										-->
+                                        <br>
+                                        <br>
+                                        <p align="center" class="box_msg"><span id="backmsg"></span><font color="#0000CC"><b><span id="timeleft"></span></b></font>&nbsp;<script>show_words('li_msg3');</script></p>
+                                        <span id="newlink" style="display:none"></span>
+										<div id="show_back2" style="display:none"><a href="<% CmoGetCfg("html_response_return_page","none"); %>" onClick="javascript:back();"><b><script>show_words('_Back');</script></b></a></div>
+                                      </div>
+                                  </div></td>
+                                </tr>
+                              </table>
+                            <p>&nbsp;</p></td>
+                        </tr>
+                                            </table>
+<br></td></tr>
+              </table>
+                <br></td>
+          </tr>
+      </table></td>
+    <td background="bg1_r.gif">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><img src="c1_bl.gif" width="21" height="20" /></td>
+    <td align="right" background="bg1_b.gif"><img src="copyright.png" width="264" height="20" /></td>
+    <td><img src="c1_br.gif" width="21" height="20" /></td>
+  </tr>
+</table>
+</body>
+<script>
+	//var count = <% CmoGetCfg("countdown_time","none"); %>;
+	//do_count_down();
+	onPageLoad();
+	do_count_down();
+</script>
+</html>

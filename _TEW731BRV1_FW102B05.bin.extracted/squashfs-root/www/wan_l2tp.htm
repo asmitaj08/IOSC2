@@ -1,0 +1,610 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;">
+<title>TRENDNET | modelName | Main | WAN</title>
+<link rel="stylesheet" href="style.css" type="text/css">
+<script language="JavaScript" src="uk.js"></script>
+
+<script language="JavaScript" src="public_js/public.js"></script>
+<script language="Javascript" src="js/jquery-1.3.2.min.js"></script>
+<script language="Javascript" src="js/xml.js"></script>
+<script language="Javascript" src="js/object.js"></script>
+<SCRIPT LANGUAGE="JavaScript">
+	var dev_info = get_router_info();
+
+	var hw_version 	= dev_info.hw_ver;
+	var version 	= dev_info.fw_ver;
+	var model		= dev_info.model;
+	var login_Info 	= dev_info.login_info;
+	var cli_mac 	= dev_info.cli_mac;
+
+	var param = {
+		url: "get_set.ccp",
+		arg: ""
+	};
+	param.arg = "ccp_act=get&num_inst=3";
+	param.arg +="&oid_1=IGD_WANDevice_i_WANConnectionDevice_i_&inst_1=11100";
+	param.arg +="&oid_2=IGD_WANDevice_i_WANConnectionDevice_i_L2TP_i_&inst_2=11110";
+	param.arg +="&oid_3=IGD_WANDevice_i_WANConnectionDevice_i_L2TP_i_ConnectionCfg_i_&inst_3=11111";
+	get_config_obj(param);
+	
+	function loadSettings(){
+		//set_checked("<% CmoGetCfg("wan_l2tp_dynamic","none"); %>",get_by_name("wan_l2tp_dynamic"));
+		//set_checked("<% CmoGetCfg("wan_l2tp_connect_mode","none"); %>",get_by_name("wan_l2tp_connect_mode"));
+		set_checked(config_val("l2tpCfg_IPAddressType_"),get_by_name("wan_l2tp_dynamic"));
+		set_checked(config_val("l2tpConn_ConnectionTrigger_"),get_by_name("wan_l2tp_connect_mode"));
+		
+		get_by_id("wan_l2tp_ipaddr").value = config_val("l2tpCfg_ExternalIPAddress_");
+		get_by_id("wan_l2tp_netmask").value = config_val("l2tpCfg_SubnetMask_");
+		get_by_id("wan_l2tp_gateway").value = config_val("l2tpCfg_DefaultGateway_");
+		get_by_id("wan_primary_dns").value = config_val("l2tpCfg_DNSServers_");
+		get_by_id("wan_l2tp_server_ip").value = config_val("l2tpConn_ServerIP_");
+		get_by_id("wan_l2tp_username").value = config_val("l2tpConn_Username_");
+		//get_by_id("wan_l2tp_password").value = config_val("");
+		get_by_id("wan_l2tp_max_idle_time").value = config_val("l2tpConn_IdleDisconnectTime_");
+		get_by_id("wan_l2tp_mtu").value = config_val("l2tpConn_MaxMTUSize_");
+
+		get_by_id("wan_mac").value = config_val("wanConnDev_MACAddress_");
+		get_by_id("wanConnDev_MACAddressOverride_1.1.1.0.0").value = config_val("wanConnDev_MACAddressOverride_");
+
+		set_mac(get_by_id("wan_mac").value, ":");
+
+		disable_static_address(get_by_name("wan_l2tp_dynamic"), get_by_id("wan_l2tp_ipaddr"), get_by_id("wan_l2tp_netmask"), get_by_id("wan_l2tp_gateway"), get_by_id("wan_primary_dns"));
+		check_connectmode();
+	}
+
+	function clone_mac_action(){
+		set_mac(cli_mac, ":");
+		get_by_id("wan_mac").value = cli_mac;
+		
+		get_by_id("wanConnDev_MACAddressOverride_1.1.1.0.0").value = "1";
+	}
+
+	function send_request(){
+		var wan_type = get_by_name("wan_l2tp_dynamic");
+		var ip = get_by_id("wan_l2tp_ipaddr").value;		
+		var mask = get_by_id("wan_l2tp_netmask").value;
+		var gateway = get_by_id("wan_l2tp_gateway").value;	
+		var dns = get_by_id("wan_primary_dns").value;	
+		var idle_time = get_by_id("wan_l2tp_max_idle_time").value;	    	
+        var mtu = get_by_id("wan_l2tp_mtu").value;
+        
+        var ip_addr_msg = replace_msg(all_ip_addr_msg,get_words('_IP_Addr'));
+		var gateway_msg = replace_msg(all_ip_addr_msg,get_words('_GWAddr'));
+		var dns_server_msg = replace_msg(all_ip_addr_msg,get_words('_DNS_Ser'));
+        var max_idle_msg = replace_msg(check_num_msg, get_words('_IdleTime'), 0, 999);
+        var mtu_msg = replace_msg(check_num_msg, " "+get_words('_MTU'), 576, 1460);
+        
+		var temp_ip_obj = new addr_obj(ip.split("."), ip_addr_msg, false, false);
+		var temp_mask_obj = new addr_obj(mask.split("."), subnet_mask_msg, false, false);
+		var temp_gateway_obj = new addr_obj(gateway.split("."), gateway_msg, false, false);
+		var temp_dns_obj = new addr_obj(dns.split("."), dns_server_msg, false, false);
+		var temp_idle = new varible_obj(idle_time, max_idle_msg, 0, 9999, false);
+        var temp_mtu = new varible_obj(mtu, mtu_msg, 576, 1460, false);
+        
+		if (wan_type[1].checked){
+			if (!check_lan_setting(temp_ip_obj, temp_mask_obj, temp_gateway_obj)){
+				return false;
+			}
+		}
+		
+		if (dns != "" && dns != "0.0.0.0"){
+			if (!check_address(temp_dns_obj)){
+				return false;
+			}
+		}
+
+		if(get_by_id("wan_l2tp_server_ip").value == ""){
+                alert(msg[MSG40]);
+                return false;
+        }
+
+		if(get_by_id("wan_l2tp_username").value == "")
+		{
+			alert(get_words("li_msg164"));
+			return false;
+		}
+		
+		if(get_by_id("wan_l2tp_password").value == "")
+		{
+			alert(get_words("_MSG100"));
+			return false;
+		}
+			
+		if (!check_pwd("wan_l2tp_password", "pwd2")){
+			return false;
+		}
+		
+		if (wan_type[0].checked) //Set dynamic IP
+			get_by_id("wan_specify_dns").value = 0;
+		else{						//Set static IP
+			get_by_id("wan_specify_dns").value = (dns == "" || dns == "0.0.0.0") ? 0 : 1;			
+		}	
+			
+		if(get_checked_value(get_by_name("wan_l2tp_connect_mode")) == "2")
+		{
+			if (!check_varible(temp_idle)){
+				return false;
+			}
+		}
+    	
+    	if (!check_varible(temp_mtu)){
+    		return false;
+    	}
+
+		var mac = "";
+		for (var i = 1; i < 7; i++){
+			mac += get_by_id("mac" + i).value;
+			
+			if (i < 6){
+				mac += ":";
+			}
+		}
+		if(check_mac_00(mac) == -59)
+        {
+            alert(msg[MSG59]);
+            return false;
+        }
+        if (!check_mac_00(mac) || mac == "00:00:00:00:00:00" || mac == ":::::"){
+			alert(msg[MSG5]);
+			return;
+		}
+		get_by_id("wan_mac").value= mac;
+
+		
+		copyDataToDataModelFormat();
+		send_submit("form2");
+	}
+	
+	function check_connectmode(){
+		var conn_mode = get_by_name("wan_l2tp_connect_mode");
+		var idle_time = get_by_id("wan_l2tp_max_idle_time");
+		
+		if(conn_mode[2].checked == true){
+			idle_time.disabled = false;
+		}else{
+			idle_time.disabled = true;
+		}
+	}
+	
+	function copyDataToDataModelFormat()
+	{
+		get_by_id("l2tpCfg_IPAddressType_1.1.1.1.0").value = get_checked_value(get_by_name("wan_l2tp_dynamic"));
+		get_by_id("l2tpCfg_ExternalIPAddress_1.1.1.1.0").value = get_by_id("wan_l2tp_ipaddr").value;
+		get_by_id("l2tpCfg_SubnetMask_1.1.1.1.0").value = get_by_id("wan_l2tp_netmask").value;
+		get_by_id("l2tpCfg_DefaultGateway_1.1.1.1.0").value = get_by_id("wan_l2tp_gateway").value;
+		//get_by_id("l2tpCfg_DNSEnabled_1.1.1.1.0").value = get_by_id("");
+		get_by_id("l2tpCfg_DNSServers_1.1.1.1.0").value = get_by_id("wan_primary_dns").value;
+		get_by_id("l2tpConn_ServerIP_1.1.1.1.1").value = get_by_id("wan_l2tp_server_ip").value;
+		get_by_id("l2tpConn_Username_1.1.1.1.1").value = get_by_id("wan_l2tp_username").value;
+		//if(get_by_id("wan_l2tp_password").value == "WDB8WvbXdHtZyM8Ms2RENgHlacJghQyG")
+			//get_by_id("l2tpConn_Password_1.1.1.1.1").value = config_val("l2tpConn_Password_");
+		//else
+			get_by_id("l2tpConn_Password_1.1.1.1.1").value = get_by_id("wan_l2tp_password").value;
+		get_by_id("l2tpConn_ConnectionTrigger_1.1.1.1.1").value = get_checked_value(get_by_name("wan_l2tp_connect_mode"));
+		get_by_id("l2tpConn_IdleDisconnectTime_1.1.1.1.1").value = get_by_id("wan_l2tp_max_idle_time").value;
+		get_by_id("l2tpConn_MaxMTUSize_1.1.1.1.1").value = get_by_id("wan_l2tp_mtu").value;
+
+		if(get_by_id("wanConnDev_MACAddressOverride_1.1.1.0.0").value == "0")
+		{
+			if(get_by_id("wanConnDev_MACAddress_1.1.1.0.0").value != get_by_id("wan_mac").value)
+				get_by_id("wanConnDev_MACAddressOverride_1.1.1.0.0").value = "1";
+		}			
+
+		if(get_by_id("wanConnDev_MACAddressOverride_1.1.1.0.0").value == "1")
+			get_by_id("wanConnDev_MACAddress_1.1.1.0.0").value = get_by_id("wan_mac").value;
+
+	}
+</SCRIPT>
+</head>
+
+<body onLoad="MM_preloadImages('but_wizard_1.gif','but_status_1.gif','but_tools_1.gif','but_main_1.gif','but_wireless_1.gif','but_routing_1.gif','but_access_1.gif','but_management_1.gif');loadSettings()">
+<table width="750" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="21"><img src="c1_tl.gif" width="21" height="21" /></td>
+    <td width="708" background="bg1_t.gif"><img src="top_1.gif" width="390" height="21" /></td>
+    <td width="21"><img src="c1_tr.gif" width="21" height="21" /></td>
+  </tr>
+  <tr>
+    <td valign="top" background="bg1_l.gif"><img src="top_2.gif" width="21" height="69" /></td>
+    <td background="bg.gif"><table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="13%"><img src="logo.gif" /></td>
+        <td width="87%" align="right"><img src="description.gif" /></td>
+      </tr>
+    </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="20%" height="429" valign="top"><table width="56%" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td onclick="location.href='lan.htm'">
+				<table class="menu_tb">
+				<tr>
+					<td class="menu_sel_nw"></td>
+					<td class="menu_sel_n"></td>
+					<td class="menu_sel_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_w"></td>
+					<td class="menu_sel_m"><b>&nbsp;&nbsp;<script>show_words('_MSG749');</script></td>
+					<td class="menu_sel_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_sw"></td>
+					<td class="menu_sel_s"></td>
+					<td class="menu_sel_se"></td>
+				</tr>
+				</table>	
+				</a></td>
+              </tr>
+              <tr>
+                <td><table width="100%" border="0" cellpadding="2" class="submenubg">
+                    <tr>
+                      <td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td width="87%"><a href="lan.htm" class="submenus"><b><script>show_words('_LAN_DHCPSer')</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="wan.htm" class="submenus"><b><u><script>show_words('_WAN')</script></u></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="password.htm" class="submenus"><b><script>show_words('_Pwd')</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="time.htm" class="submenus"><b><script>show_words('_Time')</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="ddns.htm" class="submenus"><b><script>show_words('_dyndns')</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="ipv6.htm" class="submenus"><b><script>show_words('_IPv6')</script></b></a></td>
+                    </tr>
+                </table></td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='wireless_basic.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wireless')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='status.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG748')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='static_routing.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG747')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='filters.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Access')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='snmp.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG746')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='restart.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Tools')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="show_wizard('wizard.htm',login_Info)">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wizard')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="15" height="15"></td>
+              </tr>
+            </table>
+            <p>&nbsp;</p>
+              <p>&nbsp;</p></td>
+            <td width="2%"><img src="spacer.gif" width="15" height="15" /></td>
+            <td width="78%" valign="top"><table width="98%" border="0" cellpadding="0" cellspacing="0" class="tabBigTitle">
+                <tr>
+                  <td class="headerbg2"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                      <tr>
+                        <td width="79%"><font color="#FFFFFF" class="textheader" style="margin-left:0; padding-left:0"><script>show_words('_WAN')</script></font></td>
+                        <td width="21%"><input name="button" type="button" id="help_btn" class="ButtonHelp" onclick="MM_openBrWindow('help_main.htm#main_wan','','scrollbars=yes,resizable=yes,width=800,height=550')" value="" />
+								<script>$('#help_btn').val(get_words('_Help'));</script>
+                        </td>
+                      </tr>
+                  </table></td>
+                </tr>
+                <tr>
+                  <td valign="top">
+				  <form id="form2" name="form2" method="post" action="get_set.ccp">
+					<input type="hidden" name="ccp_act" value="set">
+					<input type="hidden" name="ccpSubEvent" value="CCP_SUB_WAN">
+					<input type="hidden" name="nextPage" value="wan_l2tp.htm">
+					<input type="hidden" name="wanConnDev_CurrentConnObjType_1.1.1.0.0" id="wanConnDev_CurrentConnObjType_1.1.1.0.0" value="4">
+					<input type="hidden" name="wanConnDev_MACAddress_1.1.1.0.0" id="wanConnDev_MACAddress_1.1.1.0.0" value="">
+					<input type="hidden" name="wanConnDev_MACAddressOverride_1.1.1.0.0" id="wanConnDev_MACAddressOverride_1.1.1.0.0" value="">
+					<input type="hidden" name="l2tpCfg_IPAddressType_1.1.1.1.0" id="l2tpCfg_IPAddressType_1.1.1.1.0" value="">
+					<input type="hidden" name="l2tpCfg_ExternalIPAddress_1.1.1.1.0" id="l2tpCfg_ExternalIPAddress_1.1.1.1.0" value="">
+					<input type="hidden" name="l2tpCfg_SubnetMask_1.1.1.1.0" id="l2tpCfg_SubnetMask_1.1.1.1.0" value="">
+					<input type="hidden" name="l2tpCfg_DefaultGateway_1.1.1.1.0" id="l2tpCfg_DefaultGateway_1.1.1.1.0" value="">
+					<input type="hidden" name="l2tpCfg_DNSEnabled_1.1.1.1.0" id="l2tpCfg_DNSEnabled_1.1.1.1.0" value="1">
+					<input type="hidden" name="l2tpCfg_DNSServers_1.1.1.1.0" id="l2tpCfg_DNSServers_1.1.1.1.0" value="">
+					<input type="hidden" name="l2tpConn_ServerIP_1.1.1.1.1" id="l2tpConn_ServerIP_1.1.1.1.1" value="">
+					<input type="hidden" name="l2tpConn_Username_1.1.1.1.1" id="l2tpConn_Username_1.1.1.1.1" value="">
+					<input type="hidden" name="l2tpConn_Password_1.1.1.1.1" id="l2tpConn_Password_1.1.1.1.1" value="">
+					<input type="hidden" name="l2tpConn_ConnectionTrigger_1.1.1.1.1" id="l2tpConn_ConnectionTrigger_1.1.1.1.1" value="">
+					<input type="hidden" name="l2tpConn_IdleDisconnectTime_1.1.1.1.1" id="l2tpConn_IdleDisconnectTime_1.1.1.1.1" value="">
+					<input type="hidden" name="l2tpConn_MaxMTUSize_1.1.1.1.1" id="l2tpConn_MaxMTUSize_1.1.1.1.1" value="">
+				  </form>
+				  <form id="form1" name="form1" method="post" action="apply.cgi">
+                    <input type="hidden" id="html_response_page" name="html_response_page" value="back.htm">
+                    <input type="hidden" id="html_response_message" name="html_response_message" value="The setting is saved.">
+                    <input type="hidden" id="html_response_return_page" name="html_response_return_page" value="wan.htm">
+                    <input type="hidden" id="wan_specify_dns" name="wan_specify_dns"  value="">
+                    <input type="hidden" id="wan_proto" name="wan_proto" value="l2tp">
+                    <input type="hidden" id="wan_mac" name="wan_mac" value="">
+                    <input type="hidden" id="wan_pppoe_russia_enable" name="wan_pppoe_russia_enable" value="0">
+                    <input type="hidden" id="wan_pptp_russia_enable" name="wan_pptp_russia_enable" value="0">
+                    <input type="hidden" id="reboot_type" name="reboot_type" value="reboot">
+                    <table width="98%" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#333333">
+                      <tr>
+                        <td align="right" valign="top" class="bgblue"><script>show_words('_conntype')</script></td>
+                        <td  class="bggrey">
+						<table width="100%" border="0">
+                            <tr>
+                              <td><select size="1" id="conn_type" name="conn_type" onChange="change_wan_html(this.options[selectedIndex].value)">
+                                <option value="0"><script>show_words('_DHCPClient_FixedIP')</script></option>
+<!--DEF CONFIG_POE-->                                <option value="1"><script>show_words('_PPPoE')</script></option>
+<!--DEF CONFIG_PPTP-->                                <option value="2"><script>show_words('_PPTP')</script></option>
+                                <option value="3" selected><script>show_words('_L2TP')</script></option>
+<!--DEF	CONFIG_BIGPOND       <option value="4"><script>show_words('_BigPondCable')</script></option>-->
+<!--DEF	CONFIG_RUSPOE-->        <option value="5"><script>show_words('_RussiaPPPoE')</script></option>
+<!--DEF	CONFIG_RUSPPTP-->       <option value="6"><script>show_words('_RussiaPPTP')</script></option>
+<!--DEF CONFIG_RUSL2TP-->		<option value="7"><script>show_words('_RussiaL2TP')</script></option>
+                              </select></td>
+                            </tr>
+                            <tr>
+                              <td><input type="radio" value="0" name="wan_l2tp_dynamic" onClick='disable_static_address(get_by_name("wan_l2tp_dynamic"), get_by_id("wan_l2tp_ipaddr"), get_by_id("wan_l2tp_netmask"), get_by_id("wan_l2tp_gateway"), get_by_id("wan_primary_dns"))'>
+                                <b><script>show_words('_DynamicIP')</script></b>&nbsp;&nbsp;&nbsp;
+                                <input type="radio" value="1" name="wan_l2tp_dynamic" onClick='disable_static_address(get_by_name("wan_l2tp_dynamic"), get_by_id("wan_l2tp_ipaddr"), get_by_id("wan_l2tp_netmask"), get_by_id("wan_l2tp_gateway"), get_by_id("wan_primary_dns"))'>
+                                <b><script>show_words('_StaticIP')</script></b></td>
+                            </tr>
+                        </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_IP_Addr')</script></td>
+                        <td  class="bggrey"><input type=text id="wan_l2tp_ipaddr" name="wan_l2tp_ipaddr" size="16" maxlength="15" value=""></td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_Subnet')</script></td>
+                        <td  class="bggrey"><input type=text id="wan_l2tp_netmask" name="wan_l2tp_netmask" size=16 maxlength=15 value=""></td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_GW')</script></td>
+                        <td  class="bggrey"><input name="wan_l2tp_gateway" type=text id="wan_l2tp_gateway" size="16" maxlength="15" value=""></td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_DNS')</script></td>
+                        <td  class="bggrey"><input name="wan_primary_dns" type=text id="wan_primary_dns" size="16" maxlength="15" value=""></td>
+                      </tr>
+                      <tr>
+                        <td width="150" align="right" class="bgblue"><script>show_words('_MACAddr')</script></td>
+                        <td class="bggrey"><input type="text" id="mac1" name="mac1" size="2" maxlength="2">
+                          -
+                          <input type="text" id="mac2" name="mac2" size="2" maxlength="2">
+                          -
+                          <input type="text" id="mac3" name="mac3" size="2" maxlength="2">
+                          -
+                          <input type="text" id="mac4" name="mac4" size="2" maxlength="2">
+                          -
+                          <input type="text" id="mac5" name="mac5" size="2" maxlength="2">
+                          -
+                          <input type="text" id="mac6" name="mac6" size="2" maxlength="2">
+                          &nbsp;&nbsp;<br>
+                          <input type="button" value="" id="mac_clone" name="clone" onClick="clone_mac_action()"><script>$('#mac_clone').val(get_words('_CloneMAC'));</script></td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_SerIPName')</script></td>
+                        <td  class="bggrey"><input type=text id="wan_l2tp_server_ip" name="wan_l2tp_server_ip" size=30 maxlength=63 value=""></td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_L2TPaccount')</script></td>
+                        <td  class="bggrey"><input type=text id="wan_l2tp_username" name="wan_l2tp_username" size=30 maxlength=63 value=""></td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_L2TPpwd')</script></td>
+                        <td  class="bggrey"><input type=password id="wan_l2tp_password" name="wan_l2tp_password" size="30" maxlength="64" value="WDB8WvbXdHtZyM8Ms2RENgHlacJghQyGWDB8WvbXdHtZyM8Ms2RENgHlacJghQyG"></td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_RetypeL2TPPwd')</script></td>
+                        <td valign="top"  class="bggrey"><input type="password" id="pwd2" name="pwd2" size=30 maxlength=64 value="WDB8WvbXdHtZyM8Ms2RENgHlacJghQyGWDB8WvbXdHtZyM8Ms2RENgHlacJghQyG"></td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"> <script>show_words('_AutoReconn')</script> </td>
+                        <td class="bggrey"><input type=radio name="wan_l2tp_connect_mode" value="0" onClick="check_connectmode()">
+                          <script>show_words('_AlwaysOn')</script>&nbsp;&nbsp;&nbsp;
+                          <input type=radio name="wan_l2tp_connect_mode" value="1" onClick="check_connectmode()">
+                          <script>show_words('_Manual')</script>
+                          &nbsp;&nbsp;&nbsp;
+                          <input type=radio name="wan_l2tp_connect_mode" value="2" onClick="check_connectmode()">
+                          <script>show_words('_OnDemand')</script></td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_IdleTimeOut')</script></td>
+                        <td  class="bggrey"><input type=text id="wan_l2tp_max_idle_time" name="wan_l2tp_max_idle_time" size="4" maxlength="4" value="">
+                          <script>show_words('_minutes')</script></td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue"><script>show_words('_MTU')</script> </td>
+                        <td  class="bggrey"><input type=text id="wan_l2tp_mtu" name="wan_l2tp_mtu" maxlength="4" size="4" value=""></td>
+                      </tr>
+                      <tr>
+                        <td align="right" class="bgblue">&nbsp;</td>
+                        <td bgcolor="#FFFFFF" class="bggrey2"><input name="cancel" type="button" class="ButtonSmall" id="cancel" onClick="window.location='wan_l2tp.htm'" value="">
+									<script>$('#cancel').val(get_words('_Cancel'));</script>
+                            <input name="apply" type="button" class="ButtonSmall" id="apply" onClick="send_request()" value="">               <script>$('#apply').val(get_words('_Apply'));</script>         </td>
+                      </tr>
+                    </table>
+                  </form>
+                    <br>
+                  </td>
+                </tr>
+            </table></td>
+          </tr>
+      </table></td>
+    <td background="bg1_r.gif">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><img src="c1_bl.gif" width="21" height="20" /></td>
+    <td align="right" background="bg1_b.gif"><img src="copyright.png" width="264" height="20" /></td>
+    <td><img src="c1_br.gif" width="21" height="20" /></td>
+  </tr>
+</table>
+<script>
+	var login_who=login_Info;
+    if(login_who != "w")
+    {
+        get_by_id("cancel").disabled = "true";
+        get_by_id("apply").disabled = "true";
+    }
+</script>
+</body>
+</html>

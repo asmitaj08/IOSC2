@@ -1,0 +1,503 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;">
+<title>TRENDNET | modelName | Status | Log</title>
+<link rel="stylesheet" href="style.css" type="text/css">
+<script language="JavaScript" src="uk.js"></script>
+
+<script language="JavaScript" src="public_js/public.js"></script>
+<script language="Javascript" src="js/jquery-1.3.2.min.js"></script>
+<script language="Javascript" src="js/xml.js"></script>
+<script language="Javascript" src="js/object.js"></script>
+<SCRIPT LANGUAGE="JavaScript">
+	var dev_info = get_router_info();
+
+	var hw_version 	= dev_info.hw_ver;
+	var version 	= dev_info.fw_ver;
+	var model		= dev_info.model;
+	var login_Info 	= dev_info.login_info;
+	var cli_mac 	= dev_info.cli_mac;
+	
+	var param = {
+		url: "get_set.ccp",
+		arg: ""
+	};
+
+	param.url = "log.ccp"
+	param.arg = "ccp_act=doLogReflash";
+	
+	get_config_obj(param);
+	
+	var query_page = 1;
+	
+	param.url = "log.ccp"
+	param.arg = "ccp_act=doLogQuery&queryPage="+query_page;
+	
+	get_config_obj(param);
+	
+	var zero_page = 0;
+	var current_page = 0;
+	var totle_page = 0;
+	
+	function send_action(act, page)
+	{
+		var paramQry = {
+			url: "log.ccp",
+			arg: "ccp_act="+act
+		};
+		
+		if(page!=0)
+			paramQry.arg += "&queryPage="+page;
+			
+		get_config_obj(paramQry);
+		paint_page_info();
+		paint_content();
+		disable_log_button();
+	}
+
+	function to_first_page(){
+		query_page = 1;
+		send_action("doLogQuery", query_page);
+		//send_submit("form2");
+	}
+	
+	function to_last_page(){
+		query_page = totle_page;
+		send_action("doLogQuery", query_page);
+		//send_submit("form3");
+	}
+	
+	function to_next_page(){
+		query_page += 1;
+		send_action("doLogQuery", query_page);
+		//send_submit("form4");
+	}
+	
+	function to_pre_page(){
+		query_page -= 1;
+		send_action("doLogQuery", query_page);
+		//send_submit("form5");
+	}
+	
+	function clear_log(){
+		//send_submit("form6");
+		send_action("doLogClear", 0);
+		location.href='log.htm';
+	}
+	
+	function disable_log_button(){
+		get_by_id("pre_page").disabled = false;
+		get_by_id("next_page").disabled = false;
+		get_by_id("first_page").disabled = false;
+		get_by_id("last_page").disabled = false;
+		
+		//var cur_page = <% CmoGetStatus("log_current_page"); %>;
+		//var tot_page = <% CmoGetStatus("log_total_page"); %>;
+		
+		var cur_page = current_page;
+		var tot_page = totle_page;
+		
+		if (cur_page == 1 || (cur_page==0 && tot_page==0)){
+		    get_by_id("pre_page").disabled = true;
+		}
+		if ((cur_page == tot_page ) && cur_page!=0 && tot_page!=0 ){
+		    get_by_id("next_page").disabled = true;
+		}
+		var login_who=login_Info;
+    	if(login_who != "w")
+			get_by_id("clear").disabled = "true";			
+	}
+
+	function paint_page_info()
+	{
+		var logCnt = config_val("currLogCnt");
+		if(logCnt == 0)
+		{
+			current_page = zero_page;
+			totle_page = 0;
+		}
+		else
+		{
+			if((logCnt%10) == 0)
+				totle_page = Math.floor(logCnt/10)
+			else
+				totle_page = Math.floor(logCnt/10) + 1;
+			current_page = query_page;
+		}
+		
+		if(totle_page > 10)
+			totle_page = 10;
+		
+		get_by_id("log_total_page").innerHTML = totle_page;
+		get_by_id("log_current_page").innerHTML = current_page;
+	}
+	function paint_content()
+	{
+		var logCnt = config_val("currLogCnt");
+		var loopMax = 0;
+		
+		if(logCnt == 0)
+			return;
+			
+		if(logCnt>10)
+			loopMax = 10;
+		else
+			loopMax = logCnt;
+			
+		var logTime = config_str_multi("logTime");
+		var logType = config_str_multi("logType");
+		var logMsg = config_str_multi("logMsg");
+		
+		var content = '';
+		content = '<table width="100%">'+
+					'<tr>'+
+					'<td align="center" bgcolor="#DDDDDD"><b>' + get_words('_Time') + '</b></td>'+
+					'<td align="center" bgcolor="#DDDDDD"><b>' + get_words('_Type') + '</b></td>'+
+					'<td align="center" bgcolor="#DDDDDD"><b>' + get_words('_Message') + '</b></td>'+
+					'</tr>';
+		
+		for(var i=0; i<logTime.length; i++)
+		{
+			content +='<tr bgcolor=#FFFFFF>'+
+						'<td width=\"120\">' + logTime[i] + '</td>'+
+						'<td width=\"80\">' + logType[i] + '</td>'+
+						'<td>' + logMsg[i] + '</td>'+
+						'</tr>';
+		}
+		content += '</table>';
+		get_by_id("logContent").innerHTML = content;
+	}
+</SCRIPT>
+</head>
+
+<body onLoad="MM_preloadImages('but_wizard_1.gif','but_status_1.gif','but_tools_1.gif','but_main_1.gif','but_wireless_1.gif','but_routing_1.gif','but_access_1.gif','but_management_1.gif')">
+<table width="750" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="21"><img src="c1_tl.gif" width="21" height="21" /></td>
+    <td width="708" background="bg1_t.gif"><img src="top_1.gif" width="390" height="21" /></td>
+    <td width="21"><img src="c1_tr.gif" width="21" height="21" /></td>
+  </tr>
+  <tr>
+    <td valign="top" background="bg1_l.gif"><img src="top_2.gif" width="21" height="69" /></td>
+    <td background="bg.gif"><table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="13%"><img src="logo.gif" /></td>
+        <td width="87%" align="right"><img src="description.gif" /></td>
+      </tr>
+    </table>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="20%" height="429" valign="top"><table width="56%" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+				<td onclick="location.href='lan.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG749');</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>	
+				</a></td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+				<td onclick="location.href='wireless_basic.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wireless')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+				<td onclick="location.href='status.htm'">
+				<table class="menu_tb">
+				<tr>
+					<td class="menu_sel_nw"></td>
+					<td class="menu_sel_n"></td>
+					<td class="menu_sel_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_w"></td>
+					<td class="menu_sel_m"><b>&nbsp;&nbsp;<script>show_words('_MSG748')</script></td>
+					<td class="menu_sel_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sel_sw"></td>
+					<td class="menu_sel_s"></td>
+					<td class="menu_sel_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><table width="100%" border="0" cellpadding="2" class="submenubg">
+                    <tr>
+                      <td width="13%" align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td width="87%"><a href="status.htm" class="submenus"><b><script>show_words('_DevInfo');</script> </b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="log.htm" class="submenus"><b><u><script>show_words('_Log');</script></u></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="log_setting.htm" class="submenus"><b><script>show_words('_LogSet');</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="statistic.htm" class="submenus"><b><script>show_words('_Statistic');</script></b></a></td>
+                    </tr>
+                    <tr>
+                      <td align="right"><font color="#FFFFFF">&bull;</font></td>
+                      <td><a href="wla_conn.htm" class="submenus"><b><script>show_words('_Wireless');</script></b></a></td>
+                    </tr>
+                </table></td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='static_routing.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG747')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='filters.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Access')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='snmp.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_MSG746')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="location.href='restart.htm'">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Tools')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="8" height="8"></td>
+              </tr>
+              <tr>
+                <td onclick="show_wizard('wizard.htm',login_Info)">
+				<table class="menu_tb" onMouseOver="changeMenuClass(this, 'in');" onmouseout="changeMenuClass(this, 'out');">
+				<tr>
+					<td class="menu_nw"></td>
+					<td class="menu_n"></td>
+					<td class="menu_ne"></td>
+				</tr>
+				<tr>
+					<td class="menu_w"></td>
+					<td class="menu_m"><b>&nbsp;&nbsp;<script>show_words('_Wizard')</script></td>
+					<td class="menu_e"></td>
+				</tr>
+				<tr>
+					<td class="menu_sw"></td>
+					<td class="menu_s"></td>
+					<td class="menu_se"></td>
+				</tr>
+				</table>
+				</td>
+              </tr>
+              <tr>
+                <td><img src="spacer.gif" width="15" height="15"></td>
+              </tr>
+            </table>
+            <p>&nbsp;</p>
+              <p>&nbsp;</p></td>
+            <td width="2%"><img src="spacer.gif" width="15" height="15" /></td>
+            <td width="78%" valign="top"><table width="98%" border="0" cellpadding="0" cellspacing="0" class="tabBigTitle">
+                <tr>
+                  <td class="headerbg2"><table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding: 10px 0 10px 0">
+                      <tr>
+                        <td width="79%"><font color="#FFFFFF" class="textheader" style="margin-left:0; padding-left:0"><script>show_words('_Log')</script></font></td>
+                        <td width="21%"><input name="button" type="button" id="help_btn" class="ButtonHelp" onclick="MM_openBrWindow('help_status.htm#status_log','','scrollbars=yes,resizable=yes,width=800,height=550')" value="" />
+								<script>$('#help_btn').val(get_words('_Help'));</script>
+                        </td>
+                      </tr>
+                  </table></td>
+                </tr>
+                <tr>
+                  <td valign="top"><form id="form1" name="form1" method="post">
+                    <input type=hidden id="current_page" name="current_page" value="<% CmoGetStatus("log_current_page"); %>">
+                    <input type=hidden id="total_page" name="total_page" value="<% CmoGetStatus("log_total_page"); %>">
+                    <input type="hidden" name="total_log" id="total_log" value="<% CmoGetLog(); %>">
+                    <table width="98%" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#555555">
+                      <tr>
+                        <td><input type="button" id="first_page" name="first_page" value="" onClick="to_first_page()">
+									<script>$('#first_page').val(get_words('_FirstPage'));</script>
+                            <input type="button" id="last_page" name="last_page" value="" onClick="to_last_page()">
+									<script>$('#last_page').val(get_words('_LastPage'));</script>
+                            <input type="button" id="pre_page" name="pre_page" value="" onClick="to_pre_page()">
+									<script>$('#pre_page').val(get_words('_PreviousPage'));</script>
+                            <input type="button" id="next_page" name="next_page" value="" onClick="to_next_page()">
+									<script>$('#next_page').val(get_words('_NextPage'));</script>
+                            <input type="button" id="clear" name="clear" value="" onClick="clear_log()">
+									<script>$('#clear').val(get_words('_ClearLog'));</script>
+                            <input type="button" id="refresh" name="refresh" value="" onClick="location.href='log.htm'">
+									<script>$('#refresh').val(get_words('_Refresh'));</script>								
+									</td>
+                      </tr>
+                      <tr>
+                        <td><font color="#FFFFFF" face="Tahoma" size="2"> <script>show_words('_Page')</script>:
+                          <span id="log_current_page"></span><!--<% CmoGetStatus("log_current_page"); %>-->
+                          /
+                          <span id="log_total_page"></span><!--<% CmoGetStatus("log_total_page"); %>-->
+                        </font></td>
+                      </tr>
+                      <tr>
+                        <td><table width="100%" border="0" align="center" cellpadding="3" cellspacing="1" bgcolor="#333333">
+						   <!--
+                            <tr>
+                              <td align="center" bgcolor="#DDDDDD"><b><script>show_words('_Time')</script></b></td>
+                              <td align="center" bgcolor="#DDDDDD"><b><script>show_words('_Type')</script></b></td>
+                              <td align="center" bgcolor="#DDDDDD"><b><script>show_words('_Message')</script></b></td>
+							</tr>
+							-->
+							<tr><td>
+							<span id="logContent"></span>
+							</td></tr>
+							<!--
+                            <script>
+									var temp_entry = get_by_id("total_log").value.split("|syslog|");
+									for (var i = 0; i < temp_entry.length; i++){
+										var entry = temp_entry[i].split("|");
+										if(entry.length > 1){
+											document.write("<tr bgcolor=#FFFFFF><td width=\"120\">" + entry[0] + "</td><td width=\"80\">" + entry[1] + "</td><td>" + entry[2] + "</td></tr>");
+										}
+									}
+								</script>
+							-->
+                        </table></td>
+                      </tr>
+                    </table>
+                  </form>
+                    <br>
+                  </td>
+                </tr>
+            </table></td>
+          </tr>
+      </table></td>
+    <td background="bg1_r.gif">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><img src="c1_bl.gif" width="21" height="20" /></td>
+    <td align="right" background="bg1_b.gif"><img src="copyright.png" width="264" height="20" /></td>
+    <td><img src="c1_br.gif" width="21" height="20" /></td>
+  </tr>
+</table>
+<form id="form2" name="form2" method="post" action="log_first_page.cgi"><input type="hidden" name="html_response_page" value="log.htm"><input type="hidden" name="html_response_return_page" value="log.htm"></form>
+<form id="form3" name="form3" method="post" action="log_last_page.cgi"><input type="hidden" name="html_response_page" value="log.htm"><input type="hidden" name="html_response_return_page" value="log.htm"></form>
+<form id="form4" name="form4" method="post" action="log_next_page.cgi"><input type="hidden" name="html_response_page" value="log.htm"><input type="hidden" name="html_response_return_page" value="log.htm"></form>
+<form id="form5" name="form5" method="post" action="log_previous_page.cgi"><input type="hidden" name="html_response_page" value="log.htm"><input type="hidden" name="html_response_return_page" value="log.htm"></form>
+<form id="form6" name="form6" method="post" action="log_clear_page.cgi"><input type="hidden" name="html_response_page" value="log.htm"><input type="hidden" name="html_response_return_page" value="log.htm"></form>
+</body>
+<script>
+	//disable_log_button();
+	paint_page_info();
+	paint_content();
+	disable_log_button();
+</script>
+</html>
