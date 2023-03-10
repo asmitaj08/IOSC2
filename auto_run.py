@@ -31,8 +31,13 @@ if __name__ == '__main__':
     for filename in os.listdir(input_directory_path):
         f = os.path.join(input_directory_path, filename)
         # os.path.basename(f)
-        if os.path.isfile(f) and filename.endswith(".bin"):
-            cmd = "python3 " + python_script_path + " " + f + " " + filename
+        if os.path.isfile(f):
+            filename.replace("(", "_").replace(")","_")
+            print(filename)
+            print(output_directory_path+filename )
+            out_file = output_directory_path+filename
+            cmd = "python3 " + python_script_path + " " + f + " " + out_file
+            # cmd = "python3 " + python_script_path + " " + f + " " +filename
             print(cmd)
             if os.system(cmd) == 0:
                 count_files_processed += 1 
@@ -41,9 +46,9 @@ if __name__ == '__main__':
                 failed_files_list.append(filename)
 
 
-        else:
-            print("Given directory should only have files")
-            exit(1)
+        # else:
+        #     print("Given directory should only have files")
+        #     exit(1)
 
     print("All files processed")
     print("Total Failed files ", count_files_failed)

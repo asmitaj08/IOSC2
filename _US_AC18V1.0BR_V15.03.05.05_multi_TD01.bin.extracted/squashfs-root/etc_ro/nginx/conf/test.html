@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">  
+<html xmlns="http://www.w3.org/1999/xhtml">  
+<head>  
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />  
+<script type="application/javascript" src="jquery-2.0.3.js"></script>  
+<title>无标题文档</title>  
+<script type="application/javascript">  
+  
+$.fn.serializeObject = function()    
+{    
+   var o = {};    
+   var a = this.serializeArray();    
+   $.each(a, function() {    
+       if (o[this.name]) {    
+           if (!o[this.name].push) {    
+               o[this.name] = [o[this.name]];    
+           }    
+           o[this.name].push(this.value || '');    
+       } else {    
+           o[this.name] = this.value || '';    
+       }    
+   });    
+   return o;    
+};  
+  
+function onClik(){  
+        //var data = $("#form1").serializeArray(); //自动将form表单封装成json  
+        //alert(JSON.stringify(data));  
+        var jsonuserinfo = $('#form1').serializeObject();  
+        //alert(JSON.stringify(jsonuserinfo));
+		$.post("/cgi-bin/luci/;stok=4b9a52c678f43ebcb3f85b20c019d703/admin/datamanager/request",
+			JSON.stringify(jsonuserinfo), function(data){
+				alert(data);
+			});
+}
+
+function onClik2(){  
+        //var data = $("#form2").serializeArray(); //自动将form表单封装成json  
+        //alert(JSON.stringify(data));  
+        var jsonuserinfo = $('#form1').serializeObject();  
+        //alert(JSON.stringify(jsonuserinfo));
+		$.post("/cgi-bin/luci/admin/datamanager/stok",
+			jsonuserinfo, function(data){
+				alert(data);
+			});
+}
+</script>  
+</head>  
+  
+<body>  
+<form id="form1" name="form1" method="post" action="">  
+  <p>USB操作</p>  
+   <table width="708" border="1">
+	<tr>
+		<td>操作:<label for="op"></label></td>
+		<td>
+			<select name="op" size="1" id="op">  
+			  <option value=1>目录查询</option>  
+			  <option value=2>复制</option>
+			  <option value=3>移动</option>  
+			  <option value=4>删除</option>
+			  <option value=5>创建目录</option>
+			  <option value=6>重命名</option>	  
+			</select>  
+		</td>
+	</tr>
+    <tr>  
+      <td>path<label for="path"></label>  </td>  
+      <td> 
+        <input type="text" name="path" id="path" /></td>        
+    </tr>  
+   <tr>  	
+	<td><input type="button" name="submit" onclick="onClik();" value="提交"/>  </td>
+  </tr>
+  </table>
+</form> 
+
+<form id="form2" name="form2" method="post" action="">   
+   <p>获取Session</p>  
+   <table width="708" border="1">
+	<tr>
+		<td>用户名<label for="username"></label>  </td>  
+      <td> 
+        <input type="text" name="username" id="username" /></td>  
+	</tr>
+    <tr>  
+      <td>密码<label for="password"></label>  </td>  
+      <td> 
+        <input type="text" name="password" id="password" /></td>        
+    </tr>      
+  </table> 
+  <input type="button" name="submit" onclick="onClik2();" value="提交"/>  
+</form>   
+</body>  
+</html>  
