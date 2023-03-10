@@ -2,6 +2,7 @@
 import os
 import sys
 
+
 if __name__ == '__main__':
     if len(sys.argv) < 4:
         print("Requires python script path, input directory path with firmware binary files dataset, output directory path")
@@ -19,8 +20,8 @@ if __name__ == '__main__':
     if not os.path.exists(output_directory_path):
         os.mkdir(output_directory_path)
 
-    os.system("cd "+output_directory_path)
-    print(os.system("pwd"))
+    # os.chdir(output_directory_path)
+    # print(os.getcwd())
     
     
 
