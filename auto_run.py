@@ -18,15 +18,11 @@ if __name__ == '__main__':
 
     if not os.path.exists(output_directory_path):
         os.mkdir(output_directory_path)
-        if(os.system("cd "+output_directory_path)):
-            print(os.system("pwd"))
-        else :
-            exit()
-    else :
-        if(os.system("cd "+output_directory_path)):
-            print(os.system("pwd"))
-        else :
-            exit()
+
+    os.system("cd "+output_directory_path)
+    print(os.system("pwd"))
+    
+    
 
     count_files_processed = 0
     count_files_failed = 0
