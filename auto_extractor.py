@@ -99,4 +99,5 @@ if __name__ == '__main__':
     # Fetching the root path of the extracted binary
     dir_path = re.sub('/bin', '', dir_path_part)
     cve_check = subprocess.run(['cve-bin-tool', dir_path, '-o', output_filename, '-f', 'csv,json,html'])
+    print(cve_check)
 
