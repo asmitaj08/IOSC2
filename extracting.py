@@ -1,5 +1,6 @@
 import os
 import json
+import csv
 
 sample_dataset={"camera":{},"router":{}}
 root_path = '/Users/seemaupadhya/Documents/Workspace/Project/ecs289m-project/cve-bin-outputs'
@@ -28,30 +29,87 @@ if os.path.isdir(root_path):
                     sub={}
                     array = []
                     for iterative in data:
-                        print(iterative)
+                        #print(iterative)
                         if(iterative['product'] in sub.keys()):     #"busybox"
-                                if(iterative['version'] in sub[iterative['product']]['version'].keys()):
-                                    sub[iterative['product']]['version'][iterative['version']][iterative['cve_number']] =  {
+                                if(iterative['version'] in sub[iterative['product']].keys()):
+                                    sub[iterative['product']][iterative['version']][iterative['cve_number']] =  {
                                                                                 "severity": iterative['severity'],
                                                                                 "score": iterative['score'],
                                                                                 "source":iterative['source']}
                                 else:
-                                    sub[iterative['product']]['version'][iterative['version']]={iterative['cve_number']:{
+                                    sub[iterative['product']][iterative['version']]={iterative['cve_number']:{
                                                                                 "severity": iterative['severity'],
                                                                                 "score": iterative['score'],
                                                                                 "source":iterative['source']}}
                         else:
-                            sub[iterative['product']] = {'vendor' : iterative['vendor'], 'version':{
+                            sub[iterative['product']] = {'vendor' : iterative['vendor'], 
                                                                     iterative['version'] : {iterative['cve_number']:{
                                                                             "severity": iterative['severity'],
                                                                             "score": iterative['score'],
                                                                             "source":iterative['source']
-                                                                    }}}}
-                    for k,v in sub.items():
-                        print(k)
-                        for key in (v["version"].keys()):
-                            print(len(v["version"][key]))
+                                                                    }}}
+                    # for k,v in sub.items():
+                    #     print(k)
+                    #     for key in (v["version"].keys()):
+                    #         print(len(v["version"][key]))
                 sample_dataset[device][vendor][model_version]=sub
                 
 
-                
+                # {'busybox': {"num_packages":30,"num_cves":xx,"severity_low":,"severity_medium":,"severity_high":}, 'glibc': 15, 'zlib': 27, 'gcc': 16, 'openssl': 21, 'miniupnpc': 15, 'curl': 15, 'libcurl': 15, 'wpa_supplicant': 6}
+
+package_cve_mapping={}
+for product,details in sample_dataset.items():
+        for vendors,model_versions in details.items():
+                    for model_version,package_details in model_versions.items():
+                                    for package,pd  in package_details.items():
+                                            if package not in package_cve_mapping.keys():
+                                                  package_cve_mapping[package]={}     
+                                            for k,v in pd.items():
+                                                if(k!='vendor'):
+                                                    if(k not in package_cve_mapping[package].keys()):
+                                                        print(package+":"+k)
+                                                        package_cve_mapping[package][k]={'count':0,'cve_num':0,"cve_high":0,"cve_med":0,"cve_low":0}
+                                                    package_cve_mapping[package][k]['count']=1+package_cve_mapping[package][k]['count']
+                                                    cc,ch,cm,cl = 0,0,0,0
+                                                    for version,cve_details in v.items():
+                                                        cc+=1
+                                                        if cve_details['severity']=="HIGH":
+                                                            ch+=1
+                                                        elif(cve_details['severity']=="MEDIUM"):
+                                                                cm+=1
+                                                        else:
+                                                                cl+=1
+                                                    package_cve_mapping[package][k]['cve_num']=cc+package_cve_mapping[package][k]['cve_num']
+                                                    package_cve_mapping[package][k]['cve_high']=ch+package_cve_mapping[package][k]['cve_high']
+                                                    package_cve_mapping[package][k]['cve_med']=cm+package_cve_mapping[package][k]['cve_med']
+                                                    package_cve_mapping[package][k]['cve_low']=cl+package_cve_mapping[package][k]['cve_low']
+
+print(package_cve_mapping)
+
+field_names= ['Package_Name', 'Version', 'Count', 'Number of CVEs','CVE_high','CVE_med','CVE_low']
+with open("my_dict.csv", mode="w", newline="") as file:
+
+    # Create a CSV writer object
+    writer = csv.DictWriter(file, fieldnames=field_names)
+
+    # Write the header row to the CSV file
+    writer.writeheader()
+
+    # Loop through each key-value pair in the dictionary
+    for package_name, value in package_cve_mapping.items():
+
+        # Write the data row to the CSV file
+        writer.writerow({
+            "Package_Name": package_name,
+
+        })
+        for version, version_details in value.items():
+             writer.writerow({
+            "Version": version,
+            "Count":version_details['count'],
+            'Number of CVEs':version_details['cve_num'],
+            "CVE_high":version_details['cve_high'],
+            "CVE_med":version_details['cve_med'],
+            "CVE_low":version_details['cve_low']
+
+        })
