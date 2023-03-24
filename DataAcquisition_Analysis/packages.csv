@@ -1,0 +1,48 @@
+Package Vendor,Packages
+busybox,{'busybox'}
+gnu,"{'gcc', 'zlib', 'ncurses', 'glibc'}"
+openssl,{'openssl'}
+libexpat_project,{'libexpat'}
+point-to-point_protocol_project,{'point-to-point_protocol'}
+ntp,{'ntp'}
+thekelleys,{'dnsmasq'}
+w1.fi,"{'wpa_supplicant', 'hostapd'}"
+beasts,{'vsftpd'}
+netfilter,{'iptables'}
+lighttpd,{'lighttpd'}
+miniupnp_project,"{'miniupnpc', 'miniupnpd'}"
+ijg,{'libjpeg'}
+zlib,{'zlib'}
+stunnel,{'stunnel'}
+haxx,"{'libcurl', 'curl'}"
+lua,{'lua'}
+e2fsprogs_project,{'e2fsprogs'}
+d-bus_project,{'d-bus'}
+freedesktop,"{'libdbus', 'dbus'}"
+sqlite,{'sqlite'}
+sysstat_project,{'sysstat'}
+oracle,{'berkeley_db'}
+tcpdump,"{'tcpdump', 'libpcap'}"
+libtiff,{'libtiff'}
+gnupg,{'libgcrypt'}
+bzip,{'bzip2'}
+proftpd_project,{'proftpd'}
+openvpn,{'openvpn'}
+netatalk_project,{'netatalk'}
+litech,{'router_advertisement_daemon'}
+readymedia_project,{'readymedia'}
+json-c_project,{'json-c'}
+gmplib,{'gmp'}
+strongswan,{'strongswan'}
+ffmpeg,{'ffmpeg'}
+pupnp_project,{'pupnp'}
+ipsec-tools,{'ipsec-tools'}
+xiph.org,{'libvorbis'}
+xelerance,{'openswan'}
+minidlna_project,{'minidlna'}
+openldap,{'openldap'}
+openbsd,{'openssh'}
+lldpd_project,{'lldpd'}
+quagga,{'quagga'}
+libssh2,{'libssh2'}
+upx_project,{'upx'}
