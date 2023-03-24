@@ -22,7 +22,14 @@ Python Scripts:
 3. plotting.py : Plot sankey graphs for RQ2 and RQ3
 4. weakness.py : Mapping CVE's to CWE's 
 
-Dataset :
-1. dataset.json : Entire dataset used in the project
-2. dataset.csv : Entire dataset in csv format
-3. packages.csv : Mapping of packages to their vendors
+Dataset & Analysis: (In folder DataAcquisition_Analysis/)
+1. collected-firmware/ : [Drive Link](https://drive.google.com/drive/folders/1fznKy9DPJyXUBSrt-4CkxY3xf1R6F4C3?usp=sharing) 
+2. Firmware_acquisition_sources.xlsx : Details of vendors from where firmware was downloaded. 
+3. dataset.json : Entire dataset used in the project
+4. dataset.csv : Entire dataset in csv format
+5. packages.csv : Mapping of packages to their vendors
+5. Router_component_identification_cve_mapping.xlsx : Third-party packages in router firmware and corresponding CVEs.
+6. Camera_component_identificationa_cve_mapping.xlsx : Third-party packages in camera firmware and corresponding CVEs.
+7. busybox-package-details.xlsx : Details of firmware using respective version of busybox pacakges, and corresponding release dates of firmware.
+8. openssl-package-details.xlsx : Details of firmware using respective version of openssl pacakges, and corresponding release dates of firmware.
+9. gcc-package-details.xlsx : Details of firmware using respective version of busgccybox pacakges, and corresponding release dates of firmware.
