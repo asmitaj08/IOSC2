@@ -10,7 +10,7 @@ RQ3: What are the corresponding existing vulnerabilities w.r.t those software co
 
 The analysis shows an alarming scenario. Most of these devices use third-party packages that are outdated, hence the vulnerabilities related to the outdated version of the packages still persist in these devices. The rate at which these third-party packages are updated is not the same as the update rate of the firmware. Moreover, even with the update in the firmware versions, not all the third-party packages are updated showing an alarming security risk to these devices. 
 
-# Tool used - [cve-bin-tool](https://github.com/intel/cve-bin-tool)
+* Tool used - [cve-bin-tool](https://github.com/intel/cve-bin-tool)
 
 File Layout:
 
